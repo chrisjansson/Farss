@@ -12,5 +12,5 @@
   <ItemGroup>
     <PackageReference Include="CodeHollow.FeedReader" Version="1.1.5" />
     <PackageReference Include="Giraffe" Version="3.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.4" />
   </ItemGroup> </Project> 
