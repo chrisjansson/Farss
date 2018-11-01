@@ -12,6 +12,8 @@
 
 ### Stuff to do
 
+- [] dotnet test doesn't work with expecto adapter
+
 #### Subscription management
 - [] POST feed to subscribe
 - [] List
