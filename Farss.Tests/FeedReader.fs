@@ -2,7 +2,7 @@ module FeedReader
 
 open Expecto
 open CodeHollow.FeedReader
-open System.Threading.Tasks
+open System.IO
 
 let throwsAsync op message = async {
     let mutable opFailed = false    
@@ -30,5 +30,12 @@ let tests =
 
                 do! throwsAsync op "Throws on reading non rss feed"
             }
+        ]
+
+        testList "reading example feed" [
+            testCase "stuff" <| fun _ ->
+                let feedContent = File.ReadAllText("ExampleRssFeed.xml")
+                let feed = FeedReader.ReadFromString(feedContent)
+                Expect.equal feed.Title "Scripting News" "Title"
         ]
     ]

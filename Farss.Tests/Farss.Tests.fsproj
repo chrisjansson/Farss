@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Sample.fs" />
     <Compile Include="FeedReader.fs" />
     <Compile Include="Main.fs" />
