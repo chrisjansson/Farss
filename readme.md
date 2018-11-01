@@ -13,6 +13,7 @@
 ### Stuff to do
 
 - [x] dotnet test doesn't work with expecto adapter
+- [ ] CI appveyor
 
 #### Subscription management
 - [ ] POST feed to subscribe
