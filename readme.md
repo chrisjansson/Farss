@@ -12,11 +12,11 @@
 
 ### Stuff to do
 
-- [] dotnet test doesn't work with expecto adapter
+- [x] dotnet test doesn't work with expecto adapter
 
 #### Subscription management
-- [] POST feed to subscribe
-- [] List
+- [ ] POST feed to subscribe
+- [ ] List
 
 #### Personal Reading workflow
 * Scroll through new articles and mark them as read or read later

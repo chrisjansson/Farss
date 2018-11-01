@@ -19,8 +19,8 @@ let tests =
             let factory = new WebApplicationFactory<Farss.Server.Startup>()
             let client = factory.CreateClient()
 
-            let! response = client.GetAsync("/ping2") |> Async.AwaitTask
+            let! response = client.GetAsync("/ping") |> Async.AwaitTask
 
-            response.EnsureSuccessStatusCode()
+            response.EnsureSuccessStatusCode() |> ignore
         }
     ]
