@@ -13,7 +13,9 @@
 ### Stuff to do
 
 - [x] dotnet test doesn't work with expecto adapter
-- [ ] CI appveyor
+- [x] CI appveyor
+- [ ] Convert CI to a fake script instead
+- [ ] Dockerize app
 
 #### Subscription management
 - [ ] POST feed to subscribe
