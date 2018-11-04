@@ -1,5 +1,6 @@
 module SubscribeToFeedSpecs
 
+open Domain
 open Expecto
 open Microsoft.AspNetCore.Mvc.Testing
 open TestStartup
@@ -24,15 +25,6 @@ module HttpClient =
 let tests = 
     testList "Subscribe to feed specs" [
         testAsync "Subscribe to feed" {
-            (*
-            setup self hosted http server or subscribe to feed from memory?
-                a faked http client with url to xml string mapping should suffice for the time being
-            setup Farss server, in memory is okay
-
-            post feed url
-
-            verify against data store
-            *)
             let factory = new TestWebApplicationFactory()
 
             let feedContent = File.ReadAllText("ExampleRssFeed.xml")
@@ -45,7 +37,14 @@ let tests =
             response.EnsureSuccessStatusCode() |> ignore
 
             let repository = factory.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-            Expect.equal (repository.getAll()).Length 1 "one added feed"
+            
+            let expected: Feed = 
+                {
+                    Url = "a feed url"
+                }
+                
+            let actualFeeds = repository.getAll()
+            Expect.equal actualFeeds [ expected ] "one added feed"
         }
         
         testAsync "In memory server" {

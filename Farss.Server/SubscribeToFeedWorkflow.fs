@@ -8,6 +8,6 @@ type SubscribeToFeedCommand =
     }
     
 let subscribeToFeed (repository: FeedRepository) (command: SubscribeToFeedCommand) =
-    let feed: Feed = { Url = "Weeee" }
+    let feed: Feed = { Url = command.Url }
     repository.save feed
 
