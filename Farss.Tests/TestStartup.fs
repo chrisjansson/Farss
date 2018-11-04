@@ -1,16 +1,13 @@
 module TestStartup
 
-open Farss.Server
 open Microsoft.AspNetCore.Mvc.Testing
 open Microsoft.AspNetCore.TestHost
-open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Hosting
-open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
+open FeedReaderAdapter
 
 type FakeFeedReader =
     {
-        Adapter: FeedReaderAdapter.FeedReaderAdapter
+        Adapter: FeedReaderAdapter
         Add: string * string -> unit
     }
 
@@ -20,9 +17,9 @@ let createFakeFeedReader (): FakeFeedReader =
     let add (url: string, content: string): unit =
         map <- Map.add url content map
 
-    let adapter = 
+    let adapter: FeedReaderAdapter = 
         {
-            FeedReaderAdapter.FeedReaderAdapter.getFromUrl = fun url -> 
+            getFromUrl = fun url -> 
                 let content = Map.find url map
                 CodeHollow.FeedReader.FeedReader.ReadFromString(content)
         }
@@ -31,10 +28,6 @@ let createFakeFeedReader (): FakeFeedReader =
         Add = add
         Adapter = adapter
     }
-
-type TestStartup =
-    inherit Startup
-    override this.CreateWebApp() = Farss.Giraffe.createWebApp ()
 
 type TestWebApplicationFactory() =
     inherit WebApplicationFactory<Farss.Server.Startup>()
