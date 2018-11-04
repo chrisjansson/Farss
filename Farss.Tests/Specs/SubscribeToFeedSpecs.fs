@@ -2,10 +2,22 @@ module SubscribeToFeedSpecs
 
 open Expecto
 open Microsoft.AspNetCore.Mvc.Testing
+open TestStartup
+open Microsoft.AspNetCore.Mvc.Testing
+open Microsoft.AspNetCore.Mvc.Testing
+open Persistence
+open System.IO
+open System.Net.Http
+open Newtonsoft.Json
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
         client.GetAsync(url) |> Async.AwaitTask
+
+    let postAsync (url: string) (content: 'a) (client: System.Net.Http.HttpClient) =
+        let json = JsonConvert.SerializeObject(content)
+        let content = new StringContent(json)
+        client.PostAsync(url, content) |> Async.AwaitTask
 
 [<Tests>]
 let tests = 
@@ -20,16 +32,23 @@ let tests =
 
             verify against data store
             *)
-            let factory = new WebApplicationFactory<Farss.Server.Startup>()
+            let factory = new TestWebApplicationFactory()
+
+            let feedContent = File.ReadAllText("ExampleRssFeed.xml")
+            factory.FakeFeedReader.Add ("a feed url", feedContent)
+
             let client = factory.CreateClient()
 
-            let! response = client |> HttpClient.getAsync "/ping"
-
+            let payload: Domain.SubscribeToFeedDto = { Url = "a feed url" }
+            let! response = client |> HttpClient.postAsync "/feeds" payload
             response.EnsureSuccessStatusCode() |> ignore
+
+            let repository = factory.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+            Expect.equal (repository.getAll()).Length 1 "one added feed"
         }
         
         testAsync "In memory server" {
-            let factory = new WebApplicationFactory<Farss.Server.Startup>()
+            let factory = new TestWebApplicationFactory()
             let client = factory.CreateClient()
 
             let! response = client |> HttpClient.getAsync "/ping"
