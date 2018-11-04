@@ -9,6 +9,7 @@ open Persistence
 open System.IO
 open System.Net.Http
 open Newtonsoft.Json
+open SubscribeToFeedWorkflow
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -39,7 +40,7 @@ let tests =
 
             let client = factory.CreateClient()
 
-            let payload: Domain.SubscribeToFeedDto = { Url = "a feed url" }
+            let payload: SubscribeToFeedCommand = { Url = "a feed url" }
             let! response = client |> HttpClient.postAsync "/feeds" payload
             response.EnsureSuccessStatusCode() |> ignore
 

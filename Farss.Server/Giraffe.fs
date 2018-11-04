@@ -6,16 +6,16 @@ open Persistence
 open Microsoft.AspNetCore.Http
 open Domain
 open FSharp.Control.Tasks.V2.ContextInsensitive
+open SubscribeToFeedWorkflow
 
 let someHttpHandler : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
             let adapter = ctx.GetService<FeedReaderAdapter>()
             let repository = ctx.GetService<FeedRepository>()
-            let! dto = ctx.BindJsonAsync<SubscribeToFeedDto>()            
-
-            let feed: Feed = { Url = "Weeee" }
-            repository.save feed
+            let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()            
+            
+            SubscribeToFeedWorkflow.subscribeToFeed repository dto
 
             return! Successful.NO_CONTENT next ctx
         }
