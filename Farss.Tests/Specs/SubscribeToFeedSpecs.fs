@@ -47,6 +47,14 @@ let tests =
             Expect.equal actualFeeds [ expected ] "one added feed"
         }
         
+        ptest "Get subscription" {
+            ()
+        }
+        
+        ptest "Delete subscription" {
+            ()
+        }
+        
         testAsync "In memory server" {
             let factory = new TestWebApplicationFactory()
             let client = factory.CreateClient()
