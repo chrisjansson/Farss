@@ -16,6 +16,8 @@ module AsyncResult =
         return Result.bind f r
     }
 
+    let Return (r: Result<_,_>) = async.Return r
+
 type  FeedError =
     | FetchError of Exception
     | ParseError of Exception
