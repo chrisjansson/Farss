@@ -21,6 +21,17 @@ module HttpClient =
         let content = new StringContent(json)
         client.PostAsync(url, content) |> Async.AwaitTask
 
+let ``then`` (f: TestWebApplicationFactory) = f
+
+let ``feed`` (url: string) (f: TestWebApplicationFactory): (Feed * TestWebApplicationFactory) 
+    = ({ Url = url }, f)
+
+let ``should have been saved`` (f: Feed, factory: TestWebApplicationFactory) =
+    let repository = factory.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+    let actualFeeds = repository.getAll()
+    Expect.equal actualFeeds [ f ] "one added feed"
+
+
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
@@ -36,15 +47,10 @@ let tests =
             let! response = client |> HttpClient.postAsync "/feeds" payload
             response.EnsureSuccessStatusCode() |> ignore
 
-            let repository = factory.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-            
-            let expected: Feed = 
-                {
-                    Url = "a feed url"
-                }
-                
-            let actualFeeds = repository.getAll()
-            Expect.equal actualFeeds [ expected ] "one added feed"
+            factory
+            |> ``then``
+            |> ``feed`` "a feed url" 
+            |> ``should have been saved`` 
         }
         
         ptest "Get subscription" {
