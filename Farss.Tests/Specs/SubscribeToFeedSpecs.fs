@@ -11,6 +11,7 @@ open System.IO
 open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
+open Microsoft.AspNetCore.Mvc.Testing
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -23,34 +24,46 @@ module HttpClient =
 
 let ``then`` (f: TestWebApplicationFactory) = f
 
-let ``feed`` (url: string) (f: TestWebApplicationFactory): (Feed * TestWebApplicationFactory) 
-    = ({ Url = url }, f)
+let ``feed`` (url: string) cont (f: Async<TestWebApplicationFactory>) = async {
+        let! f' = f
+        do! cont ({ Feed.Url = url }, f')
+    }
 
-let ``should have been saved`` (f: Feed, factory: TestWebApplicationFactory) =
-    let repository = factory.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-    let actualFeeds = repository.getAll()
-    Expect.equal actualFeeds [ f ] "one added feed"
+let ``should have been saved`` (op: Feed * TestWebApplicationFactory) = async {
+        let (f, f') = op
+        let repository = f'.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+        let actualFeeds = repository.getAll()
+        Expect.equal actualFeeds [ f ] "one added feed"
+    }
+
+let Given () = 
+    new TestWebApplicationFactory()
+
+let ``feed available at url`` (url: string) (feed: string) (factory: TestWebApplicationFactory) = 
+    factory.FakeFeedReader.Add (url, feed)
+    factory
+
+let ``a user subscribes to feed`` (url: string) (factory: TestWebApplicationFactory) = async {
+        let payload: SubscribeToFeedCommand = { Url = url }
+        let client = factory.CreateClient()
+        let! response = client |> HttpClient.postAsync "/feeds" payload
+        response.EnsureSuccessStatusCode() |> ignore
+        return factory
+    }
+
+let When a = a
+let Then a = a
 
 
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
         testAsync "Subscribe to feed" {
-            let factory = new TestWebApplicationFactory()
-
             let feedContent = File.ReadAllText("ExampleRssFeed.xml")
-            factory.FakeFeedReader.Add ("a feed url", feedContent)
-
-            let client = factory.CreateClient()
-
-            let payload: SubscribeToFeedCommand = { Url = "a feed url" }
-            let! response = client |> HttpClient.postAsync "/feeds" payload
-            response.EnsureSuccessStatusCode() |> ignore
-
-            factory
-            |> ``then``
-            |> ``feed`` "a feed url" 
-            |> ``should have been saved`` 
+            do!
+                Given () |> ``feed available at url`` "a feed url" feedContent |> 
+                When |> ``a user subscribes to feed`` "a feed url" |>
+                Then |> ``feed`` "a feed url" ``should have been saved``
         }
         
         ptest "Get subscription" {
