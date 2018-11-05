@@ -26,6 +26,7 @@ type FeedReaderAdapter =
     }
 
 let createAdapter (): FeedReaderAdapter =
+    //Todo: async catch
     let tryOrErrorAsync op errorConstructor arg = async {
         try
             let! result = op arg
