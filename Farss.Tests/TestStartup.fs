@@ -20,8 +20,11 @@ let createFakeFeedReader (): FakeFeedReader =
     let adapter: FeedReaderAdapter = 
         {
             getFromUrl = fun url -> 
-                let content = Map.find url map
-                CodeHollow.FeedReader.FeedReader.ReadFromString(content)
+                let result =
+                    match Map.tryFind url map with
+                    | Some v -> CodeHollow.FeedReader.FeedReader.ReadFromString(v) |> Ok
+                    | None -> System.Exception() |> FetchError  |> Error
+                async.Return result
         }
 
     {
