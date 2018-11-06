@@ -28,14 +28,10 @@ type FeedReaderAdapter =
     }
 
 let createAdapter (): FeedReaderAdapter =
-    //Todo: async catch
     let tryOrErrorAsync op errorConstructor arg = async {
-        try
-            let! result = op arg
-            return Ok result
-        with
-        | e -> 
-            return errorConstructor e |> Error
+        match! (Async.Catch (op arg)) with
+        | Choice1Of2 r -> return Ok r
+        | Choice2Of2 r -> return Error (errorConstructor r)
     }
 
     let tryOrError op errorConstructor arg =
