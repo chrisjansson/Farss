@@ -9,7 +9,10 @@ type SubscribeToFeedCommand =
     }
     
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository) (command: SubscribeToFeedCommand) =
+    let saveFeed _ =
+        let feed: Feed = { Url = command.Url }
+        repository.save feed
+
     feedReader.getFromUrl command.Url
-    // let feed: Feed = { Url = command.Url }
-    // repository.save feed
+    |> AsyncResult.mapResult saveFeed
 

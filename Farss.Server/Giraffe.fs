@@ -15,7 +15,7 @@ let someHttpHandler : HttpHandler =
             let repository = ctx.GetService<FeedRepository>()
             let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()            
             
-            SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto
+            do! SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto |> Async.Ignore
 
             return! Successful.NO_CONTENT next ctx
         }

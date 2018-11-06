@@ -6,7 +6,7 @@ open System
 type AsyncResult<'T, 'E> = Async<Result<'T, 'E>>
 
 module AsyncResult =
-    let map f ar: Async<Result<_, _>> = async {
+    let mapResult f ar: Async<Result<_, _>> = async {
         let! r = ar
         return Result.map f r
     }
