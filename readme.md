@@ -1,5 +1,7 @@
 # Farss (_Farce_)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/0acrgm8eq2xjrws0?svg=true)](https://ci.appveyor.com/project/ChrisJansson/farss)
+
 ### Tech must haves!
 * F#
 * Giraffe
