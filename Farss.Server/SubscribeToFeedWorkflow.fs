@@ -14,6 +14,7 @@ type SubscribeToFeedCommand =
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository) (command: SubscribeToFeedCommand) =
     //todo: handle atom feeds betters
+    //todo: rss2.0 only? Does that change anything?
     let saveFeed _ =
         let feed: Feed = { Url = command.Url }
         repository.save feed
