@@ -18,6 +18,11 @@
 - [x] CI appveyor
 - [ ] Convert CI to a fake script instead
 - [ ] Dockerize app
+- [ ] Error handling strategy in aspnetcore pipeline
+    * Investigate how unhandled errors are surfaced in aspnetcore
+    * Does an error handling middleware trap exceptions?
+        Giraffe's does.
+        How does AI work?
 
 #### Subscription management
 - [ ] POST feed to subscribe
