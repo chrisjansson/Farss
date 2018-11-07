@@ -18,6 +18,12 @@ module AsyncResult =
 
     let Return (r: Result<_,_>) = async.Return r
 
+module Async =
+    let map f a = async {
+        let! a' = a
+        return (f a')
+    }
+
 type  FeedError =
     | FetchError of Exception
     | ParseError of Exception

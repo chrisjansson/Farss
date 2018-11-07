@@ -14,7 +14,6 @@ module FakeFeedReaderAdapter =
     let fetchError (message: string) =
         Exception(message) |> FetchError  |> Error |> AsyncResult.Return
 
-
     let feed (feed: CodeHollow.FeedReader.Feed) =
         feed |> Ok  |> AsyncResult.Return
 
@@ -25,27 +24,34 @@ module Expect =
         Expect.equal a e message
     }
 
+let expectBadRequest actual message = async {
+        let! actual' = actual
+        match actual' with        
+        | Error (BadRequest (m, e)) ->
+            Expect.equal m message "Bad request message"
+            Expect.equal m message "Bad request message"
+        | _ -> Tests.failtest "Expected bad request"
+    }
+
 [<Tests>]
 let tests = testList "subscribe to feed tests" [
         let cases = [
             "fails subscribe when fetching fails", fun r -> async {
                 let fetchResult = FakeFeedReaderAdapter.fetchError "fetch error"
-                let expected = AsyncResult.mapResult ignore fetchResult
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
                 let result = subscribeToFeed adapter r { Url = "any url" }
 
-                do! Expect.equalAsync result expected "should fail with feed adapter result"
+                do! expectBadRequest result "fetch error"
             }
 
             "fails subscribe when feed parsing fails", fun r -> async {
                 let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
-                let expected = AsyncResult.mapResult ignore fetchResult
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
                 let result = subscribeToFeed adapter r { Url = "any url" }
 
-                do! Expect.equalAsync result expected "should fail with feed adapter result"
+                do! expectBadRequest result "parse error"
             }
 
             "result is ok when successful", fun r -> async {

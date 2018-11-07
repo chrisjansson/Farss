@@ -8,16 +8,22 @@ open Domain
 open FSharp.Control.Tasks.V2.ContextInsensitive
 open SubscribeToFeedWorkflow
 
+let convertToHandler (result: Result<Unit, WorkflowError>) =
+    match result with
+    | Ok _ -> Successful.NO_CONTENT
+    //todo: what to do with the exception?
+    | Error (BadRequest (message, _)) -> RequestErrors.BAD_REQUEST message
+
 let someHttpHandler : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
             let adapter = ctx.GetService<FeedReaderAdapter>()
             let repository = ctx.GetService<FeedRepository>()
             let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()            
-            
-            do! SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto |> Async.Ignore
 
-            return! Successful.NO_CONTENT next ctx
+            let! result = SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto 
+                        
+            return! (result |> convertToHandler) next ctx
         }
 
 let createWebApp () =
