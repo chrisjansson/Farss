@@ -7,6 +7,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FeedReader.fs" />
+    <Compile Include="FeedBuilder.fs" />
     <Compile Include="SubscribeToFeedTests.fs" />
     <Compile Include="TestStartup.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
@@ -16,7 +17,8 @@
     <PackageReference Include="FSharp.Core" Version="4.*" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.1.3" />
-    <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.2" />
+    <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.0" />
+    <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.*" />
   </ItemGroup>
