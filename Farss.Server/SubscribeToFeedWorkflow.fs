@@ -13,6 +13,7 @@ type SubscribeToFeedCommand =
 
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository) (command: SubscribeToFeedCommand) =
+    //todo: handle atom feeds betters
     let saveFeed _ =
         let feed: Feed = { Url = command.Url }
         repository.save feed
