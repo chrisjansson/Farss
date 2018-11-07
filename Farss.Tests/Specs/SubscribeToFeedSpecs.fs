@@ -4,7 +4,6 @@ open Domain
 open Expecto
 open TestStartup
 open Persistence
-open System.IO
 open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
@@ -20,7 +19,7 @@ module HttpClient =
 
 let ``then`` (f: TestWebApplicationFactory) = f
 
-let ``feed`` (url: string) cont (f: Async<TestWebApplicationFactory>) = async {
+let ``default feed with url`` (url: string) cont (f: Async<TestWebApplicationFactory>) = async {
         let! f' = f
         do! cont ({ Feed.Url = url }, f')
     }
@@ -55,11 +54,12 @@ let Then a = a
 let tests = 
     testList "Subscribe to feed specs" [
         testAsync "Subscribe to feed" {
-            let feedContent = File.ReadAllText("ExampleRssFeed.xml")
+            let feedContent = FeedBuilder.feed "feed title" |> FeedBuilder.toRss            
+
             do!
                 Given () |> ``feed available at url`` "a feed url" feedContent |> 
                 When |> ``a user subscribes to feed`` "a feed url" |>
-                Then |> ``feed`` "a feed url" ``should have been saved``
+                Then |> ``default feed with url`` "a feed url" ``should have been saved``
         }
         
         ptest "Get subscription" {
