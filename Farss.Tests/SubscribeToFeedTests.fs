@@ -33,6 +33,11 @@ let expectBadRequest actual message = async {
         | _ -> Tests.failtest "Expected bad request"
     }
 
+type FeedProjection = { Url: string }
+
+let project (feed: Domain.Feed): FeedProjection =
+    { Url = feed.Url }
+
 [<Tests>]
 let tests = testList "subscribe to feed tests" [
         let cases = [
@@ -69,8 +74,17 @@ let tests = testList "subscribe to feed tests" [
 
                 do! subscribeToFeed adapter r { Url = "any url" } |> Async.Ignore
 
-                let expected = { Domain.Feed.Url = "any url" }
-                Expect.equal (r.getAll()) [ expected ] "should save feed"
+                let expected = { FeedProjection.Url = "any url" }
+                Expect.equal (r.getAll() |> List.map project) [ expected ] "should save feed"
+            }
+
+            "created feed has non empty guid", fun r -> async {
+                let fetchResult = FakeFeedReaderAdapter.feed (CodeHollow.FeedReader.Feed())
+                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+
+                do! subscribeToFeed adapter r { Url = "any url" } |> Async.Ignore
+
+                Expect.all (r.getAll()) (fun f -> f.Id <> Guid())  "all feeds should have non empty guid ids"
             }
         ]
 

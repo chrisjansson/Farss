@@ -1,7 +1,9 @@
 module SubscribeToFeedWorkflow
+open System
 open Domain
 open Persistence
 open FeedReaderAdapter
+
 
 type WorkflowError =
     | BadRequest of string * System.Exception
@@ -16,7 +18,7 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository)
     //todo: handle atom feeds betters
     //todo: rss2.0 only? Does that change anything?
     let saveFeed _ =
-        let feed: Feed = { Url = command.Url }
+        let feed: Feed = { Url = command.Url; Id = Guid.NewGuid() }
         repository.save feed
 
     let convertToWorkflowError r: Result<Unit, WorkflowError> =

@@ -19,15 +19,20 @@ module HttpClient =
 
 let ``then`` (f: TestWebApplicationFactory) = f
 
+type FeedProjection = { Url: string }
+
+let project (feed: Domain.Feed): FeedProjection =
+    { Url = feed.Url }
+
 let ``default feed with url`` (url: string) cont (f: Async<TestWebApplicationFactory>) = async {
         let! f' = f
-        do! cont ({ Feed.Url = url }, f')
+        do! cont ({ FeedProjection.Url = url }, f')
     }
 
-let ``should have been saved`` (op: Feed * TestWebApplicationFactory) = async {
+let ``should have been saved`` (op: FeedProjection * TestWebApplicationFactory) = async {
         let (f, f') = op
         let repository = f'.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-        let actualFeeds = repository.getAll()
+        let actualFeeds = repository.getAll() |> List.map project
         Expect.equal actualFeeds [ f ] "one added feed"
     }
 
