@@ -2,16 +2,12 @@ module SubscribeToFeedSpecs
 
 open Domain
 open Expecto
-open Microsoft.AspNetCore.Mvc.Testing
 open TestStartup
-open Microsoft.AspNetCore.Mvc.Testing
-open Microsoft.AspNetCore.Mvc.Testing
 open Persistence
 open System.IO
 open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
-open Microsoft.AspNetCore.Mvc.Testing
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
