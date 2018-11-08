@@ -29,11 +29,14 @@ let someHttpHandler : HttpHandler =
 let getFeedsHandler: HttpHandler = 
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            //let adapter = ctx.GetService<FeedReaderAdapter>()
-            //let repository = ctx.GetService<FeedRepository>()
-            //let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()    
+            let repository = ctx.GetService<FeedRepository>()
 
-            return! Successful.NO_CONTENT next ctx
+            let dtos = 
+                repository.getAll() 
+                |> List.map Dto.SubscriptionDto.toDto
+                |> Array.ofList
+
+            return! Successful.ok (json dtos) next ctx
         }
 
 let createWebApp () =

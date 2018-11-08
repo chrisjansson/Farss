@@ -18,6 +18,9 @@ module HttpClient =
         let content = new StringContent(json)
         client.PostAsync(url, content) |> Async.AwaitTask
 
+type TC<'C> = 'C * TestWebApplicationFactory
+type ATC<'C> = Async<TC<'C>>
+
 let ``then`` (f: TestWebApplicationFactory) = f
 
 type FeedProjection = { Url: string }
@@ -71,13 +74,16 @@ let ``subscriptions are fetched`` (f: TestWebApplicationFactory) = async {
         return (content, f)
     }
     
-let ``subscription with url`` (expectedUrl: string) cont (context: Async<_ * TestWebApplicationFactory>) = async {
-        let! (content, f) = context
-        cont ((expectedUrl, content), f)
+let ``subscription with url`` (expectedUrl: string) cont (tc: ATC<_>) = async {
+        let! (content, _) = tc
+        cont (expectedUrl, content)
     }
 
-let ``is returned`` a =
-    Tests.failtest "assert return"
+let ``is returned`` (expectedUrl: string, actualContent: string) =
+    let dto = JsonConvert.DeserializeObject<Dto.SubscriptionDto[]>(actualContent)
+    
+    Expect.equal dto.Length 1 "Number of feeds returned"
+    Expect.all dto (fun s -> s.Url = expectedUrl) "feed subscription url"
 
 [<Tests>]
 let tests = 
