@@ -4,15 +4,10 @@ open Domain
 open Persistence
 open FeedReaderAdapter
 
-
-type WorkflowError =
-    | BadRequest of string * System.Exception
-
 type SubscribeToFeedCommand = 
     {
         Url: string
     }
-
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository) (command: SubscribeToFeedCommand) =
     //todo: handle atom feeds betters

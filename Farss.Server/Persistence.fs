@@ -15,3 +15,6 @@ let create () =
         getAll = getAll
         save = save
     }
+
+type WorkflowError =
+    | BadRequest of string * System.Exception

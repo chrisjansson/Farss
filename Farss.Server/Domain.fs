@@ -7,4 +7,3 @@ type Feed =
         Id: Guid
         Url: string
     }
-

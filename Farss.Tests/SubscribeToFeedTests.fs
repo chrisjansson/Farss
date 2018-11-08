@@ -4,6 +4,7 @@ open Expecto
 open SubscribeToFeedWorkflow
 open FeedReaderAdapter
 open System
+open Persistence
 
 module FakeFeedReaderAdapter =
     let stubResult result: FeedReaderAdapter = {  getFromUrl = fun _ -> result }
