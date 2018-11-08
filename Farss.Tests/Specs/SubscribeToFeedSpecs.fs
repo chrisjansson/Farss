@@ -7,6 +7,7 @@ open Persistence
 open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
+open System
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -37,7 +38,9 @@ let ``should have been saved`` (op: FeedProjection * TestWebApplicationFactory) 
     }
 
 let Given () = 
-    new TestWebApplicationFactory()
+    let f = new TestWebApplicationFactory()
+    f.CreateClient() |> ignore
+    f
 
 let ``feed available at url`` (url: string) (feed: string) (factory: TestWebApplicationFactory) = 
     factory.FakeFeedReader.Add (url, feed)
@@ -54,6 +57,27 @@ let ``a user subscribes to feed`` (url: string) (factory: TestWebApplicationFact
 let When a = a
 let Then a = a
 
+let ``a feed with url`` (url: string) (f: TestWebApplicationFactory) =
+    let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+    let feed = { Domain.Url = url; Id = Guid.NewGuid() }
+    repository.save feed
+    f
+
+let ``subscriptions are fetched`` (f: TestWebApplicationFactory) = async {
+        let client = f.CreateClient()
+        let! response = client |> HttpClient.getAsync "/feeds"
+        response.EnsureSuccessStatusCode() |> ignore
+        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        return (content, f)
+    }
+    
+let ``subscription with url`` (expectedUrl: string) cont (context: Async<_ * TestWebApplicationFactory>) = async {
+        let! (content, f) = context
+        cont ((expectedUrl, content), f)
+    }
+
+let ``is returned`` a =
+    Tests.failtest "assert return"
 
 [<Tests>]
 let tests = 
@@ -67,8 +91,11 @@ let tests =
                 Then |> ``default feed with url`` "a feed url" ``should have been saved``
         }
         
-        ptest "Get subscription" {
-            ()
+        testAsync "Get subscription" {
+            do! 
+                Given () |> ``a feed with url`` "http://whatevs" |>
+                When |> ``subscriptions are fetched`` |>
+                Then |> ``subscription with url`` "http://whatevs" ``is returned``
         }
         
         ptest "Delete subscription" {

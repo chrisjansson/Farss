@@ -26,8 +26,19 @@ let someHttpHandler : HttpHandler =
             return! (result |> convertToHandler) next ctx
         }
 
+let getFeedsHandler: HttpHandler = 
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            //let adapter = ctx.GetService<FeedReaderAdapter>()
+            //let repository = ctx.GetService<FeedRepository>()
+            //let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()    
+
+            return! Successful.NO_CONTENT next ctx
+        }
+
 let createWebApp () =
     choose [
         route "/ping"   >=> text "pong"
         route "/"       >=> htmlFile "/pages/index.html"
-        route "/feeds"   >=> someHttpHandler ]
+        route "/feeds" >=> POST >=> someHttpHandler
+        route "/feeds" >=> GET >=> getFeedsHandler ]
