@@ -25,8 +25,10 @@
         How does AI work?
 
 #### Subscription management
-- [ ] POST feed to subscribe
-- [ ] List
+- [x] POST feed to subscribe
+- [ ] Aren't feeds really feed subscriptions? 
+- [ ] GET subscriptions List
+- [ ] Delete feeds
 
 #### Personal Reading workflow
 * Scroll through new articles and mark them as read or read later
