@@ -4,18 +4,6 @@ open Expecto
 open CodeHollow.FeedReader
 open System.IO
 
-let throwsAsync op message = async {
-    let mutable opFailed = false    
-    try
-        do! op
-    with     
-    | _ ->
-        opFailed <- true 
-
-    if not opFailed then do
-        Tests.failtest <| sprintf "Should throw esxception: %s" message
-}
-
 let readAsync = FeedReader.ReadAsync >> Async.AwaitTask
 
 [<Tests>]
@@ -28,7 +16,7 @@ let tests =
             testAsync "fails reading non feed" {
                 let op = readAsync "https://wootaslkdj.com" |> Async.Ignore
 
-                do! throwsAsync op "Throws on reading non rss feed"
+                do! Expect.throwsAsync op "Throws on reading non rss feed"
             }
         ]
 

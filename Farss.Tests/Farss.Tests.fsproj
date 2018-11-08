@@ -3,13 +3,15 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TestInfrastructure\TestStartup.fs" />
+    <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs" />
     <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExpectoExtensions.fs" />
     <Compile Include="FeedReader.fs" />
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="SubscribeToFeedTests.fs" />
-    <Compile Include="TestStartup.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
   </ItemGroup>
   <ItemGroup>

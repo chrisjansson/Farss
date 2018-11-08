@@ -6,25 +6,6 @@ open FeedReaderAdapter
 open System
 open Persistence
 
-module FakeFeedReaderAdapter =
-    let stubResult result: FeedReaderAdapter = {  getFromUrl = fun _ -> result }
-
-    let parseError (message: string) =
-        Exception(message) |> ParseError  |> Error |> AsyncResult.Return
-
-    let fetchError (message: string) =
-        Exception(message) |> FetchError  |> Error |> AsyncResult.Return
-
-    let feed (feed: CodeHollow.FeedReader.Feed) =
-        feed |> Ok  |> AsyncResult.Return
-
-module Expect =
-    let equalAsync actual expected message = async {
-        let! a = actual
-        let! e = expected
-        Expect.equal a e message
-    }
-
 let expectBadRequest actual message = async {
         let! actual' = actual
         match actual' with        

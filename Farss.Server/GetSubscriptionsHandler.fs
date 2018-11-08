@@ -4,7 +4,6 @@ open Giraffe
 open Persistence
 open Microsoft.AspNetCore.Http
 open FSharp.Control.Tasks.V2.ContextInsensitive
-open GiraffeUtils
 
 let getSubscriptionsHandler: HttpHandler = 
     fun (next: HttpFunc) (ctx: HttpContext) ->
