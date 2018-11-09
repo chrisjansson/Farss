@@ -85,6 +85,87 @@ let ``is returned`` (expectedUrl: string, actualContent: string) =
     Expect.equal dto.Length 1 "Number of feeds returned"
     Expect.all dto (fun s -> s.Url = expectedUrl) "feed subscription url"
 
+type AsyncTestStep<'T, 'U> = ATC<'T> -> ATC<'U>
+
+let (>>>) (l: AsyncTestStep<'a,'b>) (r: AsyncTestStep<'b,'c>): AsyncTestStep<'a, 'c> = 
+    let f arg = 
+        let nextAtc = l arg
+        r nextAtc
+    f
+
+let Given2: AsyncTestStep<_,_> = 
+    fun atc -> async {
+        let! (x, f) = atc
+        return  (x, f)
+    }
+
+let When2: AsyncTestStep<_,_> = 
+    fun atc -> async {
+        let! (x, f) = atc
+        return  (x, f)
+    }
+
+let Then2: AsyncTestStep<_,_> = 
+    fun atc -> async {
+        let! (x, f) = atc
+        return  (x, f)
+    }
+
+let ``a feed with url2`` (url: string): AsyncTestStep<_, unit> =
+    fun atc -> async {
+        let! (_, f) = atc
+
+        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+        let feed = { Domain.Url = url; Id = Guid.NewGuid() }
+        repository.save feed
+
+        return  ((), f)
+    }
+
+let ``subscriptions are fetched2``: AsyncTestStep<_, string> =
+    fun atc -> async {
+        let! (_, f) = atc
+
+        let client = f.CreateClient()
+        let! response = client |> HttpClient.getAsync "/feeds"
+        response.EnsureSuccessStatusCode() |> ignore
+        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+
+        return (content, f)
+    }
+
+let ``subscription with url2`` (expectedUrl: string): AsyncTestStep<string, string * string> = 
+    fun atc -> async {
+        let! (content, f) = atc
+
+        return ((expectedUrl, content), f)
+    }
+
+    
+let ``is returned2``: AsyncTestStep<string*string, _> =
+    fun atc -> async {
+        let! ((expectedUrl, actualContent),f) = atc
+
+        let dto = JsonConvert.DeserializeObject<Dto.SubscriptionDto[]>(actualContent)
+    
+        Expect.equal dto.Length 1 "Number of feeds returned"
+        Expect.all dto (fun s -> s.Url = expectedUrl) "feed subscription url"
+        return ((), f)
+    }
+  
+let toTest (testStep: AsyncTestStep<unit, _>) = async {
+        let f = new TestWebApplicationFactory()
+        f.CreateClient() |> ignore
+
+        let stuff: ATC<unit> = async.Return ((), f)
+        do! testStep stuff |> Async.Ignore
+    }
+    
+let testF name t = 
+    testAsync name {
+        do! t |> toTest
+    }
+    
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
@@ -96,13 +177,11 @@ let tests =
                 When |> ``a user subscribes to feed`` "a feed url" |>
                 Then |> ``default feed with url`` "a feed url" ``should have been saved``
         }
-        
-        testAsync "Get subscription" {
-            do! 
-                Given () |> ``a feed with url`` "http://whatevs" |>
-                When |> ``subscriptions are fetched`` |>
-                Then |> ``subscription with url`` "http://whatevs" ``is returned``
-        }
+            
+        testF "Get subscription" (
+            Given2 >>> ``a feed with url2`` "http://whatevs" >>> 
+            When2 >>> ``subscriptions are fetched2`` >>> 
+            Then2 >>> ``subscription with url2`` "http://whatevs" >>> ``is returned2``)
         
         ptest "Delete subscription" {
             ()
@@ -116,5 +195,7 @@ let tests =
 
             response.EnsureSuccessStatusCode() |> ignore
         }
+
+
     ]
 
