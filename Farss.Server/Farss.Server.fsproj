@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -13,6 +13,8 @@
     <Compile Include="SubscribeToFeedWorkflow.fs" />
     <Compile Include="SubscribeToFeedHandler.fs" />
     <Compile Include="GetSubscriptionsHandler.fs" />
+    <Compile Include="DeleteSubscriptionWorkflow.fs" />
+    <Compile Include="DeleteSubscriptionHandler.fs" />
     <Compile Include="Giraffe.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />

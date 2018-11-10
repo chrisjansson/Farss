@@ -7,4 +7,5 @@ let createWebApp () =
         route "/ping"   >=> text "pong"
         route "/"       >=> htmlFile "/pages/index.html"
         route "/feeds" >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
-        route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler ]
+        route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
+        route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler ]

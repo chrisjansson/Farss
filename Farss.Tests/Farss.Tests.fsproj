@@ -12,6 +12,7 @@
     <Compile Include="FeedReader.fs" />
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="SubscribeToFeedTests.fs" />
+    <Compile Include="DeleteSubscriptionTests.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
   </ItemGroup>
   <ItemGroup>

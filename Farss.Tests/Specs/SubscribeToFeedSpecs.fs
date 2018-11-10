@@ -93,23 +93,16 @@ let (>>>) (l: AsyncTestStep<'a,'b>) (r: AsyncTestStep<'b,'c>): AsyncTestStep<'a,
         r nextAtc
     f
 
-let Given2: AsyncTestStep<_,_> = 
-    fun atc -> async {
+let pipe: AsyncTestStep<_, _> =
+        fun atc -> async {
         let! (x, f) = atc
         return  (x, f)
     }
 
-let When2: AsyncTestStep<_,_> = 
-    fun atc -> async {
-        let! (x, f) = atc
-        return  (x, f)
-    }
-
-let Then2: AsyncTestStep<_,_> = 
-    fun atc -> async {
-        let! (x, f) = atc
-        return  (x, f)
-    }
+let Given2 = pipe
+let When2 = pipe
+let Then2 = pipe
+let And = pipe
 
 let ``a feed with url2`` (url: string): AsyncTestStep<_, unit> =
     fun atc -> async {
@@ -165,7 +158,49 @@ let testF name t =
     testAsync name {
         do! t |> toTest
     }
+
+let feed_with_url (url: string): AsyncTestStep<_, string> =
+    fun atc -> async {
+        let! (_, f) = atc
+        return (url, f)
+    }
     
+let is_deleted: AsyncTestStep<string, _> =
+    fun atc -> async {
+        let! (url, f) = atc
+
+        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+        let subscription = 
+            repository.getAll()
+            |> List.find (fun s -> s.Url = url)
+
+        let command: Domain.DeleteSubscriptionCommand = { Id = subscription.Id }
+
+        let! response = f.CreateClient() |> HttpClient.postAsync "/subscription/delete" command
+        response.EnsureSuccessStatusCode() |> ignore
+
+        return ((), f)
+    }
+
+let only_feed_with_url (url: string): AsyncTestStep<_, string> =
+    fun atc -> async {
+        let! (_, f) = atc
+        return (url, f)
+    }
+
+let should_remain: AsyncTestStep<string, _> =
+    fun atc -> async {
+        let! (expectedRemainingUrl, f) = atc
+        
+        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
+        let subscriptions = repository.getAll()
+        
+        Expect.equal subscriptions.Length 1 "Only one subscription should remain"
+        Expect.all subscriptions (fun s -> s.Url = expectedRemainingUrl) "Subscription with url should remain"
+
+        return ((), f)
+    }
+
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
@@ -178,15 +213,19 @@ let tests =
                 Then |> ``default feed with url`` "a feed url" ``should have been saved``
         }
             
-        testF "Get subscription" (
+        testF "Get subscriptions" (
             Given2 >>> ``a feed with url2`` "http://whatevs" >>> 
             When2 >>> ``subscriptions are fetched2`` >>> 
-            Then2 >>> ``subscription with url2`` "http://whatevs" >>> ``is returned2``)
+            Then2 >>> ``subscription with url2`` "http://whatevs" >>> ``is returned2``
+        )
         
-        ptest "Delete subscription" {
-            ()
-        }
-        
+        testF "Delete subscription" (
+            Given2 >>> ``a feed with url2`` "feed 1" >>> 
+            And >>> ``a feed with url2`` "feed 2" >>> 
+            When2 >>> feed_with_url "feed 2" >>> is_deleted >>>
+            Then2 >>> only_feed_with_url "feed 1" >>> should_remain
+        )
+
         testAsync "In memory server" {
             let factory = new TestWebApplicationFactory()
             let client = factory.CreateClient()
@@ -195,7 +234,5 @@ let tests =
 
             response.EnsureSuccessStatusCode() |> ignore
         }
-
-
     ]
 
