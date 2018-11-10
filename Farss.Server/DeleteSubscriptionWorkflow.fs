@@ -7,7 +7,6 @@ open Domain
 let convertToWorkflowError (): WorkflowError =
     InvalidParameter <| List.singleton "Invalid id"
     
-
 let deleteSubscription (repository: FeedRepository) (dto: DeleteSubscriptionDto) =
     let command = DeleteSubscriptionDto.toCommand dto
 

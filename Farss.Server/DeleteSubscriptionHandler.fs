@@ -4,16 +4,18 @@ open Giraffe
 open Persistence
 open Microsoft.AspNetCore.Http
 open FSharp.Control.Tasks.V2.ContextInsensitive
-open Domain
+open Dto
+open GiraffeUtils
 
 let deleteSubscriptionHandler: HttpHandler = 
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            //todo: bind incoming value types
             let repository = ctx.GetService<FeedRepository>()
-            let! cmd = ctx.BindJsonAsync<DeleteSubscriptionCommand>()
+            let! cmd = ctx.BindJsonAsync<DeleteSubscriptionDto>()
 
-            repository.delete cmd.Id
+            let result = 
+                DeleteSubscriptionWorkflow.deleteSubscription repository cmd
+                |> convertToHandler
 
-            return! Successful.NO_CONTENT next ctx
+            return! result next ctx
         }
