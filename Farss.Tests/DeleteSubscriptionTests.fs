@@ -3,6 +3,7 @@
 open System
 open Expecto
 open Persistence
+open Domain
 
 module Expect =
     let expectInvalidParameter (result: Result<_,WorkflowError>) =
@@ -23,6 +24,18 @@ let tests =
                 let command: Dto.DeleteSubscriptionDto = { Id = Nullable() }
                 let result = DeleteSubscriptionWorkflow.deleteSubscription r command
                 Expect.expectInvalidParameter result
+
+            "deletes subscription", fun r ->
+                let subscription: Feed = { Id = Guid.NewGuid(); Url = "some url" }
+                let subscription2: Feed = { Id = Guid.NewGuid(); Url = "another some url" }
+                r.save subscription
+                r.save subscription2
+
+                let command: Dto.DeleteSubscriptionDto = { Id = Nullable(subscription.Id) }
+                let result = DeleteSubscriptionWorkflow.deleteSubscription r command
+                
+                Expect.isOk result "should delete feed ok"
+                Expect.equal (r.getAll()) [subscription2] "should delete one feed"
         ]
 
         let createTest (name, f) =
