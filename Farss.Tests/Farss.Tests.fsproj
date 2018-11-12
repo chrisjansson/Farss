@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="MartenCharacterizationTests.fs" />
     <Compile Include="TestInfrastructure\TestStartup.fs" />
     <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs" />
     <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
@@ -18,6 +19,7 @@
   <ItemGroup>
     <PackageReference Include="Expecto" Version="8.3.*" />
     <PackageReference Include="FSharp.Core" Version="4.*" />
+    <PackageReference Include="Marten" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.1.3" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.0" />
