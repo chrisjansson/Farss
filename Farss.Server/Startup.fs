@@ -14,6 +14,7 @@ type Startup() =
     member this.ConfigureServices(services: IServiceCollection) =
         services.AddGiraffe() |> ignore
         services.AddSingleton<FeedRepository>(Persistence.create ()) |> ignore
+        services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter ()) |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =

@@ -22,6 +22,4 @@ module DeleteSubscriptionDto =
         else 
             Error ()
         
-
-
         //todo: domain dto workflow in what order, what part of workflow is part of domain etc?
