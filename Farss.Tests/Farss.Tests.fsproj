@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="MartenCharacterizationTests.fs" />
+    <Compile Include="TestInfrastructure\DatabaseTesting.fs" />
     <Compile Include="TestInfrastructure\TestStartup.fs" />
     <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs" />
     <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
@@ -14,6 +14,7 @@
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="SubscribeToFeedTests.fs" />
     <Compile Include="DeleteSubscriptionTests.fs" />
+    <Compile Include="MartenCharacterizationTests.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
