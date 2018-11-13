@@ -38,31 +38,45 @@ module Query =
 let createConnectionString (data: PostgresConnectionString) =   
     sprintf "host=%s;database=%s;password=%s;username=%s" data.Host data.Database data.Password data.Username
             
-let initializeTestDatabase (masterDatabase: PostgresConnectionString) =
+let initializeTestDatabase (masterDatabase: PostgresConnectionString) databaseName =
     let connectionString = createConnectionString masterDatabase
     use dbConnection = new NpgsqlConnection(connectionString)
     dbConnection.Open()
 
     let drop = dbConnection.CreateCommand()
-    drop.CommandText <- "DROP DATABASE IF EXISTS farss_tests"
+    drop.CommandText <- sprintf "DROP DATABASE IF EXISTS %s" databaseName
     drop.ExecuteNonQuery() |> ignore
 
     let create = dbConnection.CreateCommand()
-    create.CommandText <- "CREATE DATABASE farss_tests"
+    create.CommandText <- sprintf "CREATE DATABASE %s" databaseName
     create.ExecuteNonQuery() |> ignore
+
+type DatabaseTestFixture(connectionString: PostgresConnectionString, documentStore: DocumentStore) =
+    member __.ConnectionString with get () = connectionString
+    member __.DocumentStore with get () = documentStore
+
+    interface IDisposable with
+        member this.Dispose() =
+            this.DocumentStore.Dispose()
+
+let createFixture test () = 
+    let connectionStringData = { Host = "localhost"; Database = "postgres"; Username = "postgres"; Password = "postgres" }
+
+    let databaseName = "farss_tests"
+    initializeTestDatabase connectionStringData databaseName
+
+    let testConnectionString = { connectionStringData with Database = "farss_tests" }
+    
+    let cs = createConnectionString testConnectionString
+    let store = DocumentStore.For(cs)
+    
+    use fixture = new DatabaseTestFixture(testConnectionString, store)
+    test fixture
 
 [<Tests>]
 let tests = testList "Marten characterization tests" [
-        ptest "store document" {
-            //todo: teardown
-
-            let connectionStringData = { Host = "localhost"; Database = "postgres"; Username = "postgres"; Password = "postgres" }
-            initializeTestDatabase connectionStringData
-
-            let testConnectionStringData = { connectionStringData with Database = "farss_tests" }
-            let connectionString = createConnectionString testConnectionStringData 
-
-            let store = DocumentStore.For(connectionString)
+        let tests = [ "store document", fun (fixture: DatabaseTestFixture) ->
+            let store = fixture.DocumentStore
 
             let expected = { Id = Guid.NewGuid(); Prop1 = "Hello world"; Prop2 = 4711 }
 
@@ -85,5 +99,7 @@ let tests = testList "Marten characterization tests" [
 
                 Expect.equal all.Count 1 "Document count"
             )
-        }
+        ]
+
+        yield! testFixture createFixture tests
     ]
