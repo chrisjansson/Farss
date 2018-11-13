@@ -35,30 +35,32 @@ module Query =
     let toList (query: IQueryable<_>) =
         query.ToList()
 
+let createConnectionString (data: PostgresConnectionString) =   
+    sprintf "host=%s;database=%s;password=%s;username=%s" data.Host data.Database data.Password data.Username
+            
+let initializeTestDatabase (masterDatabase: PostgresConnectionString) =
+    let connectionString = createConnectionString masterDatabase
+    use dbConnection = new NpgsqlConnection(connectionString)
+    dbConnection.Open()
+
+    let drop = dbConnection.CreateCommand()
+    drop.CommandText <- "DROP DATABASE IF EXISTS farss_tests"
+    drop.ExecuteNonQuery() |> ignore
+
+    let create = dbConnection.CreateCommand()
+    create.CommandText <- "CREATE DATABASE farss_tests"
+    create.ExecuteNonQuery() |> ignore
+
 [<Tests>]
 let tests = testList "Marten characterization tests" [
         ptest "store document" {
             //todo: teardown
 
             let connectionStringData = { Host = "localhost"; Database = "postgres"; Username = "postgres"; Password = "postgres" }
-            let connectionString = sprintf "host=%s;database=%s;password=%s;username=%s" connectionStringData.Host connectionStringData.Database connectionStringData.Password connectionStringData.Username
-            
-            let dbConnection = new NpgsqlConnection(connectionString)
-            dbConnection.Open()
-
-            let drop = dbConnection.CreateCommand()
-            drop.CommandText <- "DROP DATABASE IF EXISTS farss_tests"
-            drop.ExecuteNonQuery() |> ignore
-
-            let create = dbConnection.CreateCommand()
-            create.CommandText <- "CREATE DATABASE farss_tests"
-            create.ExecuteNonQuery() |> ignore
-            
-            dbConnection.Close()
-            dbConnection.Dispose()
+            initializeTestDatabase connectionStringData
 
             let testConnectionStringData = { connectionStringData with Database = "farss_tests" }
-            let connectionString = sprintf "host=%s;database=%s;password=%s;username=%s" testConnectionStringData.Host testConnectionStringData.Database testConnectionStringData.Password testConnectionStringData.Username
+            let connectionString = createConnectionString testConnectionStringData 
 
             let store = DocumentStore.For(connectionString)
 
