@@ -1,4 +1,4 @@
-namespace Farss.Server
+module Farss.Server
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
@@ -8,11 +8,25 @@ open Giraffe
 open Persistence
 open Marten
 open Postgres
+open Microsoft.Extensions.Configuration
 
-type Startup() =
+let loadConnectionString (configuration: IConfiguration): PostgresConnectionString = 
+        let userName = configuration.["postgres.username"]
+        let password = configuration.["postgres.password"]
+        let host = configuration.["postgres.host"]
+        let database = configuration.["postgres.database"]
+        {
+            Username = userName
+            Password = password
+            Host = host
+            Database = database
+        }
 
-    //todo: read configuration from somewhere
+type Startup(configuration: IConfiguration) =
     member this.ConfigureServices(services: IServiceCollection) =
+        let connectionString = loadConnectionString configuration
+        services.AddSingleton(connectionString) |> ignore
+
         services.AddGiraffe() |> ignore
         
         services.AddSingleton<IDocumentStore>(fun s -> 
