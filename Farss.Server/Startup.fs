@@ -6,17 +6,30 @@ open Microsoft.Extensions.DependencyInjection
 
 open Giraffe
 open Persistence
+open Marten
+open Postgres
 
 type Startup() =
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+    //todo: read configuration from somewhere
     member this.ConfigureServices(services: IServiceCollection) =
         services.AddGiraffe() |> ignore
-        services.AddSingleton<FeedRepository>(Persistence.create ()) |> ignore
+        
+        services.AddSingleton<IDocumentStore>(fun s -> 
+            let connectionString = s.GetRequiredService<PostgresConnectionString>()
+            let cs = Postgres.createConnectionString connectionString
+            DocumentStore.For(cs) :> IDocumentStore) |> ignore
+
+        services.AddScoped<IDocumentSession>(fun s ->
+            let store = s.GetRequiredService<IDocumentStore>()
+            store.LightweightSession()) |> ignore
+
+        services.AddScoped<FeedRepository>(fun s -> 
+            let session = s.GetRequiredService<IDocumentSession>()
+            Persistence.FeedRepositoryImpl.create session) |> ignore
+
         services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter ()) |> ignore
 
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
         if env.IsDevelopment() then 
             app.UseDeveloperExceptionPage() |> ignore

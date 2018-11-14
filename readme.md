@@ -23,6 +23,7 @@
     * Does an error handling middleware trap exceptions?
         Giraffe's does.
         How does AI work?
+- [ ] Split integration tests that require WebSdk into separate assembly, these don't behave well with normal test integration supplied by expecto runner
 
 #### Subscription management
 - [x] POST feed to subscribe
