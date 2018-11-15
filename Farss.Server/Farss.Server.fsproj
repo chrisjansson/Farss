@@ -17,6 +17,7 @@
     <Compile Include="DeleteSubscriptionHandler.fs" />
     <Compile Include="Giraffe.fs" />
     <Compile Include="Postgres.fs" />
+    <Compile Include="CompositionRoot.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
