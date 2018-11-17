@@ -11,6 +11,19 @@ let initializeTestDatabase (masterDatabase: PostgresConnectionString) databaseNa
     use dbConnection = new NpgsqlConnection(connectionString)
     dbConnection.Open()
 
+    let kill = dbConnection.CreateCommand()
+    kill.CommandText <- (sprintf """SELECT 
+    pg_terminate_backend(pid) 
+FROM 
+    pg_stat_activity 
+WHERE 
+    -- don't kill my own connection!
+    pid <> pg_backend_pid()
+    -- don't kill the connections to other databases
+    AND datname = '%s'
+    ;""" databaseName)
+    kill.ExecuteNonQuery() |> ignore
+
     let drop = dbConnection.CreateCommand()
     drop.CommandText <- sprintf "DROP DATABASE IF EXISTS %s" databaseName
     drop.ExecuteNonQuery() |> ignore
@@ -46,7 +59,7 @@ let buildConfiguration () =
             cb
     cb.Build()
 
-let createFixture test () = 
+let createFixture2 () = 
     let configuration = buildConfiguration ()
     let connectionStringData = Postgres.loadConnectionString configuration
     
@@ -58,5 +71,8 @@ let createFixture test () =
     let cs = createConnectionString testConnectionString
     let store = DocumentStore.For(cs)
     
-    use fixture = new DatabaseTestFixture(testConnectionString, store)
+    new DatabaseTestFixture(testConnectionString, store)
+
+let createFixture test () = 
+    use fixture = createFixture2 ()
     test fixture

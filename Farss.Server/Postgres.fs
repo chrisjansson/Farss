@@ -1,6 +1,7 @@
 ﻿module Postgres
 
 open Microsoft.Extensions.Configuration
+open System.Collections.Generic
 
 type PostgresConnectionString = 
     {
@@ -24,3 +25,11 @@ let loadConnectionString (configuration: IConfiguration): PostgresConnectionStri
             Host = host
             Database = database
         }
+
+let toKeyValuePairs (connectionString: PostgresConnectionString) =
+    [
+        KeyValuePair("postgres:username", connectionString.Username)
+        KeyValuePair("postgres:password", connectionString.Password)
+        KeyValuePair("postgres:host", connectionString.Host)
+        KeyValuePair("postgres:database", connectionString.Database)
+    ]

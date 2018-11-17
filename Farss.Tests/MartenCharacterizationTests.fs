@@ -28,7 +28,8 @@ type TestDocument =
     }
 
 [<Tests>]
-let tests = testList "Marten characterization tests" [
+let tests = 
+    testList "Marten characterization tests" [
         let tests = [ "store document", fun (fixture: DatabaseTestFixture) ->
             let store = fixture.DocumentStore
 
@@ -56,4 +57,4 @@ let tests = testList "Marten characterization tests" [
         ]
 
         yield! testFixture createFixture tests
-    ]
+    ] |> testSequencedGroup "integration"

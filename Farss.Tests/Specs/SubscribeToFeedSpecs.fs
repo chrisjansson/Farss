@@ -8,6 +8,7 @@ open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
 open System
+open Microsoft.Extensions.DependencyInjection
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -33,15 +34,23 @@ let ``default feed with url`` (url: string) cont (f: Async<TestWebApplicationFac
         do! cont ({ FeedProjection.Url = url }, f')
     }
 
+let inScope op (f: TestWebApplicationFactory) =
+    use scope = f.Server.Host.Services.CreateScope()
+    op scope.ServiceProvider
+
 let ``should have been saved`` (op: FeedProjection * TestWebApplicationFactory) = async {
         let (f, f') = op
-        let repository = f'.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-        let actualFeeds = repository.getAll() |> List.map project
+
+        let actualFeeds = (inScope (fun scope -> 
+            let fr = scope.GetService<FeedRepository>()
+            fr.getAll()) f') |> List.map project
+
         Expect.equal actualFeeds [ f ] "one added feed"
     }
 
 let Given () = 
-    let f = new TestWebApplicationFactory()
+    let df = DatabaseTesting.createFixture2 ()
+    let f = new TestWebApplicationFactory(df)
     f.CreateClient() |> ignore
     f
 
@@ -147,7 +156,8 @@ let ``is returned2``: AsyncTestStep<string*string, _> =
     }
   
 let toTest (testStep: AsyncTestStep<unit, _>) = async {
-        let f = new TestWebApplicationFactory()
+        let df = DatabaseTesting.createFixture2 ()
+        let f = new TestWebApplicationFactory(df)
         f.CreateClient() |> ignore
 
         let stuff: ATC<unit> = async.Return ((), f)
@@ -227,12 +237,13 @@ let tests =
         )
 
         testAsync "In memory server" {
-            let factory = new TestWebApplicationFactory()
+            let df = DatabaseTesting.createFixture2 ()
+            let factory = new TestWebApplicationFactory(df)
             let client = factory.CreateClient()
 
             let! response = client |> HttpClient.getAsync "/ping"
 
             response.EnsureSuccessStatusCode() |> ignore
         }
-    ]
+    ] |> testSequencedGroup "integration"
 

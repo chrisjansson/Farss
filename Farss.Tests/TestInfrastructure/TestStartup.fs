@@ -4,6 +4,10 @@ open Microsoft.AspNetCore.Mvc.Testing
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.DependencyInjection
 open FeedReaderAdapter
+open DatabaseTesting
+open Microsoft.AspNetCore.Hosting
+open Microsoft.Extensions.Configuration
+open System.Collections.Generic
 
 type FakeFeedReader =
     {
@@ -32,15 +36,21 @@ let createFakeFeedReader (): FakeFeedReader =
         Adapter = adapter
     }
 
-type TestWebApplicationFactory() =
+
+
+type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
     inherit WebApplicationFactory<Farss.Server.Startup>()
 
     member val FakeFeedReader: FakeFeedReader = createFakeFeedReader ()
 
     override this.ConfigureWebHost(builder) =
-        builder.ConfigureTestServices(
-            fun services -> 
-                services.AddSingleton(this.FakeFeedReader.Adapter) |> ignore
+        builder
+            .ConfigureAppConfiguration(fun c ->
+                c.AddInMemoryCollection(Postgres.toKeyValuePairs databaseFixture.ConnectionString) |> ignore
             )
-        |> ignore
+            .ConfigureTestServices(
+                fun services -> 
+                    services.AddSingleton(this.FakeFeedReader.Adapter) |> ignore
+                )
+            |> ignore
 
