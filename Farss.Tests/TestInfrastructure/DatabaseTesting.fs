@@ -4,6 +4,7 @@ open Postgres
 open Npgsql
 open Marten
 open System
+open Microsoft.Extensions.Configuration
 
 let initializeTestDatabase (masterDatabase: PostgresConnectionString) databaseName =
     let connectionString = createConnectionString masterDatabase
@@ -26,9 +27,29 @@ type DatabaseTestFixture(connectionString: PostgresConnectionString, documentSto
         member this.Dispose() =
             this.DocumentStore.Dispose()
 
-let createFixture test () = 
-    let connectionStringData = { Host = "localhost"; Database = "postgres"; Username = "postgres"; Password = "postgres" }
+let buildConfiguration () =
+    let envConfiguration = ConfigurationBuilder()
+                            .AddEnvironmentVariables()
+                            .Build()
 
+    let isCi = not <| System.String.IsNullOrWhiteSpace(envConfiguration.GetValue<string>("APPVEYOR"))
+
+    let cb =
+        ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddJsonFile("appsettings.json")
+
+    let cb = 
+        if isCi then
+            cb.AddJsonFile("appsettings.appveyor.json")
+        else
+            cb
+    cb.Build()
+
+let createFixture test () = 
+    let configuration = buildConfiguration ()
+    let connectionStringData = Postgres.loadConnectionString configuration
+    
     let databaseName = "farss_tests"
     initializeTestDatabase connectionStringData databaseName
 

@@ -31,4 +31,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Farss.Server\Farss.Server.fsproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.appveyor.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
