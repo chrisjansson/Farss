@@ -194,7 +194,7 @@ let should_remain: AsyncTestStep<string, _> =
 
 [<Tests>]
 let tests = 
-    testList "Subscribe to feed specs" [
+    specs "Subscribe to feed specs" [
         spec "Subscribe to feed" (
             let feedContent = FeedBuilder.feed "feed title" |> FeedBuilder.toRss            
 
@@ -225,5 +225,4 @@ let tests =
 
             response.EnsureSuccessStatusCode() |> ignore
         }
-    ] |> testSequencedGroup "integration"
-
+    ]
