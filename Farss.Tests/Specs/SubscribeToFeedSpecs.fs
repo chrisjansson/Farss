@@ -142,7 +142,7 @@ let toTest (testStep: AsyncTestStep<unit, _>) = async {
         do! testStep stuff |> Async.Ignore
     }
     
-let testF name t = 
+let spec name t = 
     testAsync name {
         do! t |> toTest
     }
@@ -195,7 +195,7 @@ let should_remain: AsyncTestStep<string, _> =
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
-        testF "Subscribe to feed" (
+        spec "Subscribe to feed" (
             let feedContent = FeedBuilder.feed "feed title" |> FeedBuilder.toRss            
 
             Given >>> feed_available_at_url "a feed url" feedContent >>>
@@ -203,13 +203,13 @@ let tests =
             Then >>> default_feed_with_url "a feed url" >>> should_have_been_saved
         )
             
-        testF "Get subscriptions" (
+        spec "Get subscriptions" (
             Given >>> a_feed_with_url "http://whatevs" >>> 
             When >>> subscriptions_are_fetched >>> 
             Then >>> subscription_with_url "http://whatevs" >>> is_returned
         )
         
-        testF "Delete subscription" (
+        spec "Delete subscription" (
             Given >>> a_feed_with_url "feed 1" >>> 
             And >>> a_feed_with_url "feed 2" >>> 
             When >>> feed_with_url "feed 2" >>> is_deleted >>>
