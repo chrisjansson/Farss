@@ -147,6 +147,18 @@ let spec name t =
         do! t |> toTest
     }
 
+
+let specCaseAsync name t =
+    testAsync name {
+        let wrapper: AsyncTestStep<unit, _> =
+            fun atc -> async {
+                let! (_, f) = atc
+                let! result = t f
+                return (result, f)
+            }
+        do! wrapper |> toTest
+    } 
+
 let feed_with_url (url: string): AsyncTestStep<_, string> =
     fun atc -> async {
         let! (_, f) = atc
@@ -216,13 +228,9 @@ let tests =
             Then >>> only_feed_with_url "feed 1" >>> should_remain
         )
 
-        testAsync "In memory server" {
-            use df = DatabaseTesting.createFixture2 ()
-            use factory = new TestWebApplicationFactory(df)
-            use client = factory.CreateClient()
-
+        specCaseAsync "In memory server" <| fun f -> async {
+            use client = f.CreateClient()
             let! response = client |> HttpClient.getAsync "/ping"
-
             response.EnsureSuccessStatusCode() |> ignore
         }
     ]
