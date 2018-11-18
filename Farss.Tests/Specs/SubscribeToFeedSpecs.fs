@@ -22,77 +22,14 @@ module HttpClient =
 type TC<'C> = 'C * TestWebApplicationFactory
 type ATC<'C> = Async<TC<'C>>
 
-let ``then`` (f: TestWebApplicationFactory) = f
-
 type FeedProjection = { Url: string }
 
 let project (feed: Domain.Feed): FeedProjection =
     { Url = feed.Url }
 
-let ``default feed with url`` (url: string) cont (f: Async<TestWebApplicationFactory>) = async {
-        let! f' = f
-        do! cont ({ FeedProjection.Url = url }, f')
-    }
-
 let inScope op (f: TestWebApplicationFactory) =
     use scope = f.Server.Host.Services.CreateScope()
     op scope.ServiceProvider
-
-let ``should have been saved`` (op: FeedProjection * TestWebApplicationFactory) = async {
-        let (f, f') = op
-
-        let actualFeeds = (inScope (fun scope -> 
-            let fr = scope.GetService<FeedRepository>()
-            fr.getAll()) f') |> List.map project
-
-        Expect.equal actualFeeds [ f ] "one added feed"
-    }
-
-let Given () = 
-    let df = DatabaseTesting.createFixture2 ()
-    let f = new TestWebApplicationFactory(df)
-    f.CreateClient() |> ignore
-    f
-
-let ``feed available at url`` (url: string) (feed: string) (factory: TestWebApplicationFactory) = 
-    factory.FakeFeedReader.Add (url, feed)
-    factory
-
-let ``a user subscribes to feed`` (url: string) (factory: TestWebApplicationFactory) = async {
-        let payload: SubscribeToFeedCommand = { Url = url }
-        let client = factory.CreateClient()
-        let! response = client |> HttpClient.postAsync "/feeds" payload
-        response.EnsureSuccessStatusCode() |> ignore
-        return factory
-    }
-
-let When a = a
-let Then a = a
-
-let ``a feed with url`` (url: string) (f: TestWebApplicationFactory) =
-    let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-    let feed = { Domain.Url = url; Id = Guid.NewGuid() }
-    repository.save feed
-    f
-
-let ``subscriptions are fetched`` (f: TestWebApplicationFactory) = async {
-        let client = f.CreateClient()
-        let! response = client |> HttpClient.getAsync "/feeds"
-        response.EnsureSuccessStatusCode() |> ignore
-        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-        return (content, f)
-    }
-    
-let ``subscription with url`` (expectedUrl: string) cont (tc: ATC<_>) = async {
-        let! (content, _) = tc
-        cont (expectedUrl, content)
-    }
-
-let ``is returned`` (expectedUrl: string, actualContent: string) =
-    let dto = JsonConvert.DeserializeObject<Dto.SubscriptionDto[]>(actualContent)
-    
-    Expect.equal dto.Length 1 "Number of feeds returned"
-    Expect.all dto (fun s -> s.Url = expectedUrl) "feed subscription url"
 
 type AsyncTestStep<'T, 'U> = ATC<'T> -> ATC<'U>
 
@@ -107,13 +44,51 @@ let pipe: AsyncTestStep<_, _> =
         let! (x, f) = atc
         return  (x, f)
     }
+    
+let feed_available_at_url (url: string) (feed: string): AsyncTestStep<_, unit> =
+    fun atc -> async {
+        let! (_, f) = atc
+            
+        f.FakeFeedReader.Add (url, feed)
 
-let Given2 = pipe
-let When2 = pipe
-let Then2 = pipe
+        return ((), f)
+    }
+
+let a_user_subscribes_to_feed (url: string): AsyncTestStep<_, unit> =
+    fun atc -> async {
+        let! (_, f) = atc
+            
+        let payload: SubscribeToFeedCommand = { Url = url }
+        let client = f.CreateClient()
+        let! response = client |> HttpClient.postAsync "/feeds" payload
+        response.EnsureSuccessStatusCode() |> ignore
+
+        return ((), f)
+    }
+
+let default_feed_with_url (url: string): AsyncTestStep<_, _> =
+    fun atc -> async {
+        let! (_, f) = atc
+        return ({ FeedProjection.Url = url }, f)
+    }
+
+let should_have_been_saved: AsyncTestStep<FeedProjection, _> =
+    fun atc -> async {
+        let! (expected, f)  = atc
+        let actualFeeds = (inScope (fun scope -> 
+            let fr = scope.GetService<FeedRepository>()
+            fr.getAll()) f) |> List.map project
+
+        Expect.equal actualFeeds [ expected ] "one added feed"
+        return ((), f)
+    }
+    
+let Given = pipe
+let When = pipe
+let Then = pipe
 let And = pipe
 
-let ``a feed with url2`` (url: string): AsyncTestStep<_, unit> =
+let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
     fun atc -> async {
         let! (_, f) = atc
 
@@ -124,7 +99,7 @@ let ``a feed with url2`` (url: string): AsyncTestStep<_, unit> =
         return  ((), f)
     }
 
-let ``subscriptions are fetched2``: AsyncTestStep<_, string> =
+let subscriptions_are_fetched: AsyncTestStep<_, string> =
     fun atc -> async {
         let! (_, f) = atc
 
@@ -136,7 +111,7 @@ let ``subscriptions are fetched2``: AsyncTestStep<_, string> =
         return (content, f)
     }
 
-let ``subscription with url2`` (expectedUrl: string): AsyncTestStep<string, string * string> = 
+let subscription_with_url (expectedUrl: string): AsyncTestStep<string, string * string> = 
     fun atc -> async {
         let! (content, f) = atc
 
@@ -144,7 +119,7 @@ let ``subscription with url2`` (expectedUrl: string): AsyncTestStep<string, stri
     }
 
     
-let ``is returned2``: AsyncTestStep<string*string, _> =
+let is_returned: AsyncTestStep<string*string, _> =
     fun atc -> async {
         let! ((expectedUrl, actualContent),f) = atc
 
@@ -214,26 +189,25 @@ let should_remain: AsyncTestStep<string, _> =
 [<Tests>]
 let tests = 
     testList "Subscribe to feed specs" [
-        testAsync "Subscribe to feed" {
+        testF "Subscribe to feed" (
             let feedContent = FeedBuilder.feed "feed title" |> FeedBuilder.toRss            
 
-            do!
-                Given () |> ``feed available at url`` "a feed url" feedContent |> 
-                When |> ``a user subscribes to feed`` "a feed url" |>
-                Then |> ``default feed with url`` "a feed url" ``should have been saved``
-        }
+            Given >>> feed_available_at_url "a feed url" feedContent >>>
+            When >>> a_user_subscribes_to_feed "a feed url" >>
+            Then >>> default_feed_with_url "a feed url" >>> should_have_been_saved
+        )
             
         testF "Get subscriptions" (
-            Given2 >>> ``a feed with url2`` "http://whatevs" >>> 
-            When2 >>> ``subscriptions are fetched2`` >>> 
-            Then2 >>> ``subscription with url2`` "http://whatevs" >>> ``is returned2``
+            Given >>> a_feed_with_url "http://whatevs" >>> 
+            When >>> subscriptions_are_fetched >>> 
+            Then >>> subscription_with_url "http://whatevs" >>> is_returned
         )
         
         testF "Delete subscription" (
-            Given2 >>> ``a feed with url2`` "feed 1" >>> 
-            And >>> ``a feed with url2`` "feed 2" >>> 
-            When2 >>> feed_with_url "feed 2" >>> is_deleted >>>
-            Then2 >>> only_feed_with_url "feed 1" >>> should_remain
+            Given >>> a_feed_with_url "feed 1" >>> 
+            And >>> a_feed_with_url "feed 2" >>> 
+            When >>> feed_with_url "feed 2" >>> is_deleted >>>
+            Then >>> only_feed_with_url "feed 1" >>> should_remain
         )
 
         testAsync "In memory server" {
