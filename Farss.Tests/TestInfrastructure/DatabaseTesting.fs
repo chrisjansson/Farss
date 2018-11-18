@@ -6,31 +6,48 @@ open Marten
 open System
 open Microsoft.Extensions.Configuration
 
+let mutable hasCreatedDatabase = false
+
 let initializeTestDatabase (masterDatabase: PostgresConnectionString) databaseName =
     let connectionString = createConnectionString masterDatabase
     use dbConnection = new NpgsqlConnection(connectionString)
     dbConnection.Open()
 
-    let kill = dbConnection.CreateCommand()
-    kill.CommandText <- (sprintf """SELECT 
-    pg_terminate_backend(pid) 
-FROM 
-    pg_stat_activity 
-WHERE 
-    -- don't kill my own connection!
-    pid <> pg_backend_pid()
-    -- don't kill the connections to other databases
-    AND datname = '%s'
-    ;""" databaseName)
-    kill.ExecuteNonQuery() |> ignore
+    if not hasCreatedDatabase then do
+        let kill = dbConnection.CreateCommand()
+        kill.CommandText <- (sprintf """SELECT 
+        pg_terminate_backend(pid) 
+    FROM 
+        pg_stat_activity 
+    WHERE 
+        -- don't kill my own connection!
+        pid <> pg_backend_pid()
+        -- don't kill the connections to other databases
+        AND datname = '%s'
+        ;""" databaseName)
+        kill.ExecuteNonQuery() |> ignore
 
-    let drop = dbConnection.CreateCommand()
-    drop.CommandText <- sprintf "DROP DATABASE IF EXISTS %s" databaseName
-    drop.ExecuteNonQuery() |> ignore
+        let drop = dbConnection.CreateCommand()
+        drop.CommandText <- sprintf "DROP DATABASE IF EXISTS %s" databaseName
+        drop.ExecuteNonQuery() |> ignore
 
-    let create = dbConnection.CreateCommand()
-    create.CommandText <- sprintf "CREATE DATABASE %s" databaseName
-    create.ExecuteNonQuery() |> ignore
+        let create = dbConnection.CreateCommand()
+        create.CommandText <- sprintf "CREATE DATABASE %s" databaseName
+        create.ExecuteNonQuery() |> ignore
+
+        hasCreatedDatabase <- true
+    let cs2 = createConnectionString <| { masterDatabase with Database = databaseName }
+    use dbConnection2 = new NpgsqlConnection(cs2)
+    dbConnection2.Open()
+        
+    let deleteSchema = dbConnection2.CreateCommand()
+    deleteSchema.CommandText <- "DROP SCHEMA IF EXISTS public CASCADE"
+    deleteSchema.ExecuteNonQuery() |> ignore
+
+    let createSchema = dbConnection2.CreateCommand()
+    createSchema.CommandText <- "CREATE SCHEMA public"
+    createSchema.ExecuteNonQuery() |> ignore
+
 
 type DatabaseTestFixture(connectionString: PostgresConnectionString, documentStore: DocumentStore) =
     member __.ConnectionString with get () = connectionString
@@ -69,7 +86,9 @@ let createFixture2 () =
     let testConnectionString = { connectionStringData with Database = databaseName }
     
     let cs = createConnectionString testConnectionString
-    let store = DocumentStore.For(cs)
+    let store = DocumentStore.For(fun a -> 
+        a.Connection(cs)
+        a.DdlRules.TableCreation <- CreationStyle.DropThenCreate)
     
     new DatabaseTestFixture(testConnectionString, store)
 

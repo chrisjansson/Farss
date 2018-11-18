@@ -6,12 +6,19 @@ open Microsoft.Extensions.DependencyInjection
 open Marten
 open Giraffe
 open Persistence
+open System
 
 type IServiceCollection with    
     member x.Add(source: IServiceCollection) =
         for service in source do    
             x.Add(service)
         x
+
+
+type Canary() =
+    interface IDisposable with 
+        member this.Dispose() =
+            ()
 
 let createCompositionRoot (connectionString: PostgresConnectionString): IServiceCollection =
     let services = ServiceCollection()
@@ -22,7 +29,9 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
     services.AddSingleton<IDocumentStore>(fun s -> 
         let connectionString = s.GetRequiredService<PostgresConnectionString>()
         let cs = Postgres.createConnectionString connectionString
-        DocumentStore.For(cs) :> IDocumentStore) |> ignore
+        DocumentStore.For(fun a -> 
+        a.Connection(cs)
+        a.DdlRules.TableCreation <- CreationStyle.DropThenCreate) :> IDocumentStore) |> ignore
 
     services.AddScoped<IDocumentSession>(fun s ->
         let store = s.GetRequiredService<IDocumentStore>()
@@ -33,5 +42,7 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         Persistence.FeedRepositoryImpl.create session) |> ignore
 
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter ()) |> ignore
+
+    services.AddSingleton<Canary>(fun _ -> new Canary()) |> ignore
 
     services :> IServiceCollection

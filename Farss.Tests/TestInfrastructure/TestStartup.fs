@@ -53,4 +53,3 @@ type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
                     services.AddSingleton(this.FakeFeedReader.Adapter) |> ignore
                 )
             |> ignore
-

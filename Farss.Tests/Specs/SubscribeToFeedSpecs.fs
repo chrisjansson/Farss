@@ -9,6 +9,7 @@ open Newtonsoft.Json
 open SubscribeToFeedWorkflow
 open System
 open Microsoft.Extensions.DependencyInjection
+open CompositionRoot
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -92,9 +93,11 @@ let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
     fun atc -> async {
         let! (_, f) = atc
 
-        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-        let feed = { Domain.Url = url; Id = Guid.NewGuid() }
-        repository.save feed
+        inScope (fun s -> 
+            let r = s.GetService<FeedRepository>()
+            let feed = { Domain.Url = url; Id = Guid.NewGuid() }
+            r.save feed
+        ) f
 
         return  ((), f)
     }
@@ -131,8 +134,8 @@ let is_returned: AsyncTestStep<string*string, _> =
     }
   
 let toTest (testStep: AsyncTestStep<unit, _>) = async {
-        let df = DatabaseTesting.createFixture2 ()
-        let f = new TestWebApplicationFactory(df)
+        use df = DatabaseTesting.createFixture2 ()
+        use f = new TestWebApplicationFactory(df)
         f.CreateClient() |> ignore
 
         let stuff: ATC<unit> = async.Return ((), f)
@@ -154,10 +157,10 @@ let is_deleted: AsyncTestStep<string, _> =
     fun atc -> async {
         let! (url, f) = atc
 
-        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-        let subscription = 
-            repository.getAll()
-            |> List.find (fun s -> s.Url = url)
+        let subscription = (inScope (fun s -> 
+            let r = s.GetService<FeedRepository>()
+            r.getAll() |> List.find (fun s -> s.Url = url)
+        ) f)
 
         let command: Domain.DeleteSubscriptionCommand = { Id = subscription.Id }
 
@@ -177,8 +180,11 @@ let should_remain: AsyncTestStep<string, _> =
     fun atc -> async {
         let! (expectedRemainingUrl, f) = atc
         
-        let repository = f.Server.Host.Services.GetService(typeof<FeedRepository>) :?> FeedRepository
-        let subscriptions = repository.getAll()
+        let subscriptions = 
+            inScope (fun s -> 
+                let r = s.GetService<FeedRepository>()
+                r.getAll()
+            ) f
         
         Expect.equal subscriptions.Length 1 "Only one subscription should remain"
         Expect.all subscriptions (fun s -> s.Url = expectedRemainingUrl) "Subscription with url should remain"
@@ -211,9 +217,9 @@ let tests =
         )
 
         testAsync "In memory server" {
-            let df = DatabaseTesting.createFixture2 ()
-            let factory = new TestWebApplicationFactory(df)
-            let client = factory.CreateClient()
+            use df = DatabaseTesting.createFixture2 ()
+            use factory = new TestWebApplicationFactory(df)
+            use client = factory.CreateClient()
 
             let! response = client |> HttpClient.getAsync "/ping"
 

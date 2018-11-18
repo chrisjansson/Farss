@@ -57,7 +57,8 @@ module FeedRepositoryImpl =
             documentSession.Store(subscription)
             documentSession.SaveChanges()
         let delete (subscriptionId: FeedId) =
-            documentSession.Delete(subscriptionId)
+            documentSession.Delete<Feed>(subscriptionId)
+            documentSession.SaveChanges()
         {
             getAll = getAll
             save = save
