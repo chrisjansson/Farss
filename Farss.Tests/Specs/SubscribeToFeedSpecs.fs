@@ -9,7 +9,6 @@ open Newtonsoft.Json
 open SubscribeToFeedWorkflow
 open System
 open Microsoft.Extensions.DependencyInjection
-open CompositionRoot
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -227,10 +226,5 @@ let tests =
             When >>> feed_with_url "feed 2" >>> is_deleted >>>
             Then >>> only_feed_with_url "feed 1" >>> should_remain
         )
-
-        specCaseAsync "In memory server" <| fun f -> async {
-            use client = f.CreateClient()
-            let! response = client |> HttpClient.getAsync "/ping"
-            response.EnsureSuccessStatusCode() |> ignore
-        }
     ]
+
