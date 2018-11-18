@@ -1,5 +1,7 @@
 version: 0.0.{build}
 image: Visual Studio 2017
+services:
+  - postgresql101
 build_script:
 - cmd: dotnet build .\Farss.Tests\Farss.Tests.fsproj
 test_script:
