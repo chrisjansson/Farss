@@ -6,6 +6,7 @@
     <Compile Include="TestInfrastructure\DatabaseTesting.fs" />
     <Compile Include="TestInfrastructure\TestStartup.fs" />
     <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs" />
+    <Compile Include="TestInfrastructure\Spec.fs" />
     <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
@@ -16,6 +17,7 @@
     <Compile Include="DeleteSubscriptionTests.fs" />
     <Compile Include="MartenCharacterizationTests.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
+    <Compile Include="Specs\FetchEntriesSpecs.fs" />
     <Compile Include="SpecTests.fs" />
   </ItemGroup>
   <ItemGroup>

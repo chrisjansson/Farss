@@ -3,12 +3,13 @@ module SubscribeToFeedSpecs
 open Domain
 open Expecto
 open TestStartup
-open Persistence
 open System.Net.Http
 open Newtonsoft.Json
 open SubscribeToFeedWorkflow
-open System
+open Spec
+open Persistence
 open Microsoft.Extensions.DependencyInjection
+open System
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -19,32 +20,12 @@ module HttpClient =
         let content = new StringContent(json)
         client.PostAsync(url, content) |> Async.AwaitTask
 
-type TC<'C> = 'C * TestWebApplicationFactory
-type ATC<'C> = Async<TC<'C>>
 
 type FeedProjection = { Url: string }
 
 let project (feed: Domain.Subscription): FeedProjection =
     { Url = feed.Url }
 
-let inScope op (f: TestWebApplicationFactory) =
-    use scope = f.Server.Host.Services.CreateScope()
-    op scope.ServiceProvider
-
-type AsyncTestStep<'T, 'U> = ATC<'T> -> ATC<'U>
-
-let (>>>) (l: AsyncTestStep<'a,'b>) (r: AsyncTestStep<'b,'c>): AsyncTestStep<'a, 'c> = 
-    let f arg = 
-        let nextAtc = l arg
-        r nextAtc
-    f
-
-let pipe: AsyncTestStep<_, _> =
-        fun atc -> async {
-        let! (x, f) = atc
-        return  (x, f)
-    }
-    
 let feed_available_at_url (url: string) (feed: string): AsyncTestStep<_, unit> =
     fun atc -> async {
         let! (_, f) = atc
@@ -82,11 +63,7 @@ let should_have_been_saved: AsyncTestStep<FeedProjection, _> =
         Expect.equal actualFeeds [ expected ] "one added feed"
         return ((), f)
     }
-    
-let Given = pipe
-let When = pipe
-let Then = pipe
-let And = pipe
+
 
 let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
     fun atc -> async {
