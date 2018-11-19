@@ -9,11 +9,11 @@ type SubscribeToFeedCommand =
         Url: string
     }
 
-let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: FeedRepository) (command: SubscribeToFeedCommand) =
+let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedCommand) =
     //todo: handle atom feeds betters
     //todo: rss2.0 only? Does that change anything?
     let saveFeed _ =
-        let feed: Feed = { Url = command.Url; Id = Guid.NewGuid() }
+        let feed: Subscription = { Url = command.Url; Id = Guid.NewGuid() }
         repository.save feed
 
     let convertToWorkflowError r: Result<Unit, WorkflowError> =

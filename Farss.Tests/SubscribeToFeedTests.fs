@@ -17,7 +17,7 @@ let expectBadRequest actual message = async {
 
 type FeedProjection = { Url: string }
 
-let project (feed: Domain.Feed): FeedProjection =
+let project (feed: Domain.Subscription): FeedProjection =
     { Url = feed.Url }
 
 [<Tests>]

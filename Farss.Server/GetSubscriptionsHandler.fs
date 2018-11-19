@@ -8,7 +8,7 @@ open FSharp.Control.Tasks.V2.ContextInsensitive
 let getSubscriptionsHandler: HttpHandler = 
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            let repository = ctx.GetService<FeedRepository>()
+            let repository = ctx.GetService<SubscriptionRepository>()
 
             let dtos = 
                 repository.getAll() 

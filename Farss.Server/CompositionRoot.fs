@@ -37,9 +37,9 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         let store = s.GetRequiredService<IDocumentStore>()
         store.LightweightSession()) |> ignore
 
-    services.AddScoped<FeedRepository>(fun s -> 
+    services.AddScoped<SubscriptionRepository>(fun s -> 
         let session = s.GetRequiredService<IDocumentSession>()
-        Persistence.FeedRepositoryImpl.create session) |> ignore
+        Persistence.SubscriptionRepositoryImpl.create session) |> ignore
 
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter ()) |> ignore
 

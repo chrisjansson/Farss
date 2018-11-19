@@ -24,7 +24,7 @@ type ATC<'C> = Async<TC<'C>>
 
 type FeedProjection = { Url: string }
 
-let project (feed: Domain.Feed): FeedProjection =
+let project (feed: Domain.Subscription): FeedProjection =
     { Url = feed.Url }
 
 let inScope op (f: TestWebApplicationFactory) =
@@ -76,7 +76,7 @@ let should_have_been_saved: AsyncTestStep<FeedProjection, _> =
     fun atc -> async {
         let! (expected, f)  = atc
         let actualFeeds = (inScope (fun scope -> 
-            let fr = scope.GetService<FeedRepository>()
+            let fr = scope.GetService<SubscriptionRepository>()
             fr.getAll()) f) |> List.map project
 
         Expect.equal actualFeeds [ expected ] "one added feed"
@@ -93,7 +93,7 @@ let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
         let! (_, f) = atc
 
         inScope (fun s -> 
-            let r = s.GetService<FeedRepository>()
+            let r = s.GetService<SubscriptionRepository>()
             let feed = { Domain.Url = url; Id = Guid.NewGuid() }
             r.save feed
         ) f
@@ -169,7 +169,7 @@ let is_deleted: AsyncTestStep<string, _> =
         let! (url, f) = atc
 
         let subscription = (inScope (fun s -> 
-            let r = s.GetService<FeedRepository>()
+            let r = s.GetService<SubscriptionRepository>()
             r.getAll() |> List.find (fun s -> s.Url = url)
         ) f)
 
@@ -193,7 +193,7 @@ let should_remain: AsyncTestStep<string, _> =
         
         let subscriptions = 
             inScope (fun s -> 
-                let r = s.GetService<FeedRepository>()
+                let r = s.GetService<SubscriptionRepository>()
                 r.getAll()
             ) f
         

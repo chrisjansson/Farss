@@ -2,12 +2,12 @@ module Domain
 
 open System
 
-type FeedId = Guid
+type SubscriptionId = Guid
 
-type Feed =
+type Subscription =
     {
-        Id: FeedId
+        Id: SubscriptionId
         Url: string
     }
 
-type DeleteSubscriptionCommand = { Id: FeedId }
+type DeleteSubscriptionCommand = { Id: SubscriptionId }

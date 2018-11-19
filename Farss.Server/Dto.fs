@@ -9,7 +9,7 @@ type SubscriptionDto =
     }
 
 module SubscriptionDto = 
-    let toDto (feed: Domain.Feed): SubscriptionDto = { Id = feed.Id; Url = feed.Url }
+    let toDto (feed: Domain.Subscription): SubscriptionDto = { Id = feed.Id; Url = feed.Url }
 
 type DeleteSubscriptionDto = { Id: Nullable<Guid> }
 

@@ -1,19 +1,19 @@
 module Persistence
 open Domain
 
-type FeedRepository =
+type SubscriptionRepository =
     {
-        getAll: unit -> Feed list
-        save: Feed -> unit
-        delete: FeedId -> unit
+        getAll: unit -> Subscription list
+        save: Subscription -> unit
+        delete: SubscriptionId -> unit
     }
 
 let create () =
     let mutable feeds = []
     let getAll () = feeds
-    let save (feed: Feed) = feeds <- feed :: feeds
-    let delete (id: FeedId) = 
-        let feeds' = List.filter (fun (f: Feed) -> f.Id <> id) feeds
+    let save (feed: Subscription) = feeds <- feed :: feeds
+    let delete (id: SubscriptionId) = 
+        let feeds' = List.filter (fun (f: Subscription) -> f.Id <> id) feeds
         feeds <- feeds'
 
     {
@@ -45,19 +45,19 @@ module Query =
 
 
 
-module FeedRepositoryImpl =
+module SubscriptionRepositoryImpl =
     open Marten
     
     let create (documentSession: IDocumentSession) =
         let getAll () = 
-            documentSession.Query<Feed>()
+            documentSession.Query<Subscription>()
             |> Query.toList
             |> List.ofSeq
-        let save (subscription: Feed) =
+        let save (subscription: Subscription) =
             documentSession.Store(subscription)
             documentSession.SaveChanges()
-        let delete (subscriptionId: FeedId) =
-            documentSession.Delete<Feed>(subscriptionId)
+        let delete (subscriptionId: SubscriptionId) =
+            documentSession.Delete<Subscription>(subscriptionId)
             documentSession.SaveChanges()
         {
             getAll = getAll
