@@ -15,6 +15,9 @@ let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description
     item
 
+//let feedItem (atr: string) (feed: SyndicationItem) =
+
+
 let toRss (feed: SyndicationItem) = 
     let sw = new StringWriterWithEncoding(System.Text.Encoding.UTF8);
     use xmlWriter = XmlWriter.Create(sw, XmlWriterSettings(Async=true))
@@ -23,4 +26,4 @@ let toRss (feed: SyndicationItem) =
     (writer.Flush()).Wait()
     xmlWriter.Flush()
     xmlWriter.Dispose()
-    sw.ToString()
+    failwith <| sw.ToString()
