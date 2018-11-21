@@ -2,12 +2,18 @@ module Domain
 
 open System
 
-type SubscriptionId = Guid
-
 type Subscription =
     {
         Id: SubscriptionId
         Url: string
     }
+and SubscriptionId = Guid
+
+type Article =
+    {
+        Id: ArticleId
+        Title: string
+    }
+and ArticleId = Guid
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }

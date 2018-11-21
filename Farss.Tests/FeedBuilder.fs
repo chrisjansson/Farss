@@ -26,4 +26,4 @@ let toRss (feed: SyndicationItem) =
     (writer.Flush()).Wait()
     xmlWriter.Flush()
     xmlWriter.Dispose()
-    failwith <| sw.ToString()
+    sw.ToString()

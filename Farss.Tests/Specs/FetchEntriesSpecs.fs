@@ -7,9 +7,13 @@ open Domain
 open System
 open TestStartup
 
-type Entry = unit
-
 open FeedBuilder
+open SubscribeToFeedSpecs
+
+type ExpectedArticle = 
+    {
+        Title: string
+    }
 
 let a_subscription_for_feed (url: string) =
     Spec.Step.map (fun (_, f) ->
@@ -26,18 +30,30 @@ let feed_has_entries url feeds =
     )
         
 let feed_is_checked: AsyncTestStep<_, unit> =
-    Spec.Step.map (fun (_, _) ->
-        failwith "Execute real coooode"
-    )
+    Spec.Step.mapAsync (fun (_, f) -> async {
+        let client = f.CreateClient()
+        do! HttpClient.postAsync "/poll" () client |> Async.Ignore
+    })
 
-let entries entries = 
+let articles entries = 
     Spec.Step.map (fun _ -> entries)
 
 
-let should_have_been_fetched: AsyncTestStep<Entry list, unit> =
-    Spec.Step.map (fun (entries: Entry list, f: TestWebApplicationFactory) -> 
-        failwith "Assert"
+let should_have_been_fetched: AsyncTestStep<ExpectedArticle list, unit> =
+    Spec.Step.map (fun (expected: ExpectedArticle list, f: TestWebApplicationFactory) -> 
+        let articles: Article list = f.InScope(fun r -> r.getAll())
+
+        let actualArticles = 
+            articles 
+            |> List.map (fun a -> { ExpectedArticle.Title = a.Title })
+
+        Expect.equal actualArticles expected "articles"
     )
+
+let article title: ExpectedArticle =
+    {
+        Title = title
+    }
 
 [<Tests>]
 let tests = 
@@ -45,10 +61,13 @@ let tests =
         spec "Fetches entries from feed" <| fun _ ->
             Given >>> a_subscription_for_feed "feed url" >>>
             And >>> feed_has_entries "" [ 
-                feedItem "feed title 1" |> toRss 
-                feedItem "feed title 2" |> toRss 
+                feedItem "article title 1" |> toRss 
+                feedItem "article title 2" |> toRss 
             ] >>>
             When >>> feed_is_checked >>>
-            Then >>> entries [] >>> should_have_been_fetched
+            Then >>> articles [
+                article "article title 1"
+                article "article title 2"
+            ] >>> should_have_been_fetched
     ]
     

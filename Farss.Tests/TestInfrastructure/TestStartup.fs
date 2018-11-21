@@ -7,7 +7,6 @@ open FeedReaderAdapter
 open DatabaseTesting
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
-open System.Collections.Generic
 
 type FakeFeedReader =
     {
@@ -36,8 +35,6 @@ let createFakeFeedReader (): FakeFeedReader =
         Adapter = adapter
     }
 
-
-
 type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
     inherit WebApplicationFactory<Farss.Server.Startup>()
 
@@ -53,3 +50,15 @@ type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
                     services.AddSingleton(this.FakeFeedReader.Adapter) |> ignore
                 )
             |> ignore
+
+    member this.InScope<'T, 'U>(f: 'T -> 'U) =
+        use scope = this.Server.Host.Services.CreateScope()
+        let service = scope.ServiceProvider.GetService<'T>()
+        f service
+
+    member this.InScopeAsync<'T>(f) = async {
+            use scope = this.Server.Host.Services.CreateScope()
+            let service = scope.ServiceProvider.GetService<'T>()
+            return! f service
+        }
+        

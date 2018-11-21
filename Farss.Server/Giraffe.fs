@@ -8,4 +8,5 @@ let createWebApp () =
         route "/"       >=> htmlFile "/pages/index.html"
         route "/feeds" >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
         route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
-        route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler ]
+        route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
+        route "/poll" >=> POST >=> FetchEntriesHandler.fetchEntriesHandler ]

@@ -8,6 +8,12 @@ type SubscriptionRepository =
         delete: SubscriptionId -> unit
     }
 
+type ArticleRepository =
+    {
+        getAll: unit -> Article list
+        save: Article -> unit
+    }
+
 let create () =
     let mutable feeds = []
     let getAll () = feeds
@@ -43,8 +49,6 @@ module Query =
     type Expr = 
         static member Quote(e:Expression<System.Func<_, _>>) = e
 
-
-
 module SubscriptionRepositoryImpl =
     open Marten
     
@@ -63,4 +67,21 @@ module SubscriptionRepositoryImpl =
             getAll = getAll
             save = save
             delete = delete
+        }
+
+
+module ArticleRepositoryImpl =
+    open Marten
+    
+    let create (documentSession: IDocumentSession): ArticleRepository =
+        let getAll () = 
+            documentSession.Query<Article>()
+            |> Query.toList
+            |> List.ofSeq
+        let save (article: Article) =
+            documentSession.Store(article)
+            documentSession.SaveChanges()
+        {
+            getAll = getAll
+            save = save
         }

@@ -25,5 +25,3 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
     feedReader.getFromUrl command.Url
     |> AsyncResult.mapResult saveFeed
     |> Async.map convertToWorkflowError
-
-
