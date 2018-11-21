@@ -1,0 +1,6 @@
+POST https://localhost:5001/feeds
+Content-Type: application/json
+
+{
+    "url": "https://feeds.feedburner.com/GrabBagOfT"
+}

@@ -1,0 +1,6 @@
+POST https://localhost:5001/subscription/delete
+Content-Type: application/json
+
+{
+    "id": "119334a4-416b-4197-a279-5fda800cd082"
+}
