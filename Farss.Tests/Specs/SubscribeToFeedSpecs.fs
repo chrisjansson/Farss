@@ -168,7 +168,7 @@ let should_remain: AsyncTestStep<string, _> =
 let tests = 
     specs "Subscribe to feed specs" [
         spec "Subscribe to feed" <| fun _->
-            let feedContent = FeedBuilder.feed "feed title" |> FeedBuilder.toRss            
+            let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
 
             Given >>> feed_available_at_url "a feed url" feedContent >>>
             When >>> a_user_subscribes_to_feed "a feed url" >>

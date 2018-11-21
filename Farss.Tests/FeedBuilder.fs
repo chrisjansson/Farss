@@ -9,7 +9,7 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 
     override this.Encoding with get() = encoding
 
-let feed (title: string) = SyndicationItem(Title = title)
+let feedItem (title: string) = SyndicationItem(Title = title)
 
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description

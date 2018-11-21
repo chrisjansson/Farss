@@ -19,10 +19,10 @@ let a_subscription_for_feed (url: string) =
             ) f
         )
 
-let feed_has_entries feeds = 
+let feed_has_entries url feeds = 
     Spec.Step.map (fun (_, f) -> 
         for feed in feeds do
-            f.FakeFeedReader.Add(feed)
+            f.FakeFeedReader.Add(url, feed)
     )
         
 let feed_is_checked: AsyncTestStep<_, unit> =
@@ -44,10 +44,10 @@ let tests =
     specs "Fetch feed entries" [
         spec "Fetches entries from feed" <| fun _ ->
             Given >>> a_subscription_for_feed "feed url" >>>
-            And >>> feed_has_entries [ 
-                //feed "feed title" > toRss 
-            ] 
-            >>>
+            And >>> feed_has_entries "" [ 
+                feedItem "feed title 1" |> toRss 
+                feedItem "feed title 2" |> toRss 
+            ] >>>
             When >>> feed_is_checked >>>
             Then >>> entries [] >>> should_have_been_fetched
     ]
