@@ -42,29 +42,32 @@ let tests = testList "subscribe to feed tests" [
             }
 
             "result is ok when successful", fun r -> async {
-                let fetchResult = FakeFeedReaderAdapter.feed (CodeHollow.FeedReader.Feed())
-                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+                let fr = TestStartup.createFakeFeedReader()
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                fr.Add("any url", xml)
 
-                let! result = subscribeToFeed adapter r { Url = "any url" }
+                let! result = subscribeToFeed fr.Adapter r { Url = "any url" }
 
                 Expect.isOk result "should return ok when successful"
             }
 
             "saves feed when successful", fun r -> async {
-                let fetchResult = FakeFeedReaderAdapter.feed (CodeHollow.FeedReader.Feed())
-                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+                let fr = TestStartup.createFakeFeedReader()
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                fr.Add("any url", xml)
 
-                do! subscribeToFeed adapter r { Url = "any url" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
 
                 let expected = { FeedProjection.Url = "any url" }
                 Expect.equal (r.getAll() |> List.map project) [ expected ] "should save feed"
             }
 
             "created feed has non empty guid", fun r -> async {
-                let fetchResult = FakeFeedReaderAdapter.feed (CodeHollow.FeedReader.Feed())
-                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+                let fr = TestStartup.createFakeFeedReader()
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                fr.Add("any url", xml)
 
-                do! subscribeToFeed adapter r { Url = "any url" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
 
                 Expect.all (r.getAll()) (fun f -> f.Id <> Guid())  "all feeds should have non empty guid ids"
             }

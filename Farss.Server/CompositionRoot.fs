@@ -45,7 +45,7 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         let session = s.GetRequiredService<IDocumentSession>()
         Persistence.ArticleRepositoryImpl.create session) |> ignore
 
-    services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter ()) |> ignore
+    services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
     services.AddSingleton<Canary>(fun _ -> new Canary()) |> ignore
 

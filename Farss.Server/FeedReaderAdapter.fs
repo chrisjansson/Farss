@@ -28,12 +28,16 @@ type  FeedError =
     | FetchError of Exception
     | ParseError of Exception
 
+type Feed = { Title: string }
+
 type FeedReaderAdapter = 
     {
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
 
-let createAdapter (): FeedReaderAdapter =
+let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
+
+let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
     let tryOrErrorAsync op errorConstructor arg = async {
         match! (Async.Catch (op arg)) with
         | Choice1Of2 r -> return Ok r
@@ -47,12 +51,14 @@ let createAdapter (): FeedReaderAdapter =
         | e -> Error (errorConstructor e)
 
     let fetch (url: string): AsyncResult<Feed, FeedError> = 
-        let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
-        let tryDownloadBytesAsync (url: string) = tryOrErrorAsync downloadBytesAsync FetchError url
+        let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
         let parseBytes (bytes: byte[]) = FeedReader.ReadFromByteArray(bytes)
         let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
+        let mapFeed (feed: CodeHollow.FeedReader.Feed) = { Title = feed.Title }
 
-        tryDownloadBytesAsync url |> AsyncResult.bind tryParseBytes
+        tryDownloadBytesAsync url 
+        |> AsyncResult.bind tryParseBytes
+        |> AsyncResult.mapResult mapFeed
 
     {
         getFromUrl = fetch
