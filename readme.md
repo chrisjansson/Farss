@@ -31,6 +31,9 @@
 - [x] GET subscriptions List
 - [x] Delete feeds
 
+### Fetch entries
+- [ ] 
+
 #### Personal Reading workflow
 * Scroll through new articles and mark them as read or read later
 * Bookmarklet for articles that arent feed articles into read later

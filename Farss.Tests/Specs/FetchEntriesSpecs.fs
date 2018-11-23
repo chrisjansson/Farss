@@ -60,7 +60,7 @@ let tests =
     specs "Fetch feed entries" [
         spec "Fetches entries from feed" <| fun _ ->
             Given >>> a_subscription_for_feed "feed url" >>>
-            And >>> feed_has_entries "" [ 
+            And >>> feed_has_entries "feed url" [ 
                 feedItem "article title 1" |> toRss 
                 feedItem "article title 2" |> toRss 
             ] >>>
