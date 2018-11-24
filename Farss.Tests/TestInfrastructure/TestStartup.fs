@@ -8,13 +8,13 @@ open DatabaseTesting
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 
-type FakeFeedReader =
+type InMemoryFeedReader =
     {
         Adapter: FeedReaderAdapter
         Add: string * string -> unit
     }
 
-let createFakeFeedReader (): FakeFeedReader =  
+let createInMemoryFeedReader (): InMemoryFeedReader =  
     let mutable map: Map<string, string> = Map.empty
 
     let add (url: string, content: string): unit =
@@ -35,7 +35,7 @@ let createFakeFeedReader (): FakeFeedReader =
 type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
     inherit WebApplicationFactory<Farss.Server.Startup>()
 
-    member val FakeFeedReader: FakeFeedReader = createFakeFeedReader ()
+    member val FakeFeedReader: InMemoryFeedReader = createInMemoryFeedReader ()
 
     override this.ConfigureWebHost(builder) =
         builder

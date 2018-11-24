@@ -27,3 +27,9 @@ module Tests =
     let specs name tests = 
         testList name tests |> testSequencedGroup "integration tests"
 
+    let testFixtureAsync (setup: 'a -> Async<unit>) (tests: (string * 'a) seq) =
+        seq {
+            for t in tests do
+                let test = setup (snd t)
+                yield testCaseAsync (fst t) test
+        }
