@@ -53,8 +53,6 @@ let tests =
         ]
         yield! testFixtureAsync setup tests
 
-        //no feeds, no articles does nothing
-        //feed with no articles does nothing
         //feed with one new article adds one
         //feed with existing article does nothing
         //multiple feeds multiple articles, read and not read
