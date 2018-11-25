@@ -21,8 +21,9 @@ let fetchEntriesHandler: HttpHandler =
                 let! getFeedResult = adapter.getFromUrl(s.Url)
                 match getFeedResult with
                 | Ok feed ->
-                    let article = { Domain.Article.Title = feed.Title; Id = Guid.NewGuid() }
-                    articleRepository.save(article)
+                    for item in feed.Items do
+                        let article = { Domain.Article.Title = item.Title; Id = Guid.NewGuid() }
+                        articleRepository.save(article)
                 | Error e -> ()
 
             return! Successful.NO_CONTENT next ctx

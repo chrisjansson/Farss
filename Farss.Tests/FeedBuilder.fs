@@ -20,13 +20,18 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 
 let feedItem (title: string) = SyndicationItem(Title = title)
 
+let feedItem2 (title: string) = 
+    { Types.Item.Title = title }
+
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description
     item
 
-
 let withDescription2 (description: string) (feed: Types.Feed) =
     { feed with Types.Feed.Description = Some description }
+
+let withItem (item: Types.Item) (feed: Types.Feed) =
+    { feed with Types.Feed.Items = feed.Items @ [item] }
 
 let feed (title: string) =  { Types.Feed.Title = title; Types.Feed.Items = []; Types.Feed.Description = None }
 

@@ -28,7 +28,17 @@ type  FeedError =
     | FetchError of Exception
     | ParseError of Exception
 
-type Feed = { Title: string; Description: string }
+type Feed = 
+    { 
+        Title: string 
+        Description: string
+        Items: Item list
+    }
+and Item = 
+    {
+        Title: string
+    }
+
 
 type FeedReaderAdapter = 
     {
@@ -55,9 +65,15 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let parseBytes (bytes: byte[]) = FeedReader.ReadFromByteArray(bytes)
         let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
+            let items = 
+                feed.Items 
+                |> Seq.map (fun item -> { Item.Title = item.Title })
+                |> List.ofSeq
+
             { 
                 Title = feed.Title 
                 Description = feed.Description
+                Items = items
             }
 
         tryDownloadBytesAsync url 

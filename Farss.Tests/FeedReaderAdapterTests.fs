@@ -3,6 +3,7 @@
 open Expecto
 open FeedBuilder
 open TestStartup
+open FeedReaderAdapter
 
 let unbox r =
     match r with
@@ -13,7 +14,7 @@ let unbox r =
 let tests =
     testList "Feed reader adapter" [
         let tests = [
-            "Test", fun (f: InMemoryFeedReader) -> async {
+            "Parses feed", fun (f: InMemoryFeedReader) -> async {
                 let content = 
                     feed "title" 
                     |> withDescription2 "description"
@@ -25,6 +26,21 @@ let tests =
                 let unboxed = unbox result
                 Expect.equal unboxed.Title "title" "Feed title"
                 Expect.equal unboxed.Description "description" "Feed description"
+            }
+
+            "Parses feed item", fun (f: InMemoryFeedReader) -> async {
+                let content = 
+                    feed "title" 
+                    |> withItem (feedItem2 "item 1")
+                    |> withItem (feedItem2 "item 2")
+                    |> toRss2
+
+                f.Add("url", content)
+            
+                let! result = f.Adapter.getFromUrl "url"
+                let unboxed = unbox result
+                Expect.equal unboxed.Items.Length 2 "Feed articles"
+                Expect.equal unboxed.Items [ { Item.Title = "item 1" }; { Item.Title = "item 2" } ] "Feed items"
             }
         ]
 

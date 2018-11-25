@@ -23,10 +23,12 @@ let a_subscription_for_feed (url: string) =
             ) f
         )
 
-let feed_has_entries url feeds = 
+let feed_has_entries url feedItems = 
     Spec.Step.map (fun (_, f) -> 
-        for feed in feeds do
-            f.FakeFeedReader.Add(url, feed)
+        let mutable feed = FeedBuilder.feed "feed"
+        for item in feedItems do
+            feed <- withItem item feed
+        f.FakeFeedReader.Add(url, toRss2 feed)
     )
         
 let feed_is_checked: AsyncTestStep<_, unit> =
@@ -61,8 +63,8 @@ let tests =
         spec "Fetches entries from feed" <| fun _ ->
             Given >>> a_subscription_for_feed "feed url" >>>
             And >>> feed_has_entries "feed url" [ 
-                feedItem "article title 1" |> toRss 
-                feedItem "article title 2" |> toRss 
+                feedItem2 "article title 1"
+                feedItem2 "article title 2" 
             ] >>>
             When >>> feed_is_checked >>>
             Then >>> articles [
