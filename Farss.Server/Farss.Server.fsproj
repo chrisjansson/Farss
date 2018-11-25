@@ -15,6 +15,7 @@
     <Compile Include="GetSubscriptionsHandler.fs" />
     <Compile Include="DeleteSubscriptionWorkflow.fs" />
     <Compile Include="DeleteSubscriptionHandler.fs" />
+    <Compile Include="FetchEntriesWorkflow.fs" />
     <Compile Include="FetchEntriesHandler.fs" />
     <Compile Include="Giraffe.fs" />
     <Compile Include="Postgres.fs" />

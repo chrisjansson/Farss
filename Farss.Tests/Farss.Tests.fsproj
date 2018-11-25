@@ -17,6 +17,7 @@
     <Compile Include="SubscribeToFeedTests.fs" />
     <Compile Include="DeleteSubscriptionTests.fs" />
     <Compile Include="MartenCharacterizationTests.fs" />
+    <Compile Include="FetchArticlesWorkflow.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
     <Compile Include="Specs\FetchEntriesSpecs.fs" />
     <Compile Include="SpecTests.fs" />

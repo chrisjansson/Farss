@@ -85,3 +85,13 @@ module ArticleRepositoryImpl =
             getAll = getAll
             save = save
         }
+
+    let createInMemory () =
+        let mutable articles = []
+        let getAll () = articles
+        let save (article: Article) = articles <- article :: articles
+
+        {
+            getAll = getAll
+            save = save
+        }
