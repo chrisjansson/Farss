@@ -17,6 +17,13 @@ let setup test = async {
     
     }
 
+let emptyFeed = { FeedReaderAdapter.Feed.Title = ""; Description = ""; Items = [] }
+
+type ExpectedArticle = 
+    {
+        Title: string
+    }
+
 [<Tests>]
 let tests = 
     testList "Fetch articles workflow" [
@@ -30,7 +37,6 @@ let tests =
             }
             "Does nothing when no items exists in feed", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
-                let emptyFeed = { FeedReaderAdapter.Feed.Title = ""; Description = ""; Items = [] }
                 adapterStub.SetResult ("feed url", Ok emptyFeed)
 
                 let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
@@ -50,10 +56,25 @@ let tests =
                 Expect.equal result (Ok [ expectedError ]) "Expected error"
                 Expect.isEmpty (articles.getAll()) "Articles"
             }
+            "Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title" } ] }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
+                let! result = workflow () |> Async.AwaitTask
+                
+                let project (article: Article): ExpectedArticle =
+                    {
+                        Title = article.Title
+                    }
+
+                Expect.isOk result "Fetch result"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+            }
         ]
         yield! testFixtureAsync setup tests
 
-        //feed with one new article adds one
         //feed with existing article does nothing
         //multiple feeds multiple articles, read and not read
         //failing reads?

@@ -27,19 +27,25 @@ let fetchEntries
             | Error e -> [e]
             | _ -> []
 
+        let extractOk r =
+            match r with
+            | Ok r -> [r]
+            | _ -> []
+
+        let feeds = 
+            results 
+            |> List.ofArray
+            |> List.collect extractOk
+
+        for feed in feeds do
+            for item in feed.Items do
+                let article = { Title = item.Title; Id = Guid.NewGuid() }
+                articleRepository.save(article)
+        
         let errors =
             results 
             |> List.ofArray
             |> List.collect extractError
-
-        //for s in subscriptions do
-        //    let! getFeedResult = adapter.getFromUrl(s.Url)
-        //    match getFeedResult with
-        //    | Ok feed ->
-        //        for item in feed.Items do
-        //            let article = { Title = item.Title; Id = Guid.NewGuid() }
-        //            articleRepository.save(article)
-        //    | Error e -> ()
 
         return Ok errors
     }
