@@ -39,8 +39,12 @@ let fetchEntries
 
         for feed in feeds do
             for item in feed.Items do
-                let article = { Title = item.Title; Id = Guid.NewGuid() }
-                articleRepository.save(article)
+                let hasArticle (guid: string) =
+                    articleRepository.getAll()
+                    |> List.exists (fun a -> a.Guid = guid)
+                if not (hasArticle item.Id) then do
+                    let article = { Article.Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
+                    articleRepository.save(article)
         
         let errors =
             results 

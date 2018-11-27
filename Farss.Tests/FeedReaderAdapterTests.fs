@@ -31,7 +31,7 @@ let tests =
             "Parses feed item", fun (f: InMemoryFeedReader) -> async {
                 let content = 
                     feed "title" 
-                    |> withItem (feedItem2 "item 1")
+                    |> withItem (feedItem2 "item 1" |> withId "a guid")
                     |> withItem (feedItem2 "item 2")
                     |> toRss2
 
@@ -40,7 +40,7 @@ let tests =
                 let! result = f.Adapter.getFromUrl "url"
                 let unboxed = unbox result
                 Expect.equal unboxed.Items.Length 2 "Feed articles"
-                Expect.equal unboxed.Items [ { Item.Title = "item 1" }; { Item.Title = "item 2" } ] "Feed items"
+                Expect.equal unboxed.Items [ { Item.Title = "item 1"; Id = "a guid" }; { Item.Title = "item 2"; Id = null } ] "Feed items"
             }
         ]
 

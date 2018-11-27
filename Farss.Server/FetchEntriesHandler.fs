@@ -22,7 +22,7 @@ let fetchEntriesHandler: HttpHandler =
                 match getFeedResult with
                 | Ok feed ->
                     for item in feed.Items do
-                        let article = { Domain.Article.Title = item.Title; Id = Guid.NewGuid() }
+                        let article = { Domain.Article.Title = item.Title; Id = Guid.NewGuid(); Guid = "" }
                         articleRepository.save(article)
                 | Error e -> ()
 

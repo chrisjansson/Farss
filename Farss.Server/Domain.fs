@@ -13,6 +13,7 @@ type Article =
     {
         Id: ArticleId
         Title: string
+        Guid: string
     }
 and ArticleId = Guid
 

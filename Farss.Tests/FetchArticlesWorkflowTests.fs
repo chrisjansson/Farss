@@ -58,10 +58,27 @@ let tests =
             }
             "Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
+                let! result = workflow () |> Async.AwaitTask
+                
+                let project (article: Article): ExpectedArticle =
+                    {
+                        Title = article.Title
+                    }
+
+                Expect.isOk result "Fetch result"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+            }
+            "Feed with one existing article does not add article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid" } ] }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
+                do! workflow () |> Async.AwaitTask |> Async.Ignore
                 let! result = workflow () |> Async.AwaitTask
                 
                 let project (article: Article): ExpectedArticle =

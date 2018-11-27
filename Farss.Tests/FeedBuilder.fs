@@ -10,8 +10,7 @@ module Types =
         Title: string
         Description: string option
         Items:  Item list }
-    and Item = { Title: string }
-    
+    and Item = { Title: string; Id: string option }
 
 type StringWriterWithEncoding(encoding: System.Text.Encoding) =
     inherit System.IO.StringWriter()
@@ -21,7 +20,10 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 let feedItem (title: string) = SyndicationItem(Title = title)
 
 let feedItem2 (title: string) = 
-    { Types.Item.Title = title }
+    { Types.Item.Title = title; Types.Item.Id = None }
+
+let withId (id: string) (item: Types.Item) = 
+    { item with Types.Item.Id = Some id }
 
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description
@@ -45,6 +47,9 @@ let toRss2 (feed: Types.Feed) =
     for item in feed.Items do
         let feedItem = SyndicationItem()
         feedItem.Title <- item.Title
+        if item.Id.IsSome then do
+            feedItem.Id <- item.Id.Value
+    
         writer.Write(feedItem).Wait()
     (writer.Flush()).Wait()
     xmlWriter.Flush()
