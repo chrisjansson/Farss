@@ -25,6 +25,79 @@ type ExpectedArticle =
     }
 
 [<Tests>]
+let singleFeedTests = 
+    testList "Update subscription workflow" [
+        let tests = [
+            "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let workflow = FetchEntriesWorkflow.fetchEntriesForSubscription subs articles adapterStub.Adapter
+                
+                let op = workflow  (Guid.NewGuid()) |> Async.AwaitTask |> Async.Ignore
+                
+                do! Expect.throwsAsync op "Fails with exception"
+            }
+            "Does nothing when no items exists in feed", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let subId = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = subId })
+                adapterStub.SetResult ("feed url", Ok emptyFeed)
+
+                let workflow = FetchEntriesWorkflow.fetchEntriesForSubscription subs articles adapterStub.Adapter
+                let! result = workflow subId |> Async.AwaitTask
+                
+                //todo: ok of number of articles updated
+                Expect.isOk result "Workflow result"
+                Expect.isEmpty (articles.getAll()) "Articles"
+            }
+            "Returns failure when feed fails", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let id = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = id })
+                let expectedError = FeedError.ParseError (exn("error"))
+                adapterStub.SetResult ("feed url", Error expectedError)
+
+                let workflow = FetchEntriesWorkflow.fetchEntriesForSubscription subs articles adapterStub.Adapter
+                let! result = workflow id |> Async.AwaitTask
+                
+                Expect.equal result (Error expectedError) "Expected error"
+                Expect.isEmpty (articles.getAll()) "Articles"
+            }
+            //"Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+            //    subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
+            //    let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "" } ] }
+            //    adapterStub.SetResult ("feed url", Ok feedResult)
+
+            //    let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
+            //    let! result = workflow () |> Async.AwaitTask
+                
+            //    let project (article: Article): ExpectedArticle =
+            //        {
+            //            Title = article.Title
+            //        }
+
+            //    Expect.isOk result "Fetch result"
+            //    Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+            //}
+            //"Feed with one existing article does not add article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+            //    subs.save ({ Url = "feed url"; Id = Guid.NewGuid() })
+            //    let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid" } ] }
+            //    adapterStub.SetResult ("feed url", Ok feedResult)
+
+            //    let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
+            //    do! workflow () |> Async.AwaitTask |> Async.Ignore
+            //    let! result = workflow () |> Async.AwaitTask
+                
+            //    let project (article: Article): ExpectedArticle =
+            //        {
+            //            Title = article.Title
+            //        }
+
+            //    Expect.isOk result "Fetch result"
+            //    Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+            //}
+        ]
+        yield! testFixtureAsync setup tests
+
+    ]
+
+[<Tests>]
 let tests = 
     testList "Fetch articles workflow" [
         let tests = [
@@ -92,7 +165,6 @@ let tests =
         ]
         yield! testFixtureAsync setup tests
 
-        //feed with existing article does nothing
         //multiple feeds multiple articles, read and not read
         //failing reads?
     ]

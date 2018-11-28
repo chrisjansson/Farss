@@ -7,6 +7,32 @@ open FSharp.Control.Tasks.V2
 open System
 open System.Threading.Tasks
 
+let fetchEntriesForSubscription 
+    (subscriptionRepository: SubscriptionRepository) 
+    (articleRepository: ArticleRepository) 
+    (adapter: FeedReaderAdapter)
+    (subscriptionId: SubscriptionId) 
+    = task {
+        let subscription = 
+            subscriptionRepository.getAll()
+            |> List.find (fun s -> s.Id = subscriptionId)
+
+        let! result = adapter.getFromUrl subscription.Url
+
+        return 
+            match result with
+            | Ok feed ->
+                for item in feed.Items do
+                    let hasArticle (guid: string) =
+                        articleRepository.getAll()
+                        |> List.exists (fun a -> a.Guid = guid)
+                    if not (hasArticle item.Id) then do
+                        let article = { Article.Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
+                        articleRepository.save(article)
+                Ok ()
+            | Error e ->
+                Error e
+    }
 
 let fetchEntries 
     (subscriptionRepository: SubscriptionRepository) 
