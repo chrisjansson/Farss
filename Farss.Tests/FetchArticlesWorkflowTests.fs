@@ -77,7 +77,7 @@ let singleFeedTests =
                 //todo: ok of number of articles updated
                 Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
             }
-            "Feed with one existing article does not add article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+            "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId })
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid" } ] }
