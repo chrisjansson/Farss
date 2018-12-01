@@ -31,9 +31,9 @@ let singleFeedTests =
             "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let workflow = FetchEntriesWorkflow.fetchEntriesForSubscriptionImpl subs articles adapterStub.Adapter
                 
-                let op = workflow  (Guid.NewGuid()) |> Async.AwaitTask |> Async.Ignore
+                let op () = workflow  (Guid.NewGuid()) |> Async.AwaitTask |> Async.Ignore
                 
-                do! Expect.throwsAsync op "Fails with exception"
+                do! Expect.throwsAsyncT op "Fails with exception"
             }
             "Does nothing when no items exists in feed", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subId = Guid.NewGuid()
