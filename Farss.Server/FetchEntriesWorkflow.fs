@@ -7,31 +7,61 @@ open FSharp.Control.Tasks.V2
 open System
 open System.Threading.Tasks
 
+module Result = 
+    let tee (f: 'T -> unit) (r: Result<'T, _>)  =
+        match r with
+        | Ok o -> 
+            f o
+            r
+        | _ -> r
+    let teeError (f: 'TError -> unit) (r: Result<_, 'TError>) =
+        match r with
+        | Error e -> 
+            f e
+            r
+        | _ -> r
+
 let fetchEntriesForSubscription 
     (subscriptionRepository: SubscriptionRepository) 
     (articleRepository: ArticleRepository) 
     (adapter: FeedReaderAdapter)
     (subscriptionId: SubscriptionId) 
     = task {
-        let subscription = 
+        let getSubscription subscriptionId =
+            //Todo: elevate to repository
             subscriptionRepository.getAll()
             |> List.find (fun s -> s.Id = subscriptionId)
 
-        let! result = adapter.getFromUrl subscription.Url
+        let fetchFeedForSubscription subscription = 
+            adapter.getFromUrl subscription.Url |> Async.StartAsTask
 
-        return 
-            match result with
-            | Ok feed ->
-                for item in feed.Items do
-                    let hasArticle (guid: string) =
-                        articleRepository.getAll()
-                        |> List.exists (fun a -> a.Guid = guid)
-                    if not (hasArticle item.Id) then do
-                        let article = { Article.Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
-                        articleRepository.save(article)
-                Ok ()
-            | Error e ->
-                Error e
+        let filterExistingItems feed =
+            //Todo: elevate to repository
+            let existingArticles = articleRepository.getAll()
+            let isNewArticle (item: Item) = 
+                let hasArticle = List.exists (fun (a: Article) -> a.Guid = item.Id) existingArticles
+                not hasArticle
+
+            feed.Items
+            |> List.filter isNewArticle
+        
+        let createArticle item: Article =
+            { Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
+        
+        let createArticles = List.map createArticle
+
+        let saveArticle = articleRepository.save
+        let saveArticles = List.iter saveArticle
+
+        let aggregateSavedArticles = List.length
+
+        return! subscriptionId
+            |> getSubscription
+            |> fetchFeedForSubscription
+            |> TaskResult.map filterExistingItems
+            |> TaskResult.map createArticles
+            |> TaskResult.tee saveArticles
+            |> TaskResult.map aggregateSavedArticles
     }
 
 let fetchEntries 

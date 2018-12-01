@@ -4,6 +4,12 @@ open CodeHollow.FeedReader
 open System
 
 type AsyncResult<'T, 'E> = Async<Result<'T, 'E>>
+//Todo: extract
+module Async =
+    let map f a = async {
+        let! a' = a
+        return (f a')
+    }
 
 module AsyncResult =
     let mapResult f ar: Async<Result<_, _>> = async {
@@ -18,11 +24,35 @@ module AsyncResult =
 
     let Return (r: Result<_,_>) = async.Return r
 
-module Async =
-    let map f a = async {
-        let! a' = a
-        return (f a')
+    let map f =
+        f |> Result.map |> Async.map
+
+module Task =
+    open FSharp.Control.Tasks.V2
+    let map f (t: System.Threading.Tasks.Task<_>) = task {
+        let! result = t
+        return f result
+    } 
+
+module TaskResult =
+    open FSharp.Control.Tasks.V2
+    open System.Threading.Tasks
+    
+    let map f =        
+        f |> Result.map |> Task.map
+
+    let tee f (t: Task<_>) = task {
+        let! result = t
+        return 
+            match result with
+            | Ok value ->
+                f value
+                result
+            | _ ->
+                result
     }
+
+
 
 type  FeedError =
     | FetchError of Exception

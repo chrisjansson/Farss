@@ -43,8 +43,7 @@ let singleFeedTests =
                 let workflow = FetchEntriesWorkflow.fetchEntriesForSubscription subs articles adapterStub.Adapter
                 let! result = workflow subId |> Async.AwaitTask
                 
-                //todo: ok of number of articles updated
-                Expect.isOk result "Workflow result"
+                Expect.equal result (Ok 0) "Number of fetched articles"
                 Expect.isEmpty (articles.getAll()) "Articles"
             }
             "Returns failure when feed fails", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
@@ -73,8 +72,7 @@ let singleFeedTests =
                         Title = article.Title
                     }
 
-                Expect.isOk result "Fetch result"
-                //todo: ok of number of articles updated
+                Expect.equal result (Ok 1) "One fetched article"
                 Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
             }
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
