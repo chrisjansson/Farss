@@ -26,7 +26,7 @@ let fetchEntriesForSubscription
     (articleRepository: ArticleRepository) 
     (adapter: FeedReaderAdapter)
     (subscriptionId: SubscriptionId) 
-    = task {
+    = 
         let getSubscription subscriptionId =
             //Todo: elevate to repository
             subscriptionRepository.getAll()
@@ -55,14 +55,13 @@ let fetchEntriesForSubscription
 
         let aggregateSavedArticles = List.length
 
-        return! subscriptionId
+        subscriptionId
             |> getSubscription
             |> fetchFeedForSubscription
             |> TaskResult.map filterExistingItems
             |> TaskResult.map createArticles
             |> TaskResult.tee saveArticles
             |> TaskResult.map aggregateSavedArticles
-    }
 
 let fetchEntries 
     (subscriptionRepository: SubscriptionRepository) 
