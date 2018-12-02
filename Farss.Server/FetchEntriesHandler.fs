@@ -7,11 +7,9 @@ open Microsoft.AspNetCore.Http
 open FSharp.Control.Tasks.V2.ContextInsensitive
 open Microsoft.Extensions.DependencyInjection
 
-
 let fetchEntriesHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            
             let runFetchArticlesForSubscription: FetchEntriesWorkflow.FetchArticlesForSubscription = 
                 fun id -> task {
                     //todo: uow
