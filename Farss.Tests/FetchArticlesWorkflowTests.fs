@@ -25,8 +25,8 @@ type ExpectedArticle =
     }
 
 [<Tests>]
-let singleFeedTests = 
-    testList "Update subscription workflow" [
+let fetchArticlesForSubscriptionTests = 
+    testList "Fetch articles for subscription workflow" [
         let tests = [
             "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -99,8 +99,8 @@ let singleFeedTests =
     ]
 
 [<Tests>]
-let tests = 
-    testList "Fetch articles workflow" [
+let fetchArticlesForAllSubscriptionsTests = 
+    testList "Fetch articles for all subscriptions workflow" [
         let tests = [
             "Does nothing when no subscriptions exists", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let workflow = FetchEntriesWorkflow.fetchEntries subs articles adapterStub.Adapter
