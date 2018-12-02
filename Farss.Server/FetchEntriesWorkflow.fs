@@ -47,49 +47,50 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             |> TaskResult.map createArticles
             |> TaskResult.tee saveArticles
             |> TaskResult.map aggregateSavedArticles
+            
+type OperationResult<'T, 'TError> = Result<'T, OperationError<'TError>>
+and OperationError<'TError> = 
+    | OperationError of exn
+    | InnerError of 'TError
 
 let fetchEntries 
     (subscriptionRepository: SubscriptionRepository) 
-    (articleRepository: ArticleRepository) 
-    (adapter: FeedReaderAdapter) 
-    _ = task {
+    (fetch: FetchArticlesForSubscription)
+    _ = 
+        //get all ids or get with projection
         let subscriptions = subscriptionRepository.getAll()
-    
-        let tasks = 
-            subscriptions 
-            |> List.map (fun s -> adapter.getFromUrl s.Url)
-            |> List.map Async.StartAsTask
-            |> Array.ofList
-        let! results = Task.WhenAll(tasks)
 
-        let extractError r =
-            match r with
-            | Error e -> [e]
-            | _ -> []
+        //extact to operation module
+        let execAsync op arg = task {
+                try 
+                    let! result = op arg
+                    return 
+                        match result with
+                        | Ok o -> Ok o
+                        | Error e -> Error (InnerError e)
+                with exn ->
+                    return Error (OperationError exn)
+            }
 
-        let extractOk r =
-            match r with
-            | Ok r -> [r]
-            | _ -> []
+        let executeFetchAsync id = task {
+                let! result = execAsync fetch id
+                return (id, result)
+            }
 
-        let feeds = 
-            results 
-            |> List.ofArray
-            |> List.collect extractOk
-
-        for feed in feeds do
-            for item in feed.Items do
-                let hasArticle (guid: string) =
-                    articleRepository.getAll()
-                    |> List.exists (fun a -> a.Guid = guid)
-                if not (hasArticle item.Id) then do
-                    let article = { Article.Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
-                    articleRepository.save(article)
-        
-        let errors =
-            results 
-            |> List.ofArray
-            |> List.collect extractError
-
-        return Ok errors
-    }
+        //extract to task module
+        let traverse (tasks: Task<_> list) = 
+            let rec inner tasks acc = task {
+                    match tasks with
+                    | [] -> 
+                        return acc
+                    | head::tail ->
+                        let! r = head
+                        let acc = r::acc
+                        return! inner tail acc
+                }
+            inner tasks []
+                
+        subscriptions
+            |> List.map (fun s -> s.Id)
+            |> List.map executeFetchAsync
+            |> traverse
