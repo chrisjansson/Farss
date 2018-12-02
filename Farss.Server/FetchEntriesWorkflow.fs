@@ -22,10 +22,10 @@ module Result =
         | _ -> r
 
 
-type FetchEntriesForSubscription =  SubscriptionId -> Task<Result<int, FeedError>>
-type FetchEntriesForSubscriptionImpl = SubscriptionRepository -> ArticleRepository -> FeedReaderAdapter -> FetchEntriesForSubscription
+type FetchArticlesForSubscription =  SubscriptionId -> Task<Result<int, FeedError>>
+type FetchArticlesForSubscriptionImpl = SubscriptionRepository -> ArticleRepository -> FeedReaderAdapter -> FetchArticlesForSubscription
 
-let fetchEntriesForSubscriptionImpl: FetchEntriesForSubscriptionImpl = 
+let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl = 
     fun subscriptionRepository articleRepository adapter subscriptionId ->
         let getSubscription subscriptionId =
             //Todo: elevate to repository
