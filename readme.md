@@ -25,6 +25,9 @@
         How does AI work?
 - [ ] Split integration tests that require WebSdk into separate assembly, these don't behave well with normal test integration supplied by expecto runner
 
+#### Stuff
+- [ ] Use the same store setup in tests
+
 #### Subscription management
 - [x] POST feed to subscribe
 - [x] Aren't feeds really feed subscriptions? 
