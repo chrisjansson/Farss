@@ -83,14 +83,6 @@ module SubscriptionRepositoryImpl =
 
 module ArticleRepositoryImpl =
     open Marten
-    open System.Linq
-    
-    [<CLIMutable>]
-    type FilterProjection = 
-        {
-            ExistingGuid: string
-            Exists: bool
-        }
 
     let create (documentSession: IDocumentSession): ArticleRepository =
         let getAll () = 
@@ -101,15 +93,19 @@ module ArticleRepositoryImpl =
             documentSession.Store(article)
             documentSession.SaveChanges()
 
-        let filterExistingArticles guids =
-            let guidsA = Array.ofList guids
-            let query = 
-                (documentSession.Query<Article>() :> IQueryable<Article>)
-                    .Select(Query.Expr.Quote<Article, FilterProjection>(fun a -> { ExistingGuid = a.Guid; Exists = guidsA.Contains(a.Guid) }))
-                    .Where(Query.Expr.Quote(fun proj -> proj.Exists))
-                    .Select(fun p -> p.ExistingGuid)
-            let existingArticles = Query.toList query |> List.ofSeq
-            List.except existingArticles guids
+        let filterExistingArticles (guids: string list) =
+            if List.length guids = 0 then
+                []
+            else if List.contains null guids then
+                failwith "Feed GUID is null"
+            else
+                let guidsA = Array.ofList guids
+                let query = """SELECT unnest(?) as guid
+                except
+                SELECT data #>> '{Guid}' from mt_doc_domain_article"""
+                let query = documentSession.Query<string>(query, guidsA)
+                List.ofSeq query
+     
         {
             getAll = getAll
             save = save
@@ -122,7 +118,7 @@ module ArticleRepositoryImpl =
         let save (article: Article) = articles <- article :: articles
         
         let filterExistingArticles guids =
-            let existingGuids = List.map (fun a -> a.Guid) articles
+            let existingGuids = List.map (fun (a:Article) -> a.Guid) articles
             List.except existingGuids guids
 
         {

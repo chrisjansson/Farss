@@ -18,20 +18,10 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             adapter.getFromUrl subscription.Url |> Async.StartAsTask
 
         let filterExistingItems feed =
-            //Todo: elevate to repository
-            let existingArticles = articleRepository.getAll()
-            let isNewArticle (item: Item) = 
-                let hasArticle = List.exists (fun (a: Article) -> a.Guid = item.Id) existingArticles
-                not hasArticle
+            let itemIds = List.map (fun (fi: Item) -> fi.Id) feed.Items
+            let newItemIds = articleRepository.filterExistingArticles itemIds
+            List.filter (fun item -> List.contains item.Id newItemIds) feed.Items
 
-            feed.Items
-            |> List.filter isNewArticle
-
-            //let itemIds = List.map (fun (fi: Item) -> fi.Id) feed.Items
-            //let newItemIds = articleRepository.filterExistingArticles itemIds
-            //List.filter (fun item -> List.contains item.Id newItemIds) feed.Items
-
-        
         let createArticle item: Article =
             { Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id }
         

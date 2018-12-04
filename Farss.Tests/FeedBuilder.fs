@@ -47,6 +47,7 @@ let toRss2 (feed: Types.Feed) =
     for item in feed.Items do
         let feedItem = SyndicationItem()
         feedItem.Title <- item.Title
+        // Not setting a guid is not great
         if item.Id.IsSome then do
             feedItem.Id <- item.Id.Value
     

@@ -39,7 +39,8 @@ let feed_is_checked: AsyncTestStep<_, unit> =
             ()
         else
             let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-            failwith content
+            System.IO.File.WriteAllText("C:\\temp\\fail.html", content)
+            failwith "error"
     })
 
 let articles entries = 
@@ -68,8 +69,8 @@ let tests =
         spec "Fetches entries from feed" <| fun _ ->
             Given >>> a_subscription_for_feed "feed url" >>>
             And >>> feed_has_entries "feed url" [ 
-                feedItem2 "article title 1"
-                feedItem2 "article title 2" 
+                feedItem2 "article title 1" |> withId "id1"
+                feedItem2 "article title 2" |> withId "id2" 
             ] >>>
             When >>> feed_is_checked >>>
             Then >>> articles [

@@ -13,8 +13,6 @@ type IServiceCollection with
         for service in source do    
             x.Add(service)
         x
-
-
 type Canary() =
     interface IDisposable with 
         member this.Dispose() =
@@ -29,9 +27,15 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
     services.AddSingleton<IDocumentStore>(fun s -> 
         let connectionString = s.GetRequiredService<PostgresConnectionString>()
         let cs = Postgres.createConnectionString connectionString
-        DocumentStore.For(fun a -> 
-        a.Connection(cs)
-        a.DdlRules.TableCreation <- CreationStyle.DropThenCreate) :> IDocumentStore) |> ignore
+        let store = DocumentStore.For(fun a -> 
+            a.Connection(cs)
+            a.RegisterDocumentType<Domain.Subscription>()
+            a.RegisterDocumentType<Domain.Article>()
+            a.PLV8Enabled <- false
+            a.DdlRules.TableCreation <- CreationStyle.DropThenCreate)
+        store.Schema.ApplyAllConfiguredChangesToDatabase() |> ignore
+        store :> IDocumentStore) |> ignore
+
 
     services.AddScoped<IDocumentSession>(fun s ->
         let store = s.GetRequiredService<IDocumentStore>()

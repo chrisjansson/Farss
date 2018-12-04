@@ -88,8 +88,13 @@ let createFixture2 () =
     let cs = createConnectionString testConnectionString
     let store = DocumentStore.For(fun a -> 
         a.Connection(cs)
+        a.PLV8Enabled <- false
+        a.RegisterDocumentType<Domain.Subscription>()
+        a.RegisterDocumentType<Domain.Article>()
         a.DdlRules.TableCreation <- CreationStyle.DropThenCreate)
     
+
+
     new DatabaseTestFixture(testConnectionString, store)
 
 let createFixture test () = 
