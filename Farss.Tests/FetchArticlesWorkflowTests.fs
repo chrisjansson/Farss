@@ -74,6 +74,23 @@ let fetchArticlesForSubscriptionTests =
                 Expect.equal result (Ok 1) "One fetched article"
                 Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
             }
+            "Fetch one article associates with subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let subscriptionId = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid" } ] }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                do! workflow subscriptionId |> Async.AwaitTask |> Async.Ignore
+                
+                let project (article: Article): ExpectedArticle =
+                    {
+                        Title = article.Title
+                    }
+
+                Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title" } ] "Articles"
+                Expect.equal (articles.getAllBySubscription (Guid.NewGuid())) [] "No articles exist for other subscription"
+            }
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId })
@@ -92,6 +109,29 @@ let fetchArticlesForSubscriptionTests =
                 Expect.equal result (Ok 0) "No fetched articles"
                 Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
             }
+            "Fetches are grouped by subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let subscriptionId0 = Guid.NewGuid()
+                let subscriptionId1 = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = subscriptionId0 })
+                subs.save ({ Url = "feed url"; Id = subscriptionId1 })
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid" } ] }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                do! workflow subscriptionId0 |> Async.AwaitTask |> Async.Ignore
+                do! workflow subscriptionId0 |> Async.AwaitTask |> Async.Ignore
+                do! workflow subscriptionId1 |> Async.AwaitTask |> Async.Ignore
+                do! workflow subscriptionId1 |> Async.AwaitTask |> Async.Ignore
+                
+                let project (article: Article): ExpectedArticle =
+                    {
+                        Title = article.Title
+                    }
+                
+                Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title" } ] "Article fetched for first sub"
+                Expect.equal (articles.getAllBySubscription subscriptionId1 |> List.map project) [ { Title = "Item title" } ] "Artile fetched for second sub"
+                Expect.equal (articles.getAll ()).Length 2 "One article per subscription"
+            }
         ]
         yield! testFixtureAsync setup tests
     ]
@@ -107,9 +147,9 @@ let fetchArticlesForAllSubscriptionsTests =
                 let expectedFetchError = (FetchError (exn "fetch error exception"))
                 let expectedException = exn "throwing fetch"
 
-                s.save ({ Domain.Subscription.Id = s0; Url = "0" })
-                s.save ({ Domain.Subscription.Id = s1; Url = "0" })
-                s.save ({ Domain.Subscription.Id = s2; Url = "0" })
+                s.save ({ Subscription.Id = s0; Url = "0" })
+                s.save ({ Subscription.Id = s1; Url = "0" })
+                s.save ({ Subscription.Id = s2; Url = "0" })
 
                 let stubFetch: FetchEntriesWorkflow.FetchArticlesForSubscription =
                     fun subId -> 
