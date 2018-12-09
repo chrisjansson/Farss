@@ -28,7 +28,7 @@ let feed_has_entries url feedItems =
         let mutable feed = FeedBuilder.feed "feed"
         for item in feedItems do
             feed <- withItem item feed
-        f.FakeFeedReader.Add(url, toRss2 feed)
+        f.FakeFeedReader.Add(url, toAtom feed)
     )
         
 let feed_is_checked: AsyncTestStep<_, unit> =
