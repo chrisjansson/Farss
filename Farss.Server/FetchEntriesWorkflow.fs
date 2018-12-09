@@ -22,8 +22,13 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             let newItemIds = articleRepository.filterExistingArticles subscriptionId itemIds
             List.filter (fun item -> List.contains item.Id newItemIds) feed.Items
 
-        let createArticle item: Article =
-            { Title = item.Title; Id = Guid.NewGuid(); Guid = item.Id; Subscription = subscriptionId }
+        let createArticle item: Article = { 
+                Id = Guid.NewGuid(); 
+                Guid = item.Id; 
+                Subscription = subscriptionId; 
+                Title = item.Title; 
+                Content = item.Content
+            }
         
         let createArticles = List.map createArticle
 

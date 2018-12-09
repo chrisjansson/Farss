@@ -15,6 +15,7 @@ type Article =
         Title: string
         Guid: string
         Subscription: SubscriptionId
+        Content: string
     }
 and ArticleId = Guid
 

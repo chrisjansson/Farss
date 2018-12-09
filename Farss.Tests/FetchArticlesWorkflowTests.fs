@@ -21,6 +21,7 @@ let emptyFeed = { FeedReaderAdapter.Feed.Title = ""; Description = ""; Items = [
 type ExpectedArticle = 
     {
         Title: string
+        Content: string
     }
 
 [<Tests>]
@@ -60,7 +61,7 @@ let fetchArticlesForSubscriptionTests =
             "Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = ""; Content = "" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = ""; Content = "Item content" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -69,10 +70,11 @@ let fetchArticlesForSubscriptionTests =
                 let project (article: Article): ExpectedArticle =
                     {
                         Title = article.Title
+                        Content = article.Content
                     }
 
                 Expect.equal result (Ok 1) "One fetched article"
-                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = "Item content" } ] "Articles"
             }
             "Fetch one article associates with subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
@@ -86,9 +88,10 @@ let fetchArticlesForSubscriptionTests =
                 let project (article: Article): ExpectedArticle =
                     {
                         Title = article.Title
+                        Content = article.Content
                     }
 
-                Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title" } ] "Articles"
+                Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title"; Content = "" } ] "Articles"
                 Expect.equal (articles.getAllBySubscription (Guid.NewGuid())) [] "No articles exist for other subscription"
             }
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
@@ -104,10 +107,11 @@ let fetchArticlesForSubscriptionTests =
                 let project (article: Article): ExpectedArticle =
                     {
                         Title = article.Title
+                        Content = article.Content
                     }
 
                 Expect.equal result (Ok 0) "No fetched articles"
-                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title" } ] "Articles"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = "" } ] "Articles"
             }
             "Fetches are grouped by subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId0 = Guid.NewGuid()
@@ -126,10 +130,11 @@ let fetchArticlesForSubscriptionTests =
                 let project (article: Article): ExpectedArticle =
                     {
                         Title = article.Title
+                        Content = article.Content
                     }
                 
-                Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title" } ] "Article fetched for first sub"
-                Expect.equal (articles.getAllBySubscription subscriptionId1 |> List.map project) [ { Title = "Item title" } ] "Artile fetched for second sub"
+                Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title"; Content = "" } ] "Article fetched for first sub"
+                Expect.equal (articles.getAllBySubscription subscriptionId1 |> List.map project) [ { Title = "Item title"; Content = "" } ] "Artile fetched for second sub"
                 Expect.equal (articles.getAll ()).Length 2 "One article per subscription"
             }
         ]
