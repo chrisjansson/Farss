@@ -57,20 +57,7 @@ let fetchEntries
                 return (id, result)
             }
 
-        //extract to task module
-        let traverse (tasks: Task<_> list) = 
-            let rec inner tasks acc = task {
-                    match tasks with
-                    | [] -> 
-                        return acc
-                    | head::tail ->
-                        let! r = head
-                        let acc = r::acc
-                        return! inner tail acc
-                }
-            inner tasks []
-                
         subscriptions
             |> List.map (fun s -> s.Id)
             |> List.map executeFetchAsync
-            |> traverse
+            |> Task.traverse
