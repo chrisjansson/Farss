@@ -171,8 +171,8 @@ let fetchArticlesForAllSubscriptionsTests =
                 
                 let expected = [ 
                         (s0, Ok 4711)
-                        (s1, Error (FetchEntriesWorkflow.InnerError expectedFetchError))
-                        (s2, Error (FetchEntriesWorkflow.OperationError expectedException))
+                        (s1, Error (InnerError expectedFetchError))
+                        (s2, Error (OperationError expectedException))
                     ]
 
                 Expect.equal result expected "Expected fetch results"

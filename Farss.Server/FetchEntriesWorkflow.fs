@@ -44,11 +44,6 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             |> TaskResult.map createArticles
             |> TaskResult.tee saveArticles
             |> TaskResult.map aggregateSavedArticles
-            
-type OperationResult<'T, 'TError> = Result<'T, OperationError<'TError>>
-and OperationError<'TError> = 
-    | OperationError of exn
-    | InnerError of 'TError
 
 let fetchEntries 
     (subscriptionRepository: SubscriptionRepository) 
@@ -57,20 +52,8 @@ let fetchEntries
         //get all ids or get with projection
         let subscriptions = subscriptionRepository.getAll()
 
-        //extact to operation module
-        let execAsync op arg = task {
-                try 
-                    let! result = op arg
-                    return 
-                        match result with
-                        | Ok o -> Ok o
-                        | Error e -> Error (InnerError e)
-                with exn ->
-                    return Error (OperationError exn)
-            }
-
         let executeFetchAsync id = task {
-                let! result = execAsync fetch id
+                let! result = Operation.execAsync fetch id
                 return (id, result)
             }
 

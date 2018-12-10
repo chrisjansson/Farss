@@ -2,7 +2,7 @@
 
 open FSharp.Control.Tasks.V2
 open System.Threading.Tasks
-    
+
 let map f =        
     f |> Result.map |> Task.map
 
