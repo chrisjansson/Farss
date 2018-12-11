@@ -19,6 +19,7 @@
     <Compile Include="MartenCharacterizationTests.fs" />
     <Compile Include="FetchArticlesWorkflowTests.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
+    <Compile Include="Specs\GetArticlesSpecs.fs" />
     <Compile Include="Specs\FetchEntriesSpecs.fs" />
     <Compile Include="SpecTests.fs" />
   </ItemGroup>

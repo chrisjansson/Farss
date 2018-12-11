@@ -8,6 +8,11 @@ type SubscriptionDto =
         Url: string
     }
 
+type ArticleDto =
+    {
+        Title: string
+    }
+
 module SubscriptionDto = 
     let toDto (feed: Domain.Subscription): SubscriptionDto = { Id = feed.Id; Url = feed.Url }
 
@@ -23,3 +28,6 @@ module DeleteSubscriptionDto =
             Error ()
         
         //todo: domain dto workflow in what order, what part of workflow is part of domain etc?
+
+module Articles =
+    open Domain

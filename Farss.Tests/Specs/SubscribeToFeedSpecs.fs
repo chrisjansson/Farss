@@ -15,6 +15,17 @@ module HttpClient =
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
         client.GetAsync(url) |> Async.AwaitTask
 
+    let getAsJsonAsync<'a> (url: string) (client: System.Net.Http.HttpClient): Async<'a> = async {
+            let! response = getAsync url client
+            if not response.IsSuccessStatusCode then
+                let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+                failwith content
+                return Unchecked.defaultof<'a>
+            else
+                let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+                return JsonConvert.DeserializeObject<'a>(json)
+        }
+        
     let postAsync (url: string) (content: 'a) (client: System.Net.Http.HttpClient) =
         let json = JsonConvert.SerializeObject(content)
         let content = new StringContent(json)
