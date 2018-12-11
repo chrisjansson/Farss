@@ -9,4 +9,5 @@ let createWebApp () =
         route "/feeds" >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
         route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
         route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
-        route "/poll" >=> POST >=> FetchEntriesHandler.fetchEntriesHandler ]
+        route "/poll" >=> POST >=> FetchEntriesHandler.fetchEntriesHandler
+        route "/articles" >=> GET >=> GetArticlesHandler.getArticlesHandler ]

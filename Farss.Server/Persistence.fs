@@ -97,7 +97,7 @@ module ArticleRepositoryImpl =
             |> List.ofSeq
 
         let save (article: Article) =
-            documentSession.Store(article)
+            documentSession.Store<Article>(article)
             documentSession.SaveChanges()
 
         let filterExistingArticles (subscriptionId: SubscriptionId) (guids: string list) =

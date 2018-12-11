@@ -7,7 +7,6 @@ open Domain
 open System
 open TestStartup
 
-open FeedBuilder
 open SubscribeToFeedSpecs
 
 type SpecArticle = 
@@ -17,7 +16,7 @@ type SpecArticle =
 
 module Build =
     open Domain
-    let Article: Article = { 
+    let article (): Article = { 
         Article.Id = Guid.NewGuid()
         Title = "A title"
         Guid = Guid.NewGuid().ToString()
@@ -36,7 +35,7 @@ let subscription (subscriptionUrl: string): AsyncTestStep<unit, Subscription> =
 
 let with_articles (articles: SpecArticle list): AsyncTestStep<Subscription, unit> =
     Spec.Step.map (fun (_, f: TestWebApplicationFactory) -> 
-            let toArticle (specArticle: SpecArticle) = { Build.Article with Title = specArticle.Title }
+            let toArticle (specArticle: SpecArticle) = { Build.article () with Title = specArticle.Title }
 
             let articles = articles |> List.map toArticle
         
