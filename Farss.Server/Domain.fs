@@ -16,7 +16,9 @@ type Article =
         Guid: string
         Subscription: SubscriptionId
         Content: string
+        IsRead: bool
     }
 and ArticleId = Guid
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }
+type SetArticleReadStatusCommand = { ArticleId: ArticleId }

@@ -28,6 +28,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
                 Subscription = subscriptionId; 
                 Title = item.Title; 
                 Content = item.Content
+                IsRead = false
             }
         
         let createArticles = List.map createArticle
