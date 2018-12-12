@@ -3,10 +3,7 @@
 open Domain
 open Expecto
 open Persistence
-open FakeFeedReaderAdapter
 open System
-open FeedReaderAdapter
-open System.Threading.Tasks
 open SetArticleReadStatusWorkflow
 
 let setup test = async {
@@ -57,7 +54,6 @@ let tests =
 
                 Expect.error result ArticleNotFound
             }
-            //non extant article
             "Sets article to read", fun (ar: ArticleRepository) -> async {
                 let article = Build.article()
                 ar.save article
@@ -69,6 +65,7 @@ let tests =
                 Expect.articleToBeRead article ar
                 Expect.isOk result "Request was successful"
             }
+            //set unread
         ]
 
         yield! testFixtureAsync setup tests

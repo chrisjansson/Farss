@@ -5,6 +5,7 @@ open Persistence
 
 open Microsoft.FSharp.Quotations
 
+//todo: extract
 let nameof (q:Expr<_>) = 
   match q with 
   | Patterns.Let(_, _, DerivedPatterns.Lambdas(_, Patterns.Call(_, mi, _))) -> mi.Name
@@ -14,7 +15,7 @@ let nameof (q:Expr<_>) =
 
 let any<'R> : 'R = failwith "!"
 
-
+//todo: merge with general workflow error type
 type WorkflowError =
     | InvalidParameter of string list
     | ArticleNotFound
@@ -22,6 +23,7 @@ type WorkflowError =
 type SetArticleReadStatusWorkflow = Dto.SetArticleReadStatusDto -> Result<unit, WorkflowError>
 type SetArticleReadStatusWorkflowImpl = ArticleRepository -> SetArticleReadStatusWorkflow
 
+//todo: refactor
 let setArticleReadStatusWorkflowImpl: SetArticleReadStatusWorkflowImpl =
     fun ar commandDto ->
         if not commandDto.ArticleId.HasValue then

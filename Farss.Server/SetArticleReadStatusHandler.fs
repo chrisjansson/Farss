@@ -12,7 +12,7 @@ let setArticleReadStatusHandler: HttpHandler =
         let ar = ctx.GetService<ArticleRepository>()
 
         let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-        do workflow cmd |> ignore
+        do workflow cmd |> ignore //todo: convert to response
 
         return! Successful.NO_CONTENT next ctx
     }
