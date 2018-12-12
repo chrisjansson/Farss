@@ -10,4 +10,6 @@ let createWebApp () =
         route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
         route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
         route "/poll" >=> POST >=> FetchEntriesHandler.fetchEntriesHandler
-        route "/articles" >=> GET >=> GetArticlesHandler.getArticlesHandler ]
+        route "/articles" >=> GET >=> GetArticlesHandler.getArticlesHandler
+        route "/article/setreadstatus" >=> POST >=> SetArticleReadStatusHandler.setArticleReadStatusHandler
+        ]

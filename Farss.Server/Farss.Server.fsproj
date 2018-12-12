@@ -26,6 +26,8 @@
     <Compile Include="FetchEntriesHandler.fs" />
     <Compile Include="GetArticlesWorkflow.fs" />
     <Compile Include="GetArticlesHandler.fs" />
+    <Compile Include="SetArticleReadStatusWorkflow.fs" />
+    <Compile Include="SetArticleReadStatusHandler.fs" />
     <Compile Include="Giraffe.fs" />
     <Compile Include="Postgres.fs" />
     <Compile Include="CompositionRoot.fs" />

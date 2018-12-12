@@ -5,11 +5,13 @@ open Expecto
 open Persistence
 open Domain
 
+//todo: move to expecto extensions
 module Expect =
     let expectInvalidParameter (result: Result<_,WorkflowError>) =
         match result with 
         | Error (InvalidParameter _) -> ()
         | _ -> Tests.failtest "Expected invalid parameter"
+
 
 [<Tests>]
 let tests = 

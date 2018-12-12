@@ -10,6 +10,7 @@
     <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Build.fs" />
     <Compile Include="ExpectoExtensions.fs" />
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="FeedReader.fs" />
@@ -18,6 +19,7 @@
     <Compile Include="DeleteSubscriptionTests.fs" />
     <Compile Include="MartenCharacterizationTests.fs" />
     <Compile Include="FetchArticlesWorkflowTests.fs" />
+    <Compile Include="SetArticleReadStatusWorkflowTests.fs" />
     <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
     <Compile Include="Specs\GetArticlesSpecs.fs" />
     <Compile Include="Specs\FetchEntriesSpecs.fs" />

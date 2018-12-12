@@ -18,6 +18,8 @@ module SubscriptionDto =
 
 type DeleteSubscriptionDto = { Id: Nullable<Guid> }
 
+type SetArticleReadStatusDto = { ArticleId: Nullable<Guid> }
+
 module DeleteSubscriptionDto =
     open Domain
 

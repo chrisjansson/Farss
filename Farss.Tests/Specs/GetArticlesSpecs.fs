@@ -14,17 +14,6 @@ type SpecArticle =
         Title: string
     }
 
-module Build =
-    open Domain
-    let article (): Article = { 
-        Article.Id = Guid.NewGuid()
-        Title = "A title"
-        Guid = Guid.NewGuid().ToString()
-        Subscription = Guid.NewGuid()
-        Content = "Content"
-        IsRead = false
-    }
-
 let subscription (subscriptionUrl: string): AsyncTestStep<unit, Subscription> =
     Spec.Step.map (fun (_, f: TestWebApplicationFactory) -> 
             let subscription = { Subscription.Id = Guid.NewGuid(); Url = subscriptionUrl }
@@ -80,7 +69,7 @@ let as_read: AsyncTestStep<string, unit> =
         let dArticle = getArticleByTitle article f
         
         let client = f.CreateClient()
-        let command = { SetArticleReadStatusCommand.ArticleId = dArticle.Id }
+        let command = { Dto.SetArticleReadStatusDto.ArticleId = Nullable(dArticle.Id) }
 
         let! response = HttpClient.postAsync "/article/setreadstatus" command client
         response.EnsureSuccessStatusCode() |> ignore

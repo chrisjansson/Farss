@@ -1,0 +1,38 @@
+﻿module SetArticleReadStatusWorkflow
+
+open Domain
+open Persistence
+
+open Microsoft.FSharp.Quotations
+
+let nameof (q:Expr<_>) = 
+  match q with 
+  | Patterns.Let(_, _, DerivedPatterns.Lambdas(_, Patterns.Call(_, mi, _))) -> mi.Name
+  | Patterns.PropertyGet(_, mi, _) -> mi.Name
+  | DerivedPatterns.Lambdas(_, Patterns.Call(_, mi, _)) -> mi.Name
+  | _ -> failwith "Unexpected format"
+
+let any<'R> : 'R = failwith "!"
+
+
+type WorkflowError =
+    | InvalidParameter of string list
+    | ArticleNotFound
+
+type SetArticleReadStatusWorkflow = Dto.SetArticleReadStatusDto -> Result<unit, WorkflowError>
+type SetArticleReadStatusWorkflowImpl = ArticleRepository -> SetArticleReadStatusWorkflow
+
+let setArticleReadStatusWorkflowImpl: SetArticleReadStatusWorkflowImpl =
+    fun ar commandDto ->
+        if not commandDto.ArticleId.HasValue then
+            InvalidParameter [ nameof <@ commandDto.ArticleId @>] |> Error
+        else
+
+            match ar.getAll() |> List.tryFind (fun a -> a.Id = commandDto.ArticleId.Value) with
+            | Some article ->
+                let article = { article with IsRead = true }
+        
+                ar.save(article)
+                Ok ()
+            | None -> ArticleNotFound |> Error
+
