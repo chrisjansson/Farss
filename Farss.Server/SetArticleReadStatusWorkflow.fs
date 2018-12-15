@@ -28,11 +28,12 @@ let setArticleReadStatusWorkflowImpl: SetArticleReadStatusWorkflowImpl =
     fun ar commandDto ->
         if not commandDto.ArticleId.HasValue then
             InvalidParameter [ nameof <@ commandDto.ArticleId @>] |> Error
+        else if not commandDto.SetIsReadTo.HasValue then   
+            InvalidParameter [ nameof <@ commandDto.SetIsReadTo @>] |> Error
         else
-
             match ar.getAll() |> List.tryFind (fun a -> a.Id = commandDto.ArticleId.Value) with
             | Some article ->
-                let article = { article with IsRead = true }
+                let article = { article with IsRead = commandDto.SetIsReadTo.Value }
         
                 ar.save(article)
                 Ok ()

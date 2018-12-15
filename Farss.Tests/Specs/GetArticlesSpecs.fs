@@ -69,7 +69,7 @@ let as_read: AsyncTestStep<string, unit> =
         let dArticle = getArticleByTitle article f
         
         let client = f.CreateClient()
-        let command = { Dto.SetArticleReadStatusDto.ArticleId = Nullable(dArticle.Id) }
+        let command = { Dto.SetArticleReadStatusDto.ArticleId = Nullable(dArticle.Id); Dto.SetArticleReadStatusDto.SetIsReadTo = Nullable(true) }
 
         let! response = HttpClient.postAsync "/article/setreadstatus" command client
         response.EnsureSuccessStatusCode() |> ignore

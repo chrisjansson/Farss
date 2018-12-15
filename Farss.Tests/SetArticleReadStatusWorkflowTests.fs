@@ -17,6 +17,10 @@ module Expect =
         let actualArticle = articleRepository.getAll() |> List.find (fun a -> a.Id = article.Id)
         Expect.isTrue actualArticle.IsRead "Article should be read"
 
+    let articleToBeUnread (article: Article) (articleRepository: ArticleRepository) =
+        let actualArticle = articleRepository.getAll() |> List.find (fun a -> a.Id = article.Id)
+        Expect.isFalse actualArticle.IsRead "Article should not be read"
+
     let invalidParameter (result: Result<_,WorkflowError>) invalidParameters =
         match result with 
         | Error (InvalidParameter actualParameters) -> Expect.equal actualParameters invalidParameters "Invalid parameters"
@@ -41,31 +45,52 @@ let tests =
             "Fails when no id is given", fun ar -> async {
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable() }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(); SetIsReadTo = Nullable(true) }
                 let result = workflow command
             
                 Expect.invalidParameter result [ "ArticleId" ]
             }
 
+            "Fails when no SetIsReadTo is given", fun ar -> async {
+                
+                let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(Guid.NewGuid()); SetIsReadTo = Nullable() }
+                let result = workflow command
+            
+                Expect.invalidParameter result [ "SetIsReadTo" ]
+            }
+    
             "Fails when article does not exist", fun ar -> async {
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(Guid.NewGuid()) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(Guid.NewGuid()); SetIsReadTo = Nullable(true) }
                 let result = workflow command
 
                 Expect.error result ArticleNotFound
             }
+
             "Sets article to read", fun (ar: ArticleRepository) -> async {
                 let article = Build.article()
                 ar.save article
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(article.Id) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(article.Id); SetIsReadTo = Nullable(true) }
                 let result = workflow command
             
                 Expect.articleToBeRead article ar
                 Expect.isOk result "Request was successful"
             }
-            //set unread
+
+            "Sets article to unread", fun (ar: ArticleRepository) -> async {
+                let article = Build.article()
+                ar.save article
+                
+                let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(article.Id); SetIsReadTo = Nullable(false) }
+                let result = workflow command
+            
+                Expect.articleToBeUnread article ar
+                Expect.isOk result "Request was successful"
+            }
         ]
 
         yield! testFixtureAsync setup tests
