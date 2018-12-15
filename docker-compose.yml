@@ -1,0 +1,16 @@
+version: '3'
+services:
+  farss:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - postgres__username=postgres
+      - postgres__password=postgres
+      - postgres__host=postgres
+      - postgres__database=postgres
+  postgres:
+    image: postgres:11.1
+    environment: 
+      - POSTGRES_PASSWORD=postgres
+  
