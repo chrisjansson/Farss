@@ -6,7 +6,9 @@
 
   <ItemGroup>
     <Compile Include="CoreTypes.fs" />
+    <Compile Include="Reflection.fs" />
     <Compile Include="Result.fs" />
+    <Compile Include="ResultBuilder.fs" />
     <Compile Include="Async.fs" />
     <Compile Include="AsyncResult.fs" />
     <Compile Include="Task.fs" />
@@ -14,6 +16,7 @@
     <Compile Include="Operation.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="Persistence.fs" />
+    <Compile Include="DtoValidation.fs" />
     <Compile Include="Dto.fs" />
     <Compile Include="FeedReaderAdapter.fs" />
     <Compile Include="GiraffeUtils.fs" />

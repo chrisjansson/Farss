@@ -4,8 +4,8 @@ open Persistence
 open Dto
 open Domain
 
-let convertToWorkflowError (): WorkflowError =
-    InvalidParameter <| List.singleton "Invalid id"
+let convertToWorkflowError e: WorkflowError =
+    InvalidParameter [e]
     
 let deleteSubscription (repository: SubscriptionRepository) (dto: DeleteSubscriptionDto) =
     let command = DeleteSubscriptionDto.toCommand dto

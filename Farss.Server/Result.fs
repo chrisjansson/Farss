@@ -1,4 +1,5 @@
-﻿module Result
+﻿[<RequireQualifiedAccess>]
+module Result
 
 let tee (f: 'T -> unit) (r: Result<'T, _>)  =
     match r with
