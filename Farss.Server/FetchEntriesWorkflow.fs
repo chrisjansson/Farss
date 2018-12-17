@@ -29,6 +29,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
                 Title = item.Title; 
                 Content = item.Content
                 IsRead = false
+                PublishedAt = DateTimeOffset.MinValue //todo: parse from feed
             }
         
         let createArticles = List.map createArticle

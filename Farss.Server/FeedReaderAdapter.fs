@@ -47,7 +47,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
             let items = 
                 feed.Items 
-                |> Seq.map (fun item -> { Item.Title = item.Title; Id = item.Id; Content = item.Content })
+                |> Seq.map (fun item -> { Item.Title = item.Title; Id = item.Id; Content = item.Content;  })
                 |> List.ofSeq
 
             { 

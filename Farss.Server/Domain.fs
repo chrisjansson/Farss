@@ -17,6 +17,7 @@ type Article =
         Subscription: SubscriptionId
         Content: string
         IsRead: bool
+        PublishedAt: DateTimeOffset
     }
 and ArticleId = Guid
 

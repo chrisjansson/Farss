@@ -11,6 +11,8 @@ type SubscriptionDto =
 type ArticleDto =
     {
         Title: string
+        IsRead: bool
+        PublishedAt: DateTimeOffset
     }
 
 module SubscriptionDto = 
