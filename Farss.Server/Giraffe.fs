@@ -6,10 +6,10 @@ let createWebApp () =
     choose [
         route "/ping"   >=> text "pong"
         route "/"       >=> htmlFile "/pages/index.html"
-        route "/feeds" >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
-        route "/feeds" >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
-        route "/subscription/delete" >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
-        route "/poll" >=> POST >=> FetchEntriesHandler.fetchEntriesHandler
-        route "/articles" >=> GET >=> GetArticlesHandler.getArticlesHandler
-        route "/article/setreadstatus" >=> POST >=> SetArticleReadStatusHandler.setArticleReadStatusHandler
-        ]
+        route ApiUrls.SubscribeToFeed >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
+        route ApiUrls.GetSubscriptions >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
+        route ApiUrls.DeleteSubscription >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
+        route ApiUrls.PollSubscriptions >=> POST >=> FetchEntriesHandler.fetchEntriesHandler
+        route ApiUrls.GetArticles >=> GET >=> GetArticlesHandler.getArticlesHandler
+        route ApiUrls.SetArticleReadStatus >=> POST >=> SetArticleReadStatusHandler.setArticleReadStatusHandler
+    ]

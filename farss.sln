@@ -30,6 +30,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Farss.Client", "Farss.Clien
 		SlnRelativePath = "Farss.Client\"
 	EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Farss.Shared", "Farss.Shared\Farss.Shared.fsproj", "{0EF93417-2205-41E0-A16E-2A1F845DE6BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,18 @@ Global
 		{AF2CA6D0-68A7-427B-A5A8-AB2C85EED5E0}.Release|x64.Build.0 = Debug|Any CPU
 		{AF2CA6D0-68A7-427B-A5A8-AB2C85EED5E0}.Release|x86.ActiveCfg = Debug|Any CPU
 		{AF2CA6D0-68A7-427B-A5A8-AB2C85EED5E0}.Release|x86.Build.0 = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|x64.Build.0 = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Debug|x86.Build.0 = Debug|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|x64.ActiveCfg = Release|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|x64.Build.0 = Release|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|x86.ActiveCfg = Release|Any CPU
+		{0EF93417-2205-41E0-A16E-2A1F845DE6BE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
