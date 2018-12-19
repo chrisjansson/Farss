@@ -7,7 +7,7 @@ open Fable.Helpers.React.Props
 
 type Model =
     | Loading
-    | Loaded of exn * exn
+    | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
 
 type Msg = 
     | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
@@ -51,6 +51,9 @@ module Cmd =
                 executeTask task arg dispatch |> ignore
         [bind]
 
+let alert (message: string) =
+    Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
+
 let init(): Model * Cmd<Msg> = 
     let loadSubsAndArticles () = 
         ApiClient.getSubscriptions ()
@@ -60,7 +63,9 @@ let init(): Model * Cmd<Msg> =
     Loading, cmd
 
 let update (msg:Msg) (model:Model) =
-    model, Cmd.none
+    match msg with
+    | Loaded (subs, articles) -> Model.Loaded (subs, articles), Cmd.none
+    | LoadingError _ -> model, (alert "Datta loading error hurr durr")
 
 let view (model:Model) dispatch =
   div []
