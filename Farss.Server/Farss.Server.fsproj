@@ -17,7 +17,7 @@
     <Compile Include="Domain.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="DtoValidation.fs" />
-    <Compile Include="Dto.fs" />
+    <Compile Include="Serialization.fs" />
     <Compile Include="FeedReaderAdapter.fs" />
     <Compile Include="GiraffeUtils.fs" />
     <Compile Include="SubscribeToFeedWorkflow.fs" />

@@ -1,26 +1,9 @@
-﻿module Dto
-
-open System
-
-type SubscriptionDto =
-    {
-        Id: Guid
-        Url: string
-    }
-
-type ArticleDto =
-    {
-        Title: string
-        IsRead: bool
-        PublishedAt: DateTimeOffset
-    }
+﻿namespace Dto
 
 module SubscriptionDto = 
+
     let toDto (feed: Domain.Subscription): SubscriptionDto = { Id = feed.Id; Url = feed.Url }
 
-type DeleteSubscriptionDto = { Id: Nullable<Guid> }
-
-type SetArticleReadStatusDto = { ArticleId: Nullable<Guid>; SetIsReadTo: Nullable<bool> }
 
 module DeleteSubscriptionDto =
     open Domain

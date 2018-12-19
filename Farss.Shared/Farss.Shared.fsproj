@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Dto.fs" />
     <Compile Include="ApiUrls.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
+
+  <ItemGroup />
 
 </Project>

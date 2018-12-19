@@ -3,6 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../Farss.Shared/Dto.fs" />
+    <Compile Include="../../Farss.Shared/ApiUrls.fs" />
+    <Compile Include="ApiClient.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>

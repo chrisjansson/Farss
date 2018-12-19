@@ -1,8 +1,8 @@
 ﻿module DeleteSubscriptionWorkflow
 
 open Persistence
-open Dto
 open Domain
+open Dto
 
 let convertToWorkflowError e: WorkflowError =
     InvalidParameter [e]
