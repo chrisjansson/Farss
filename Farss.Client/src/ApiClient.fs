@@ -13,7 +13,7 @@ let getSubscriptions () =
     Fetch.tryFetchAs ApiUrls.GetSubscriptions decoder []
     
 let deleteSubscription (dto: Dto.DeleteSubscriptionDto) =
-    Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []
+    Fetch.tryPostRecord ApiUrls.DeleteSubscription dto []
     |> Promise.mapResult ignore
 
 let getArticles () =

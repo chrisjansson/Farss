@@ -18,12 +18,12 @@ let tests =
     testList "delete subscription tests"  [
         let cases = [
             "fails when no id is given", fun r -> 
-                let command: Dto.DeleteSubscriptionDto = { Id = Nullable() }
+                let command: Dto.DeleteSubscriptionDto = { Id = None }
                 let result = DeleteSubscriptionWorkflow.deleteSubscription r command
                 Expect.isError result "Should fail when id is not given"
 
             "fails with InvalidParameter when no id is given", fun r -> 
-                let command: Dto.DeleteSubscriptionDto = { Id = Nullable() }
+                let command: Dto.DeleteSubscriptionDto = { Id = None }
                 let result = DeleteSubscriptionWorkflow.deleteSubscription r command
                 Expect.expectInvalidParameter result
 
@@ -33,7 +33,7 @@ let tests =
                 r.save subscription
                 r.save subscription2
 
-                let command: Dto.DeleteSubscriptionDto = { Id = Nullable(subscription.Id) }
+                let command: Dto.DeleteSubscriptionDto = { Id = Some subscription.Id }
                 let result = DeleteSubscriptionWorkflow.deleteSubscription r command
                 
                 Expect.isOk result "should delete feed ok"

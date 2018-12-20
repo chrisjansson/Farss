@@ -20,6 +20,6 @@ type ArticleDto =
         PublishedAt: DateTimeOffset
     }
 
-type DeleteSubscriptionDto = { Id: Nullable<Guid> }
+type DeleteSubscriptionDto = { Id: Guid option }
 
 type SetArticleReadStatusDto = { ArticleId: Nullable<Guid>; SetIsReadTo: Nullable<bool> }

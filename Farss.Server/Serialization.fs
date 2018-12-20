@@ -11,7 +11,7 @@ module DeleteSubscriptionDto =
     open Reflection
 
     let toCommand (dto: DeleteSubscriptionDto): Result<DeleteSubscriptionCommand, string> = result {
-        let! id = Nullable.value (nameof <@ dto.Id @>) dto.Id
+        let! id = Option.value (nameof <@ dto.Id @>) dto.Id
         return { DeleteSubscriptionCommand.Id = id }
     }
 

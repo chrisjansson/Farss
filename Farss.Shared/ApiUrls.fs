@@ -1,19 +1,19 @@
 ﻿module ApiUrls
 
 [<Literal>]
-let SubscribeToFeed = "/feeds"
+let SubscribeToFeed = "/api/feeds"
 
 [<Literal>]
-let GetSubscriptions = "/feeds"
+let GetSubscriptions = "/api/feeds"
 
 [<Literal>]
-let DeleteSubscription = "/subscription/delete"
+let DeleteSubscription = "/api/subscription/delete"
 
 [<Literal>]
-let PollSubscriptions = "/poll"
+let PollSubscriptions = "/api/poll"
 
 [<Literal>]
-let GetArticles = "/articles"
+let GetArticles = "/api/articles"
 
 [<Literal>]
-let SetArticleReadStatus = "/article/setreadstatus"
+let SetArticleReadStatus = "/api/article/setreadstatus"

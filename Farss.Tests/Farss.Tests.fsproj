@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Farss.Server\Farss.Server.fsproj" />
+    <ProjectReference Include="..\Farss.Shared\Farss.Shared.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.appveyor.json">

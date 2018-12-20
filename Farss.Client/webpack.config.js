@@ -14,6 +14,9 @@ module.exports = {
     devServer: {
         contentBase: "./public",
         port: 8080,
+        proxy: {
+            "/api": "http://localhost:5000"
+        }
     },
     module: {
         rules: [{
