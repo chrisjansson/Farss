@@ -6,6 +6,7 @@
     <Compile Include="../../Farss.Shared/Dto.fs" />
     <Compile Include="../../Farss.Shared/ApiUrls.fs" />
     <Compile Include="ApiClient.fs" />
+    <Compile Include="Cmd.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>

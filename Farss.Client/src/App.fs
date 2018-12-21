@@ -35,29 +35,6 @@ module PromiseResult =
         | Error e -> return Error e
     }    
 
-module Cmd =
-    let ofPromiseResult 
-        (task: 'arg -> Fable.Import.JS.Promise<Result<'a, 'e>>) 
-        (arg: 'arg) (onSuccess: 'a -> 'msg) 
-        (onError: 'e -> 'msg)
-        : Cmd<'msg>  =
-        let executeTask task arg dispatch = promise {
-                let! result = task arg
-                match result with
-                | Ok r -> 
-                    let m = onSuccess r
-                    dispatch m
-                | Error e ->
-                    let m = onError e
-                    dispatch m
-            }
-            
-        let bind: Sub<'msg> = 
-            fun dispatch ->
-                executeTask task arg dispatch |> ignore
-        [bind]
-
-
 module GuiCmd =
     let loadSubsAndArticles =
         let inner () = 
@@ -78,7 +55,6 @@ let init(): Model * Cmd<Msg> =
     let cmd = GuiCmd.loadSubsAndArticles
     Loading, cmd
 
-
 let update (msg:Msg) (model:Model) =
     match msg with
     | Loaded (subs, articles) -> Model.Loaded (subs, articles), Cmd.none
@@ -89,6 +65,7 @@ let update (msg:Msg) (model:Model) =
     | SubscriptionDeleted ->
         init()
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
+
 let renderLoading () = 
     div [] [ str "Loading..." ]
 
