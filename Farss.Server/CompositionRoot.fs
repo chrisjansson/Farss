@@ -13,10 +13,6 @@ type IServiceCollection with
         for service in source do    
             x.Add(service)
         x
-type Canary() =
-    interface IDisposable with 
-        member this.Dispose() =
-            ()
 
 let createCompositionRoot (connectionString: PostgresConnectionString): IServiceCollection =
     let services = ServiceCollection()
@@ -51,9 +47,6 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
 
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
-    //todo: remove
-    services.AddSingleton<Canary>(fun _ -> new Canary()) |> ignore
-
-    services.AddSingleton<Giraffe.Serialization.Json.IJsonSerializer>(Thoth.Json.Giraffe.ThothSerializer())
+    services.AddSingleton<Giraffe.Serialization.Json.IJsonSerializer>(Thoth.Json.Giraffe.ThothSerializer()) |> ignore
 
     services :> IServiceCollection
