@@ -57,36 +57,38 @@ module Cmd =
                 executeTask task arg dispatch |> ignore
         [bind]
 
-let alert (message: string) =
-    Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
-
 
 module GuiCmd =
-    let loadSubsAndArticles () = 
-        ApiClient.getSubscriptions ()
-        |> PromiseResult.bind(fun r -> ApiClient.getArticles () |> PromiseResult.map (fun r2 -> r, r2))
+    let loadSubsAndArticles =
+        let inner () = 
+            ApiClient.getSubscriptions ()
+            |> PromiseResult.bind(fun r -> ApiClient.getArticles () |> PromiseResult.map (fun r2 -> r, r2))
+
+        Cmd.ofPromiseResult inner () Msg.Loaded Msg.LoadingError
 
     let deleteSubscription (id: Guid) =
         let dto: Dto.DeleteSubscriptionDto = { Id = Some id }
-        ApiClient.deleteSubscription dto 
-        
+        Cmd.ofPromiseResult ApiClient.deleteSubscription dto (fun _ -> SubscriptionDeleted) SubscriptionDeleteFailed
+
+    let alert (message: string) =
+        Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
 
 let init(): Model * Cmd<Msg> = 
     
-    let cmd = Cmd.ofPromiseResult GuiCmd.loadSubsAndArticles () Msg.Loaded Msg.LoadingError
+    let cmd = GuiCmd.loadSubsAndArticles
     Loading, cmd
 
 
 let update (msg:Msg) (model:Model) =
     match msg with
     | Loaded (subs, articles) -> Model.Loaded (subs, articles), Cmd.none
-    | LoadingError _ -> model, (alert "Datta loading error hurr durr")
+    | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
-        let cmd = Cmd.ofPromiseResult GuiCmd.deleteSubscription id (fun _ -> SubscriptionDeleted) SubscriptionDeleteFailed
+        let cmd = GuiCmd.deleteSubscription id
         Loading, cmd
     | SubscriptionDeleted ->
         init()
-    | SubscriptionDeleteFailed _ -> model, (alert "Subscription delete failed")
+    | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
 let renderLoading () = 
     div [] [ str "Loading..." ]
 
