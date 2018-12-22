@@ -66,12 +66,6 @@ let update (msg:Msg) (model:Model) =
         init()
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
 
-let renderLoading () = 
-    div [] [ str "Loading..." ]
-
-let onClick dispatch msg =
-    OnClick (fun _ -> dispatch msg)
-
 module HTML =
     type Attr<'msg> = 
         | OnClick of 'msg
@@ -104,28 +98,44 @@ module HTML =
     let fragment () (elements: Html<'msg> seq): Html<'msg> =
         fun d -> R.fragment [] (applyDispatch elements d)
 
-let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) dispatch =
+    let str (str: string): Html<'msg> =
+        fun _ -> R.str str
+
+    let div (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+        fun d -> R.div (convertToProps props d) (applyDispatch children d)
+        
+    let h1 (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+        fun d -> R.h1 (convertToProps props d) (applyDispatch children d)
+
+    let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
+        html dispatch
+
+        
+let renderLoading () = 
+    HTML.div [] [ HTML.str "Loading..."  ]
+
+let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
     let subscriptions, articles = model
     
-    let renderSubscription (subscription: SubscriptionDto) dispatch =
-        div [] [
-            str subscription.Url
-            input [ Type "button"; Value "x"; onClick dispatch (DeleteSubscription subscription.Id)  ] 
+    let renderSubscription (subscription: SubscriptionDto) =
+        HTML.div [] [
+            HTML.str subscription.Url
+            HTML.input [ HTML.Attr.Type "button"; HTML.Attr.Value "x"; HTML.Attr.OnClick (DeleteSubscription subscription.Id)  ] 
         ]
         
     let renderArticle (article: ArticleDto) =
-        str article.Title
+        HTML.str article.Title
 
-    div [] [
-        div [] [
-            h1 [] [str "Subscriptions"]
-            fragment [] [
-                yield! subscriptions |> List.map (fun s -> renderSubscription s dispatch)
+    HTML.div [] [
+        HTML.div [] [
+            HTML.h1 [] [HTML.str "Subscriptions"]
+            HTML.fragment () [
+                yield! subscriptions |> List.map (fun s -> renderSubscription s)
             ]
         ] 
-        div [] [
-            h1 [] [str "Articles"]
-            fragment [] [
+        HTML.div [] [
+            HTML.h1 [] [HTML.str "Articles"]
+            HTML.fragment () [
                 yield! articles |> List.map renderArticle
             ]
         ]
@@ -133,8 +143,8 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) dispa
 
 let view (model:Model) dispatch =
     match model with
-    | Loading -> renderLoading ()
-    | Model.Loaded (subs, articles) -> renderLoaded (subs, articles) dispatch
+    | Loading -> HTML.run (renderLoading ()) dispatch
+    | Model.Loaded (subs, articles) -> HTML.run (renderLoaded (subs, articles)) dispatch
 
 Program.mkProgram init update view
     |> Program.withReact "elmish-app"
