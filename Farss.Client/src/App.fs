@@ -4,6 +4,7 @@ open System
 open Elmish
 open Elmish.React
 open Dto
+open Html
 
 type Model =
     | Loading
@@ -65,30 +66,30 @@ let update (msg:Msg) (model:Model) =
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
 
 let renderLoading () = 
-    Html.div [] [ Html.str "Loading..."  ]
+    div [] [ str "Loading..."  ]
 
 let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
     let subscriptions, articles = model
     
     let renderSubscription (subscription: SubscriptionDto) =
-        Html.div [] [
-            Html.str subscription.Url
-            Html.input [ Html.Attr.Type "button"; Html.Attr.Value "x"; Html.Attr.OnClick (DeleteSubscription subscription.Id)  ] 
+        div [] [
+            str subscription.Url
+            input [ Attr.Type "button"; Attr.Value "x"; Attr.OnClick (DeleteSubscription subscription.Id)  ] 
         ]
         
     let renderArticle (article: ArticleDto) =
-        Html.str article.Title
+        str article.Title
 
-    Html.div [] [
-        Html.div [] [
-            Html.h1 [] [Html.str "Subscriptions"]
-            Html.fragment () [
+    div [] [
+        div [] [
+            h1 [] [str "Subscriptions"]
+            fragment () [
                 yield! subscriptions |> List.map (fun s -> renderSubscription s)
             ]
         ] 
-        Html.div [] [
-            Html.h1 [] [Html.str "Articles"]
-            Html.fragment () [
+        div [] [
+            h1 [] [str "Articles"]
+            fragment () [
                 yield! articles |> List.map renderArticle
             ]
         ]
