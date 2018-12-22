@@ -17,3 +17,6 @@ let deleteSubscription (id: Guid) =
 
 let alert (message: string) =
     Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
+
+let poll =    
+    Cmd.ofPromiseResult ApiClient.poll () (fun _ -> Msg.Reload) (fun e -> Msg.LoadingError (e.ToString()))

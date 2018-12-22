@@ -13,3 +13,5 @@ type Msg =
     | DeleteSubscription of Guid
     | SubscriptionDeleted
     | SubscriptionDeleteFailed of exn
+    | Poll
+    | Reload

@@ -21,6 +21,8 @@ let update (msg:Msg) (model:Model) =
     | SubscriptionDeleted ->
         init()
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
+    | Poll -> model, GuiCmd.poll
+    | Reload -> Loading, GuiCmd.loadSubsAndArticles
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]
@@ -35,9 +37,14 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
         ]
         
     let renderArticle (article: ArticleDto) =
-        str article.Title
-
+        div [] [
+            str article.Title
+        ]
+        
     div [] [
+        div [] [
+            input [ _type "button"; value "Poll"; onClick Poll ]
+        ]
         div [] [
             h1 [] [str "Subscriptions"]
             fragment () [

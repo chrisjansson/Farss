@@ -23,3 +23,6 @@ let getArticles () =
 let setArticleReadStatus (dto: Dto.SetArticleReadStatusDto) =
     Fetch.tryPostRecord ApiUrls.SetArticleReadStatus dto []
     |> Promise.mapResult ignore
+
+let poll () =
+    Fetch.tryPostRecord ApiUrls.PollSubscriptions () [] |> Promise.mapResult ignore
