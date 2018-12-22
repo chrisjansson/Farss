@@ -5,52 +5,9 @@ open Elmish
 open Elmish.React
 open Dto
 open Html
-
-type Model =
-    | Loading
-    | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
-
-type Msg = 
-    | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
-    | LoadingError of string
-        //todo: change for domain alias
-    | DeleteSubscription of Guid
-    | SubscriptionDeleted
-    | SubscriptionDeleteFailed of exn
-
-module PromiseResult =
-    let map f p = promise {
-        let! res = p
-        return 
-            match res with
-            | Ok v -> Ok (f v)
-            | Error e -> Error e
-    }
-
-    let bind f p = promise {
-        let! res = p
-        match res with
-        | Ok v -> return! f v
-        | Error e -> return Error e
-    }    
-
-module GuiCmd =
-    let loadSubsAndArticles =
-        let inner () = 
-            ApiClient.getSubscriptions ()
-            |> PromiseResult.bind(fun r -> ApiClient.getArticles () |> PromiseResult.map (fun r2 -> r, r2))
-
-        Cmd.ofPromiseResult inner () Msg.Loaded Msg.LoadingError
-
-    let deleteSubscription (id: Guid) =
-        let dto: Dto.DeleteSubscriptionDto = { Id = Some id }
-        Cmd.ofPromiseResult ApiClient.deleteSubscription dto (fun _ -> SubscriptionDeleted) SubscriptionDeleteFailed
-
-    let alert (message: string) =
-        Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
+open Model
 
 let init(): Model * Cmd<Msg> = 
-    
     let cmd = GuiCmd.loadSubsAndArticles
     Loading, cmd
 

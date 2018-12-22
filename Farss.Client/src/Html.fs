@@ -5,7 +5,6 @@ module R = Fable.Helpers.React
 module Props = Fable.Helpers.React.Props
 type IHTMLProp = Props.IHTMLProp
 
-
 type Attr<'msg> = 
     | OnClick of 'msg
     | Type of string
@@ -28,16 +27,14 @@ let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) 
 let applyDispatch (elements: Html<'msg> seq) (dispatch: Dispatch<'msg>) = 
     Seq.map (fun e -> e dispatch) elements
 
-let input (props: Attr<'msg> seq): Html<'msg> =
-    fun d ->
-        let props = convertToProps props d
-        R.input props
-
 let fragment () (elements: Html<'msg> seq): Html<'msg> =
     fun d -> R.fragment [] (applyDispatch elements d)
 
 let str (str: string): Html<'msg> =
     fun _ -> R.str str
+    
+let input (props: Attr<'msg> seq): Html<'msg> =
+    fun d -> R.input (convertToProps props d)
 
 let div (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.div (convertToProps props d) (applyDispatch children d)
