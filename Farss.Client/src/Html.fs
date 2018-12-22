@@ -11,7 +11,9 @@ type Attr<'msg> =
     | Type of string
     | Value of string
 
-let onClick msg = OnClick msg
+let onClick = OnClick
+let _type = Type
+let value = Value
 
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 

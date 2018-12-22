@@ -74,7 +74,7 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
     let renderSubscription (subscription: SubscriptionDto) =
         div [] [
             str subscription.Url
-            input [ Attr.Type "button"; Attr.Value "x"; Attr.OnClick (DeleteSubscription subscription.Id)  ] 
+            input [ _type "button"; value "x"; onClick (DeleteSubscription subscription.Id)  ] 
         ]
         
     let renderArticle (article: ArticleDto) =
@@ -84,7 +84,7 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
         div [] [
             h1 [] [str "Subscriptions"]
             fragment () [
-                yield! subscriptions |> List.map (fun s -> renderSubscription s)
+                yield! subscriptions |> List.map renderSubscription
             ]
         ] 
         div [] [
