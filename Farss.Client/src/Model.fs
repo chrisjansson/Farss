@@ -4,7 +4,13 @@ open System
 
 type Model =
     | Loading
-    | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
+    | Loaded of Loaded
+and Loaded =
+    {
+        Articles: Dto.ArticleDto list
+        Subscriptions: Dto.SubscriptionDto list
+        SubInput: string
+    }
 
 type Msg = 
     | Loaded of Dto.SubscriptionDto list * Dto.ArticleDto list
@@ -15,3 +21,4 @@ type Msg =
     | SubscriptionDeleteFailed of exn
     | Poll
     | Reload
+    | OnChangeSub of string

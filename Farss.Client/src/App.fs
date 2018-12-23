@@ -13,7 +13,7 @@ let init(): Model * Cmd<Msg> =
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded (subs, articles), Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = "" }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id
@@ -23,12 +23,17 @@ let update (msg:Msg) (model:Model) =
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
     | Poll -> model, GuiCmd.poll
     | Reload -> Loading, GuiCmd.loadSubsAndArticles
+    | OnChangeSub str -> 
+        match model with 
+        | Model.Loaded l ->
+            Model.Loaded ({ l with SubInput = str }), Cmd.none
+        | _ -> model, Cmd.none
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]
 
-let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
-    let subscriptions, articles = model
+let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * string)) =
+    let subscriptions, articles, inp = model
     
     let renderSubscription (subscription: SubscriptionDto) =
         div [] [
@@ -47,6 +52,10 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
         ]
         div [] [
             h1 [] [str "Subscriptions"]
+            div [] [
+                str "Add"
+                input [ onInput OnChangeSub; value inp ]
+            ]
             fragment () [
                 yield! subscriptions |> List.map renderSubscription
             ]
@@ -62,7 +71,7 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list)) =
 let view (model:Model) dispatch =
     match model with
     | Loading -> Html.run (renderLoading ()) dispatch
-    | Model.Loaded (subs, articles) -> Html.run (renderLoaded (subs, articles)) dispatch
+    | Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = s } -> Html.run (renderLoaded (subs, articles, s)) dispatch
 
 Program.mkProgram init update view
     |> Program.withReact "elmish-app"
