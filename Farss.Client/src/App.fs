@@ -68,55 +68,6 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * strin
         ]
     ]
 
-//    <nav class="navbar" role="navigation" aria-label="main navigation">
-
-//  <div id="navbarBasicExample" class="navbar-menu">
-//    <div class="navbar-start">
-
-//      <a class="navbar-item">
-//        Documentation
-//      </a>
-
-//      <div class="navbar-item has-dropdown is-hoverable">
-//        <a class="navbar-link">
-//          More
-//        </a>
-
-//        <div class="navbar-dropdown">
-//          <a class="navbar-item">
-//            About
-//          </a>
-//          <a class="navbar-item">
-//            Jobs
-//          </a>
-//          <a class="navbar-item">
-//            Contact
-//          </a>
-//          <hr class="navbar-divider">
-//          <a class="navbar-item">
-//            Report an issue
-//          </a>
-//        </div>
-//      </div>
-//    </div>
-
-//    <div class="navbar-end">
-//      <div class="navbar-item">
-//        <div class="buttons">
-//          <a class="button is-primary">
-//            <strong>Sign up</strong>
-//          </a>
-//          <a class="button is-light">
-//            Log in
-//          </a>
-//        </div>
-//      </div>
-//    </div>
-
-
-//  </div>
-//</nav>
-
 module Nav =    
     open Fulma
     open Fable.Helpers.React
@@ -126,14 +77,15 @@ module Nav =
 
     let nav (isOpen: bool) dispatch =
         let brandLogo _ =
-            Navbar.Item.a [ Navbar.Item.Option.Props [(P.Href "https://bulma.io")] ] [
-                    R.img [ P.Src "https://bulma.io/images/bulma-logo.png"; P.Style [ P.CSSProp.Width "112px"; P.CSSProp.Height "28px"] ]
+            Navbar.Item.a [ Navbar.Item.Props [ (P.Href "/") ]; Navbar.Item.CustomClass "has-text-white has-text-weight-bold" ] [
+                unbox "FARSS"
             ]
 
         let burger _ =
             let classes = R.classList [
                 "is-active", isOpen
                 "navbar-burger", true
+                "has-text-white", true
             ]
 
             let click = P.OnClick (fun _ -> dispatch ())
@@ -144,11 +96,7 @@ module Nav =
                 R.span [] [] 
             ]
 
-        let classes = R.classList [
-            "is-active", isOpen
-        ]
-
-        Navbar.navbar [] [
+        Navbar.navbar [ Navbar.CustomClass "has-background-primary" ] [
             Navbar.Brand.div [] [
                 brandLogo ()
                 burger ()
@@ -156,10 +104,13 @@ module Nav =
 
             Navbar.menu [ 
                 if isOpen then
-                    yield Navbar.Menu.Option.CustomClass "is-active"
+                    yield Navbar.Menu.CustomClass "is-active"
             ] [
                 Navbar.Start.div [] [
-                    Navbar.Item.a [] [ unbox "Home" ]
+                    Navbar.Item.a [ 
+                        if not isOpen then
+                            yield Navbar.Item.CustomClass "has-text-white"
+                    ] [ unbox "Home" ]
                 ]
             ]
         ]
