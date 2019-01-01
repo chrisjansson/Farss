@@ -7,10 +7,100 @@
     <link rel="shortcut icon" href="fable.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    
+    <style type="text/css">
+
+        html {
+            height: 100%
+        }
+
+        body {
+            height: 100%
+        }
+
+        .root-grid {
+            height: 100%;
+
+            display: grid;
+            grid-template-areas: "head toolbar"
+                                 "left-pane main";
+            grid-template-rows: auto 1fr;
+            grid-template-columns: 200px 1fr;
+        }
+
+        .head {
+            grid-area: head;  
+        }
+
+        .toolbar {
+            grid-area: toolbar;
+        }
+
+        .left-pane {
+            grid-area: left-pane;
+            border-right: 2px solid hsl(0, 0%, 86%);
+
+            padding: 1rem;
+        }
+
+        .feed-header {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .main {
+            grid-area: main;
+        }
+
+        .feeds-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feed-container {
+            display: flex;
+            flex-direction: row;
+            padding-bottom: 0.3rem;
+        }
+
+        .feed-header2 {
+            flex: 1;
+        }
+
+        .feed-unread-badge {
+            flex: 0 0 auto;
+        }
+
+        .truncate {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
 
-<div id="elmish-app" class="elmish-app"></div>
-<script src="bundle.js"></script>
+<!--<div id="elmish-app" class="elmish-app"></div>-->
+<!--<script src="bundle.js"></script>-->
+<div class="root-grid">
+    <div class="head has-background-info"><h4 class="title is-4 navbar-item has-text-white">Farss</h4></div>
+    <div class="toolbar has-background-info"></div>
+    <div class="left-pane">
+        <div>
+            <h4 class="has-text-weight-semibold feed-header">Feeds</h4>
+        </div>
+        <div class="feeds-container">
+            <div class="feed-container">
+                <span class="has-text-weight-semibold feed-header2 truncate">Feed 1 asd asd asd </span>
+                <span class="tag is-info has-text-weight-semibold">123</span>
+            </div>
+            <div class="feed-container">
+                <span class="has-text-weight-semibold feed-header2 truncate">Feed 2 dsa dsaas asda sd</span>
+                <span class="tag is-info has-text-weight-semibold">200000</span>
+            </div>
+        </div>
+    </div>
+    <div class="main"></div>
+</div>
 </body>
 </html>
