@@ -22,3 +22,6 @@ type Msg =
     | Poll
     | Reload
     | OnChangeSub of string
+    | AddSubscription
+    | SubscriptionSucceeded
+    | SubscriptionFailed of exn
