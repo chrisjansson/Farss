@@ -1,12 +1,11 @@
 ﻿module CompositionRoot
 
 open Postgres
-open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Marten
 open Giraffe
 open Persistence
-open System
+open Microsoft.Extensions.Hosting
 
 type IServiceCollection with    
     member x.Add(source: IServiceCollection) =
@@ -48,5 +47,7 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
     services.AddSingleton<Giraffe.Serialization.Json.IJsonSerializer>(Thoth.Json.Giraffe.ThothSerializer()) |> ignore
+
+    services.AddSingleton<IHostedService, FetchArticlesHostedService.FetchArticlesHostedService>() |> ignore
 
     services :> IServiceCollection
