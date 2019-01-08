@@ -12,7 +12,7 @@ module Types =
         Title: string
         Description: string option
         Items:  Item list }
-    and Item = { Title: string; Id: string option; Content: string option }
+    and Item = { Title: string; Id: string option; Content: string option; PublishingDate: DateTimeOffset option }
 
 type StringWriterWithEncoding(encoding: System.Text.Encoding) =
     inherit System.IO.StringWriter()
@@ -22,13 +22,16 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 let feedItem (title: string) = SyndicationItem(Title = title)
 
 let feedItem2 (title: string) = 
-    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None }
+    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None }
 
 let withId (id: string) (item: Types.Item) = 
     { item with Types.Item.Id = Some id }
     
 let withContent (content: string) (item: Types.Item) = 
     { item with Types.Item.Content = Some content }
+
+let withPublishingDate (publishingDate: DateTimeOffset) (item: Types.Item) =
+    { item with Types.Item.PublishingDate = Some publishingDate }
 
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description

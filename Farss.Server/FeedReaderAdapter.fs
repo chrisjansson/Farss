@@ -18,6 +18,7 @@ and Item =
         Title: string
         Id: string
         Content: string
+        Timestamp: DateTimeOffset option
     }
 
 type FeedReaderAdapter = 
@@ -44,10 +45,12 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
         let parseBytes (bytes: byte[]) = FeedReader.ReadFromByteArray(bytes)
         let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
+
+
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
             let items = 
                 feed.Items 
-                |> Seq.map (fun item -> { Item.Title = item.Title; Id = item.Id; Content = item.Content;  })
+                |> Seq.map (fun item -> { Item.Title = item.Title; Id = item.Id; Content = item.Content; Timestamp = Option.ofNullable item.PublishingDate |> Option.map (fun x -> DateTimeOffset(x)) })
                 |> List.ofSeq
 
             { 

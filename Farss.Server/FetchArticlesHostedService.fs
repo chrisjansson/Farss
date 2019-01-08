@@ -8,7 +8,6 @@ open FSharp.Control.Tasks.V2
 
 let Interval = 10 * 60 * 1000
 
-
 //todo: Add durability
 type FetchArticlesHostedService(serviceProvider: IServiceProvider) =
     inherit BackgroundService()

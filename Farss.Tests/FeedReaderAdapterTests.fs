@@ -4,6 +4,7 @@ open Expecto
 open FeedBuilder
 open TestStartup
 open FeedReaderAdapter
+open System
 
 let unbox r =
     match r with
@@ -30,7 +31,11 @@ let tests =
             "Parses feed item", fun (f: InMemoryFeedReader) -> async {
                 let content = 
                     feed "title" 
-                    |> withItem (feedItem2 "item 1" |> withId "a guid" |> withContent "content for item 1")
+                    |> withItem (
+                        feedItem2 "item 1" 
+                        |> withId "a guid" 
+                        |> withContent "content for item 1" 
+                        |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero)))
                     |> withItem (feedItem2 "item 2" |> withId "item 2 guid" |> withContent "content for item 2")
                     |> toAtom
 
@@ -42,8 +47,8 @@ let tests =
                 Expect.equal 
                     unboxed.Items 
                     [
-                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1" }
-                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2" } 
+                        { Item.Title = "item 1"; Id = "a gu id"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
+                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = None } 
                     ] 
                     "Feed items"
             }
