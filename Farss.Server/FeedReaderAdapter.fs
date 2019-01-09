@@ -2,6 +2,7 @@ module FeedReaderAdapter
 
 open CodeHollow.FeedReader
 open System
+open CodeHollow.FeedReader.Feeds
 
 type  FeedError =
     | FetchError of Exception
@@ -46,11 +47,29 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let parseBytes (bytes: byte[]) = FeedReader.ReadFromByteArray(bytes)
         let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
 
-
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
+        
+            let mapItem (item: FeedItem) =
+                let timestamp =
+                    //publishingDate is 
+                    match item.SpecificItem with
+                    | :? AtomFeedItem as afi ->
+                        let updatedDate = afi.UpdatedDate |> Option.ofNullable
+                        let publishingDate = item.PublishingDate |> Option.ofNullable
+                        Option.orElse updatedDate publishingDate
+                    | _ -> 
+                        item.PublishingDate |> Option.ofNullable
+
+                { 
+                    Item.Title = item.Title
+                    Id = item.Id
+                    Content = item.Content
+                    Timestamp = Option.ofNullable item.PublishingDate |> Option.map (fun x -> DateTimeOffset(x))
+                }
+
             let items = 
                 feed.Items 
-                |> Seq.map (fun item -> { Item.Title = item.Title; Id = item.Id; Content = item.Content; Timestamp = Option.ofNullable item.PublishingDate |> Option.map (fun x -> DateTimeOffset(x)) })
+                |> Seq.map mapItem
                 |> List.ofSeq
 
             { 

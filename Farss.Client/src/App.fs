@@ -79,39 +79,6 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * strin
         ]
     ]
 
-    //let renderSubscription (subscription: SubscriptionDto) =
-    //    div [] [
-    //        str subscription.Url
-    //        input [ _type "button"; value "x"; onClick (DeleteSubscription subscription.Id)  ] 
-    //    ]
-        
-    //let renderArticle (article: ArticleDto) =
-    //    div [] [
-    //        str article.Title
-    //    ]
-        
-    //div [] [
-    //    div [] [
-    //        input [ _type "button"; value "Poll"; onClick Poll ]
-    //    ]
-    //    div [] [
-    //        h1 [] [str "Subscriptions"]
-    //        div [] [
-    //            str "Add"
-    //            input [ onInput OnChangeSub; value inp ]
-    //        ]
-    //        fragment () [
-    //            yield! subscriptions |> List.map renderSubscription
-    //        ]
-    //    ] 
-    //    div [] [
-    //        h1 [] [str "Articles"]
-    //        fragment () [
-    //            yield! articles |> List.map renderArticle
-    //        ]
-    //    ]
-    //]
-
 //module Nav =    
 //    open Fulma
 //    open Fable.Helpers.React

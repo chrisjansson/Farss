@@ -12,7 +12,12 @@ module Types =
         Title: string
         Description: string option
         Items:  Item list }
-    and Item = { Title: string; Id: string option; Content: string option; PublishingDate: DateTimeOffset option }
+    and Item = { 
+        Title: string; 
+        Id: string option; 
+        Content: string option; 
+        PublishingDate: DateTimeOffset option
+        UpdatedDate: DateTimeOffset option }
 
 type StringWriterWithEncoding(encoding: System.Text.Encoding) =
     inherit System.IO.StringWriter()
@@ -22,7 +27,7 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 let feedItem (title: string) = SyndicationItem(Title = title)
 
 let feedItem2 (title: string) = 
-    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None }
+    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None; Types.Item.UpdatedDate = None }
 
 let withId (id: string) (item: Types.Item) = 
     { item with Types.Item.Id = Some id }
@@ -32,6 +37,10 @@ let withContent (content: string) (item: Types.Item) =
 
 let withPublishingDate (publishingDate: DateTimeOffset) (item: Types.Item) =
     { item with Types.Item.PublishingDate = Some publishingDate }
+
+let withUpdatedDate (updatedDate: DateTimeOffset) (item: Types.Item) =
+    { item with Types.Item.UpdatedDate = Some updatedDate }
+
 
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description
@@ -96,7 +105,13 @@ let toAtom (feed: Types.Feed) =
             feedItem.Id <- Guid.NewGuid().ToString()
         if item.Content.IsSome then do
             feedItem.Description <- item.Content.Value
+        if item.PublishingDate.IsSome then do
+            feedItem.Published <- item.PublishingDate.Value
         feedItem.LastUpdated <- DateTimeOffset.Now
+        if item.UpdatedDate.IsSome then do
+            feedItem.LastUpdated <- item.UpdatedDate.Value
+        else do
+            feedItem.LastUpdated <- DateTimeOffset.Now
         feedItem.AddContributor(SyndicationPerson("temp", "tempemail"))
         feedItem.AddLink(SyndicationLink(Uri("http://another")))
         writer.Write(feedItem).Wait()
