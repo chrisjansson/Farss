@@ -50,21 +50,35 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
         
             let mapItem (item: FeedItem) =
-                let timestamp =
-                    //publishingDate is 
+                let extractedTimestamp =
                     match item.SpecificItem with
                     | :? AtomFeedItem as afi ->
-                        let updatedDate = afi.UpdatedDate |> Option.ofNullable
-                        let publishingDate = item.PublishingDate |> Option.ofNullable
-                        Option.orElse updatedDate publishingDate
+                        (* 
+                            UpdatedDate is required and PublishingDate is optional in Atom.
+                            Also, from the specification about PublishingDate: Contains the time of the initial creation or first availability of the entry. 
+                            So for use as a should update existing item or not updatedDate is what we want
+                        *)
+                        afi.UpdatedDate |> Option.ofNullable
                     | _ -> 
                         item.PublishingDate |> Option.ofNullable
+
+                let ensureUtcTimestamp (timestamp: DateTime) =
+                    if timestamp.Kind <> DateTimeKind.Utc then  
+                        failwith "Date should be converted to UTC by FeedReader library"
+                    else
+                        timestamp
+
+                let toDateTimeOffset (timestamp: DateTime) =
+                    DateTimeOffset(timestamp)
+
+                let zeroTimeZoneOffset (timestamp: DateTimeOffset) =
+                    timestamp.ToUniversalTime()
 
                 { 
                     Item.Title = item.Title
                     Id = item.Id
                     Content = item.Content
-                    Timestamp = Option.ofNullable item.PublishingDate |> Option.map (fun x -> DateTimeOffset(x))
+                    Timestamp = extractedTimestamp |> Option.map (ensureUtcTimestamp >> toDateTimeOffset >> zeroTimeZoneOffset)
                 }
 
             let items = 
@@ -72,6 +86,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                 |> Seq.map mapItem
                 |> List.ofSeq
 
+            //TODO: parse publishingDate/LastBuildDate for RSS feeds and UpdatedDate for Atom feeds. Can probably be used to skip item checking
             { 
                 Title = feed.Title 
                 Description = feed.Description

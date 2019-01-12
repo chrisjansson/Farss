@@ -11,6 +11,8 @@ let unbox r =
     | Ok v -> v
     | Error e -> failwith (sprintf "%A" e)
     
+//TODO: Run in different cultures
+
 [<Tests>]
 let tests =
     testList "Feed reader adapter" [
@@ -35,8 +37,13 @@ let tests =
                         feedItem2 "item 1" 
                         |> withId "a guid" 
                         |> withContent "content for item 1" 
-                        |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero)))
-                    |> withItem (feedItem2 "item 2" |> withId "item 2 guid" |> withContent "content for item 2")
+                        |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero))
+                        |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)))
+                    |> withItem (
+                        feedItem2 "item 2" 
+                        |> withId "item 2 guid" 
+                        |> withContent "content for item 2"
+                        |> withUpdatedDate (DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)))
                     |> toAtom
 
                 f.Add("url", content)
@@ -47,36 +54,8 @@ let tests =
                 Expect.equal 
                     unboxed.Items 
                     [
-                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
-                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = None } 
-                    ] 
-                    "Feed items"
-            }
-
-            "Updated date has precedence over publishing date", fun (f: InMemoryFeedReader) -> async {
-                let content = 
-                    feed "title" 
-                    |> withItem (
-                        feedItem2 "item 1" 
-                        |> withId "a guid" 
-                        |> withContent "content for item 1" 
-                        |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero))
-                        |> withUpdatedDate (DateTimeOffset(2002, 2, 3,1,4,10, TimeSpan.Zero)))
-                    |> toAtom
-
-                f.Add("url", content)
-            
-                let! result = f.Adapter.getFromUrl "url"
-                let unboxed = unbox result
-                Expect.equal 
-                    unboxed.Items 
-                    [
-                        { 
-                            Item.Title = "item 1"; 
-                            Id = "a guid";
-                            Content = "content for item 1";
-                            Timestamp = Some (DateTimeOffset(2002, 2, 3,1,4,10, TimeSpan.Zero)) 
-                        }
+                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
+                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)) } 
                     ] 
                     "Feed items"
             }
