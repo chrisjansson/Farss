@@ -17,10 +17,11 @@ type Article =
         Subscription: SubscriptionId
         Content: string
         IsRead: bool
-        PublishedAt: DateTimeOffset
+        PublishedAt: ArticleTimestamp
     }
 and ArticleId = Guid
 and ArticleGuid = string //TODO: wrap in DU?
+and ArticleTimestamp = DateTimeOffset //TODO: wrap in DU?
 
 module ArticleGuid =
     let create (str: string) = 
@@ -28,6 +29,24 @@ module ArticleGuid =
             Error "Article guid cannot be null or empty"
         else
             Ok str 
+
+module ArticleTimestamp =
+    let create v =
+        match v with
+        | Some dto -> Ok dto
+        | None -> Error "Timestamp is required"
+
+module Article =
+    let create title guid subscription content timestamp =
+        { 
+            Id = Guid.NewGuid(); 
+            Title = title; 
+            Guid = guid; 
+            Subscription = subscription; 
+            Content = content; 
+            PublishedAt = timestamp; 
+            IsRead = false 
+        }
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }
 type SetArticleReadStatusCommand = { ArticleId: ArticleId; SetIsReadTo: bool }
