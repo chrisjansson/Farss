@@ -5,69 +5,64 @@ open FeedBuilder
 open TestStartup
 open FeedReaderAdapter
 open System
-open System.Globalization
 
 let unbox r =
     match r with
     | Ok v -> v
     | Error e -> failwith (sprintf "%A" e)
     
-
 [<Tests>]
 let tests =
-    inCulture 
-        [ CultureInfo.GetCultureInfo("sv-SE"); CultureInfo.GetCultureInfo("en-US") ]
-        (testList "Feed reader adapter" [
-            let tests = [
-                "Parses feed", fun (f: InMemoryFeedReader) -> async {
-                    let content = 
-                        feed "title" 
-                        |> withDescription2 "description"
-                        |> toAtom
+    testList "Feed reader adapter" [
+        let tests = [
+            "Parses feed", fun (f: InMemoryFeedReader) -> async {
+                let content = 
+                    feed "title" 
+                    |> withDescription2 "description"
+                    |> toAtom
 
-                    f.Add("url", content)
+                f.Add("url", content)
             
-                    let! result = f.Adapter.getFromUrl "url"
-                    let unboxed = unbox result
-                    Expect.equal unboxed.Title "title" "Feed title"
-                    failwith (CultureInfo.CurrentCulture.Name)
-                }
+                let! result = f.Adapter.getFromUrl "url"
+                let unboxed = unbox result
+                Expect.equal unboxed.Title "title" "Feed title"
+            }
 
-                "Parses feed item", fun (f: InMemoryFeedReader) -> async {
-                    let content = 
-                        feed "title" 
-                        |> withItem (
-                            feedItem2 "item 1" 
-                            |> withId "a guid" 
-                            |> withContent "content for item 1" 
-                            |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero))
-                            |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)))
-                        |> withItem (
-                            feedItem2 "item 2" 
-                            |> withId "item 2 guid" 
-                            |> withContent "content for item 2"
-                            |> withUpdatedDate (DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)))
-                        |> toAtom
+            "Parses feed item", fun (f: InMemoryFeedReader) -> async {
+                let content = 
+                    feed "title" 
+                    |> withItem (
+                        feedItem2 "item 1" 
+                        |> withId "a guid" 
+                        |> withContent "content for item 1" 
+                        |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero))
+                        |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)))
+                    |> withItem (
+                        feedItem2 "item 2" 
+                        |> withId "item 2 guid" 
+                        |> withContent "content for item 2"
+                        |> withUpdatedDate (DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)))
+                    |> toAtom
 
-                    f.Add("url", content)
+                f.Add("url", content)
             
-                    let! result = f.Adapter.getFromUrl "url"
-                    let unboxed = unbox result
-                    Expect.equal unboxed.Items.Length 2 "Feed articles"
-                    Expect.equal 
-                        unboxed.Items 
-                        [
-                            { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
-                            { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)) } 
-                        ] 
-                        "Feed items"
-                    failwith (CultureInfo.CurrentCulture.Name)
-                }
-            ]
+                let! result = f.Adapter.getFromUrl "url"
+                let unboxed = unbox result
+                Expect.equal unboxed.Items.Length 2 "Feed articles"
+                Expect.equal 
+                    unboxed.Items 
+                    [
+                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
+                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)) } 
+                    ] 
+                    "Feed items"
+            }
+        ]
 
-            let setup test =
-                let reader = createInMemoryFeedReader()
-                test reader
+        let setup test =
+            let reader = createInMemoryFeedReader()
+            test reader
 
-            yield! testFixtureAsync setup tests
-        ])
+        yield! testFixtureAsync setup tests
+    ]
+    |> testCultureInvariance

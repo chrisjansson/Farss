@@ -104,3 +104,7 @@ module Tests =
                 |> List.map (fun c ->  TestLabel(c.Name, TestCase(testCodeWIthCulture testCode c, Normal), Normal))
             testList label tests
         Expecto.Test.replaceTestCode replacer test
+
+    let testCultureInvariance test =
+        let cultures = [ CultureInfo.GetCultureInfo("sv-SE"); CultureInfo.GetCultureInfo("en-US") ]
+        testWithCultures cultures test
