@@ -67,14 +67,6 @@ let inCulture (cultures: CultureInfo list) test =
     Expecto.Test.replaceTestCode replacer test
 
 [<Tests>]
-let t =
-    testList "a" [
-        testLabel "wololo"( 
-            testCase "t" <| fun _ ->
-                ())
-    ]
-
-[<Tests>]
 let tests =
     inCulture 
         [ CultureInfo.GetCultureInfo("sv-SE"); CultureInfo.GetCultureInfo("en-US") ]
