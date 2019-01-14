@@ -12,59 +12,6 @@ let unbox r =
     | Ok v -> v
     | Error e -> failwith (sprintf "%A" e)
     
-let testCodeInCulture (testCode: TestCode) (culture: CultureInfo) = 
-    let setCulture culture = 
-        CultureInfo.CurrentCulture <- culture
-        CultureInfo.CurrentUICulture <- culture
-        CultureInfo.DefaultThreadCurrentCulture <- culture
-        CultureInfo.DefaultThreadCurrentUICulture <- culture
-
-    let captureCulture _ =
-        let currentCulture = CultureInfo.CurrentCulture
-        let currentUiCulture = CultureInfo.CurrentUICulture
-        let defaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentCulture
-        let defaultThreadCurrentUiCulture = CultureInfo.DefaultThreadCurrentUICulture
-        (currentCulture, currentUiCulture, defaultThreadCurrentCulture, defaultThreadCurrentUiCulture)
-
-    let resetCulture (currentCulture, currentUiCulture, defaultThreadCurrentCulture, defaultThreadCurrentUiCulture) =
-        CultureInfo.CurrentCulture <- currentCulture
-        CultureInfo.CurrentUICulture <- currentUiCulture
-        CultureInfo.DefaultThreadCurrentCulture <- defaultThreadCurrentCulture
-        CultureInfo.DefaultThreadCurrentUICulture <- defaultThreadCurrentUiCulture
-
-    let wrap culture test arg =
-        let initial = captureCulture ()
-        setCulture culture
-
-        try 
-            test arg
-        finally 
-            resetCulture initial
-
-    let wrapAsync culture test = async {
-        let initial = captureCulture ()
-        setCulture culture
-        try 
-            do! test
-        finally 
-            resetCulture initial
-    }
-
-    match testCode with
-    | Sync stest ->
-        Sync (wrap culture stest)
-    | SyncWithCancel stest -> 
-        SyncWithCancel (wrap culture stest)
-    | Async atest ->
-        Async (wrapAsync culture atest)
-    | tc ->
-        tc
-
-let inCulture (cultures: CultureInfo list) test =
-    let replacer label (testCode: TestCode) =
-        let tests = cultures |> List.map (fun c ->  TestLabel(c.Name, TestCase(testCodeInCulture testCode c, Normal), Normal))
-        testList label tests
-    Expecto.Test.replaceTestCode replacer test
 
 [<Tests>]
 let tests =
