@@ -14,6 +14,7 @@
     <Compile Include="ExpectoExtensions.fs" />
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="CreateArticleTests.fs" />
+    <Compile Include="CreateArticleFromFeedItemTests.fs" />
     <Compile Include="FeedReader.fs" />
     <Compile Include="FeedReaderAdapterTests.fs" />
     <Compile Include="SubscribeToFeedTests.fs" />
