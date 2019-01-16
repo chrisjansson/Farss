@@ -66,3 +66,33 @@ let tests = testList "Create article" [
                 Expect.isFalse actual.IsRead "IsRead"
         ]
     ]
+
+    
+module Result =
+    (* Traverse with early return on error *)
+    let traverse (items: Result<_, _> list) =   
+        let rec impl items acc =
+            match items with
+            | [] -> Ok acc
+            | Ok r::tail -> impl tail (r::acc)
+            | Error e::_ -> Error e
+        impl items [] |> Result.map List.rev
+
+[<Tests>]
+let traverseTests =
+    testList "Result.traverse" [
+        testCase "Flips list of results to result of list" <| fun _ -> 
+            let result = Result.traverse []
+
+            Expect.equal result (Ok [])  "Flips L of Rs to R of L"
+
+        testCase "Accumulates oks" <| fun _ -> 
+            let result = Result.traverse [Ok 1; Ok 2]
+
+            Expect.equal result (Ok [1; 2]) "Accumulates values"
+            
+        testCase "Aborts at first error" <| fun _ -> //TODO: "traverseE aka traverse eager?"
+            let result = Result.traverse [ Ok 1; Error "a"; Ok 2; Error "b" ]
+
+            Expect.equal result (Error "a") "Halts eagerly on first error"
+    ]
