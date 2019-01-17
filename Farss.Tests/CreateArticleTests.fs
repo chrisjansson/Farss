@@ -70,7 +70,7 @@ let tests = testList "Create article" [
     
 module Result =
     (* Traverse with early return on error *)
-    let traverse (items: Result<_, _> list) =   
+    let traverseE (items: Result<_, _> list) =   
         let rec impl items acc =
             match items with
             | [] -> Ok acc
@@ -78,21 +78,53 @@ module Result =
             | Error e::_ -> Error e
         impl items [] |> Result.map List.rev
 
+    (* Traverse and accumulate all errors. Greedy *)
+    let traverse (items: Result<_, _> list) =
+        let rec impl items acc =
+            match acc, items with
+            | acc, []  -> acc
+            | Ok acc, Ok r::tail -> impl tail (Ok (r::acc))
+            | Ok _, Error e::tail -> impl tail (Error [e])
+            | Error acc, Ok _::tail -> impl tail (Error acc)
+            | Error acc, Error e::tail -> impl tail (Error (e::acc))
+        impl items (Ok []) 
+            |> Result.map List.rev 
+            |> Result.mapError List.rev
+
 [<Tests>]
 let traverseTests =
-    testList "Result.traverse" [
-        testCase "Flips list of results to result of list" <| fun _ -> 
-            let result = Result.traverse []
+    testList "Result" [
+        testList "Result.traverseE" [
+            testCase "Flips list of results to result of list" <| fun _ -> 
+                let result = Result.traverseE []
 
-            Expect.equal result (Ok [])  "Flips L of Rs to R of L"
+                Expect.equal result (Ok [])  "Flips L of Rs to R of L"
 
-        testCase "Accumulates oks" <| fun _ -> 
-            let result = Result.traverse [Ok 1; Ok 2]
+            testCase "Accumulates oks" <| fun _ -> 
+                let result = Result.traverseE [Ok 1; Ok 2]
 
-            Expect.equal result (Ok [1; 2]) "Accumulates values"
+                Expect.equal result (Ok [1; 2]) "Accumulates values"
             
-        testCase "Aborts at first error" <| fun _ -> //TODO: "traverseE aka traverse eager?"
-            let result = Result.traverse [ Ok 1; Error "a"; Ok 2; Error "b" ]
+            testCase "Aborts at first error" <| fun _ ->
+                let result = Result.traverseE [ Ok 1; Error "a"; Ok 2; Error "b" ]
 
-            Expect.equal result (Error "a") "Halts eagerly on first error"
+                Expect.equal result (Error "a") "Halts eagerly on first error"
+        ]
+        testList "Result.traverse" [
+            testCase "Flips list of results to result of list" <| fun _ -> 
+                let result = Result.traverse []
+
+                Expect.equal result (Ok [])  "Flips L of Rs to R of L"
+
+            testCase "Accumulates oks" <| fun _ -> 
+                let result = Result.traverse [Ok 1; Ok 2]
+
+                Expect.equal result (Ok [1; 2]) "Accumulates values"
+            
+            testCase "Accumulates errors" <| fun _ ->
+                let result = Result.traverse [ Ok 1; Error "a"; Ok 2; Error "b" ]
+
+                Expect.equal result (Error ["a"; "b"]) "Accumulates all errors"
+        ]
     ]
+    
