@@ -69,7 +69,7 @@ let tests = testList "Create article" [
 
     
 module Result =
-    (* Traverse with early return on error *)
+    /// Traverse with early return on error
     let traverseE (items: Result<_, _> list) =   
         let rec impl items acc =
             match items with
@@ -78,7 +78,7 @@ module Result =
             | Error e::_ -> Error e
         impl items [] |> Result.map List.rev
 
-    (* Traverse and accumulate all errors. Greedy *)
+    /// Traverse and accumulate all errors. Greedy
     let traverse (items: Result<_, _> list) =
         let rec impl items acc =
             match acc, items with
