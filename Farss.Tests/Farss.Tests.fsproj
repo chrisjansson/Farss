@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Build.fs" />
+    <Compile Include="ResultTests.fs" />
     <Compile Include="ExpectoExtensions.fs" />
     <Compile Include="FeedBuilder.fs" />
     <Compile Include="CreateArticleTests.fs" />
