@@ -27,7 +27,8 @@ module HttpClient =
         }
         
     let postAsync (url: string) (content: 'a) (client: System.Net.Http.HttpClient) =
-        let json = JsonConvert.SerializeObject(content)
+        //TODO: Create both snapshots and characterization tests for thoth?
+        let json = Thoth.Json.Net.Encode.Auto.toString(0, content)
         let content = new StringContent(json)
         client.PostAsync(url, content) |> Async.AwaitTask
 
@@ -52,7 +53,7 @@ let a_user_subscribes_to_feed (url: string): AsyncTestStep<_, unit> =
             
         let payload: SubscribeToFeedCommand = { Url = url }
         let client = f.CreateClient()
-        let! response = client |> HttpClient.postAsync "/feeds" payload
+        let! response = client |> HttpClient.postAsync ApiUrls.GetSubscriptions payload
         response.EnsureSuccessStatusCode() |> ignore
 
         return ((), f)
@@ -93,7 +94,7 @@ let subscriptions_are_fetched: AsyncTestStep<_, string> =
         let! (_, f) = atc
 
         let client = f.CreateClient()
-        let! response = client |> HttpClient.getAsync "/feeds"
+        let! response = client |> HttpClient.getAsync ApiUrls.GetSubscriptions
         response.EnsureSuccessStatusCode() |> ignore
         let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
 
@@ -147,7 +148,7 @@ let is_deleted: AsyncTestStep<string, _> =
 
         let command: Domain.DeleteSubscriptionCommand = { Id = subscription.Id }
 
-        let! response = f.CreateClient() |> HttpClient.postAsync "/subscription/delete" command
+        let! response = f.CreateClient() |> HttpClient.postAsync ApiUrls.DeleteSubscription command
         response.EnsureSuccessStatusCode() |> ignore
 
         return ((), f)

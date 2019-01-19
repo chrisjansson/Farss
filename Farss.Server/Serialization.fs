@@ -21,8 +21,8 @@ module SetArticleReadStatusDto =
     open Reflection
 
     let toCommand (dto: SetArticleReadStatusDto): Result<SetArticleReadStatusCommand, string> = result {
-        let! articleId = dto.ArticleId |> Nullable.value (nameof <@ dto.ArticleId @>)
-        let! setIsReadTo = dto.SetIsReadTo |> Nullable.value (nameof <@ dto.SetIsReadTo @>)
+        let! articleId = dto.ArticleId |> Option.value (nameof <@ dto.ArticleId @>)
+        let! setIsReadTo = dto.SetIsReadTo |> Option.value (nameof <@ dto.SetIsReadTo @>)
             
         return { ArticleId = articleId; SetIsReadTo = setIsReadTo }
     }

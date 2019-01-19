@@ -34,7 +34,7 @@ let feed_has_entries url feedItems =
 let feed_is_checked: AsyncTestStep<_, unit> =
     Spec.Step.mapAsync (fun (_, f) -> async {
         let client = f.CreateClient()
-        let! response = HttpClient.postAsync "/poll" () client
+        let! response = HttpClient.postAsync ApiUrls.PollSubscriptions () client
         if response.IsSuccessStatusCode then
             ()
         else

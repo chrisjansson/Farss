@@ -41,7 +41,7 @@ let the_reader_looks_at_all_articles: AsyncTestStep<unit, SpecArticle list> =
     Spec.Step.mapAsync (fun (_, f: TestWebApplicationFactory) -> async {
         use c = f.CreateClient()
 
-        let! result = HttpClient.getAsJsonAsync<Dto.ArticleDto list> "/articles" c
+        let! result = HttpClient.getAsJsonAsync<Dto.ArticleDto list> ApiUrls.GetArticles c
         
         let toActualArticle (article: Dto.ArticleDto): SpecArticle =
             {
@@ -75,9 +75,12 @@ let as_read: AsyncTestStep<string, unit> =
         let dArticle = getArticleByTitle article f
         
         let client = f.CreateClient()
-        let command = { Dto.SetArticleReadStatusDto.ArticleId = Nullable(dArticle.Id); Dto.SetArticleReadStatusDto.SetIsReadTo = Nullable(true) }
+        let command = { Dto.SetArticleReadStatusDto.ArticleId = Some (dArticle.Id); Dto.SetArticleReadStatusDto.SetIsReadTo = Some (true) }
 
-        let! response = HttpClient.postAsync "/article/setreadstatus" command client
+        let! response = HttpClient.postAsync ApiUrls.SetArticleReadStatus command client
+        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        //TODO: Handle this in HttpClient instead
+        System.IO.File.WriteAllText("C:\\temp\output.html", content)
         response.EnsureSuccessStatusCode() |> ignore
     })
 

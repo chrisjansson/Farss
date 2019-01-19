@@ -45,7 +45,7 @@ let tests =
             "Fails when no id is given", fun ar -> async {
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(); SetIsReadTo = Nullable(true) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = None; SetIsReadTo = Some true }
                 let result = workflow command
             
                 Expect.invalidParameter result [ "ArticleId" ]
@@ -54,7 +54,7 @@ let tests =
             "Fails when no SetIsReadTo is given", fun ar -> async {
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(Guid.NewGuid()); SetIsReadTo = Nullable() }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Some (Guid.NewGuid()); SetIsReadTo = None }
                 let result = workflow command
             
                 Expect.invalidParameter result [ "SetIsReadTo" ]
@@ -62,7 +62,7 @@ let tests =
     
             "Fails when article does not exist", fun ar -> async {
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(Guid.NewGuid()); SetIsReadTo = Nullable(true) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Some (Guid.NewGuid()); SetIsReadTo = Some (true) }
                 let result = workflow command
 
                 Expect.error result ArticleNotFound
@@ -73,7 +73,7 @@ let tests =
                 ar.save article
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(article.Id); SetIsReadTo = Nullable(true) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Some (article.Id); SetIsReadTo = Some (true) }
                 let result = workflow command
             
                 Expect.articleToBeRead article ar
@@ -85,7 +85,7 @@ let tests =
                 ar.save article
                 
                 let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
-                let command: Dto.SetArticleReadStatusDto = { ArticleId = Nullable(article.Id); SetIsReadTo = Nullable(false) }
+                let command: Dto.SetArticleReadStatusDto = { ArticleId = Some (article.Id); SetIsReadTo = Some (false) }
                 let result = workflow command
             
                 Expect.articleToBeUnread article ar

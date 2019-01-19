@@ -22,4 +22,4 @@ type ArticleDto =
 
 type DeleteSubscriptionDto = { Id: Guid option }
 
-type SetArticleReadStatusDto = { ArticleId: Nullable<Guid>; SetIsReadTo: Nullable<bool> }
+type SetArticleReadStatusDto = { ArticleId: Guid option; SetIsReadTo: bool option }
