@@ -27,6 +27,17 @@ type FeedReaderAdapter =
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
 
+
+module FeedItem = 
+    open Domain
+
+    let toArticle subscriptionId (item: Item) = result {
+        let! guid = ArticleGuid.create item.Id
+        let! timestamp = ArticleTimestamp.create item.Timestamp
+
+        return Article.create item.Title guid subscriptionId item.Content timestamp
+    }
+
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
 
 let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =

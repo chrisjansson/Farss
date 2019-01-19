@@ -4,10 +4,13 @@ open Domain
 open Persistence
 open FeedReaderAdapter
 open FSharp.Control.Tasks.V2
-open System
 open System.Threading.Tasks
 
-type FetchArticlesForSubscription =  SubscriptionId -> Task<Result<int, FeedError>>
+type FetchArticlesError =  
+    | FeedError of FeedError
+    | ItemError of string list
+
+type FetchArticlesForSubscription =  SubscriptionId -> Task<Result<int, FetchArticlesError>>
 type FetchArticlesForSubscriptionImpl = SubscriptionRepository -> ArticleRepository -> FeedReaderAdapter -> FetchArticlesForSubscription
 
 let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl = 
@@ -15,24 +18,22 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
         let getSubscription = subscriptionRepository.get
 
         let fetchFeedForSubscription subscription = 
-            adapter.getFromUrl subscription.Url |> Async.StartAsTask
+            adapter.getFromUrl subscription.Url
+            |> Async.map (Result.mapError FetchArticlesError.FeedError)
+            |> Async.StartAsTask
 
         let filterExistingItems feed =
             let itemIds = List.map (fun (fi: Item) -> fi.Id) feed.Items
             let newItemIds = articleRepository.filterExistingArticles subscriptionId itemIds
             List.filter (fun item -> List.contains item.Id newItemIds) feed.Items
 
-        let createArticle item: Article = { 
-                Id = Guid.NewGuid(); 
-                Guid = item.Id; 
-                Subscription = subscriptionId; 
-                Title = item.Title; 
-                Content = item.Content
-                IsRead = false
-                PublishedAt = DateTimeOffset.MinValue //todo: parse from feed
-            }
+        let createArticle = FeedItem.toArticle subscriptionId
         
-        let createArticles = List.map createArticle
+        let createArticles items = 
+            items 
+            |> List.map createArticle
+            |> Result.traverse
+            |> Result.mapError ItemError
 
         let saveArticle = articleRepository.save
         let saveArticles = List.iter saveArticle
@@ -43,7 +44,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             |> getSubscription
             |> fetchFeedForSubscription
             |> TaskResult.map filterExistingItems
-            |> TaskResult.map createArticles
+            |> Task.map (fun r -> Result.bind createArticles r)
             |> TaskResult.tee saveArticles
             |> TaskResult.map aggregateSavedArticles
 

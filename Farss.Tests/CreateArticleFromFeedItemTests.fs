@@ -2,16 +2,7 @@
 
 open Expecto
 open System
-
-module FeedItem = 
-    open Domain
-
-    let toArticle subscriptionId (item: FeedReaderAdapter.Item) = result {
-        let! guid = ArticleGuid.create item.Id
-        let! timestamp = ArticleTimestamp.create item.Timestamp
-
-        return Article.create item.Title guid subscriptionId item.Content timestamp
-    }
+open FeedReaderAdapter
 
 [<Tests>]
 let tests = 
