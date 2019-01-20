@@ -27,6 +27,28 @@ type ExpectedArticle =
 
 [<Tests>]
 let fetchArticlesForSubscriptionTests = 
+    let assertYieldsItemError title feedItem =
+        title,  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let subscriptionId = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                let feedItems = [ 
+                    feedItem
+                ]
+                let feedResult = { emptyFeed with Items = feedItems }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let! result = workflow subscriptionId |> Async.AwaitTask
+                
+                let isItemError result =
+                    match result with
+                    | Error (ItemError _) -> true
+                    |_ -> false
+
+                Expect.isTrue (isItemError result) "Contains item error"
+                Expect.equal (articles.getAll().Length) 0 "Articles"
+        }
+
     testList "Fetch articles for subscription workflow" [
         let tests = [
             "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
@@ -59,6 +81,29 @@ let fetchArticlesForSubscriptionTests =
                 Expect.equal result (Error (FeedError expectedError)) "Expected error"
                 Expect.isEmpty (articles.getAll()) "Articles"
             }
+            "Does not fetch any articles when one fails",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
+                let subscriptionId = Guid.NewGuid()
+                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                let feedItems = [ 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = (Some DateTimeOffset.Now) } 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = None } 
+                ]
+                let feedResult = { emptyFeed with Items = feedItems }
+                adapterStub.SetResult ("feed url", Ok feedResult)
+
+                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let! result = workflow subscriptionId |> Async.AwaitTask
+                
+                let isItemError result =
+                    match result with
+                    | Error (ItemError _) -> true
+                    |_ -> false
+
+                Expect.isTrue (isItemError result) "Contains item error"
+                Expect.equal (articles.getAll().Length) 0 "Articles"
+            }
+            assertYieldsItemError "Timestamp is required" { Title = "Item title"; Id = "Article Guid"; Content = "Content"; Timestamp = None }
+            assertYieldsItemError "Item id is required" { Title = "Item title"; Id = null; Content = "Content"; Timestamp = Some (DateTimeOffset.Now) }
             "Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId })
