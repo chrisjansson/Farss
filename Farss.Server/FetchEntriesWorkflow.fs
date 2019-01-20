@@ -52,7 +52,7 @@ let fetchEntries
     (subscriptionRepository: SubscriptionRepository) 
     (fetch: FetchArticlesForSubscription)
     _ = 
-        //get all ids or get with projection
+        //TODO: get all ids or get with projection
         let subscriptions = subscriptionRepository.getAll()
 
         let executeFetchAsync id = task {
