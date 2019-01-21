@@ -128,7 +128,7 @@ let fetchArticlesForSubscriptionTests =
                     {
                         Title = article.Title
                         Content = article.Content
-                        Timestamp = article.PublishedAt
+                        Timestamp = article.Timestamp
 
                     }
 
@@ -148,7 +148,7 @@ let fetchArticlesForSubscriptionTests =
                     {
                         Title = article.Title
                         Content = article.Content
-                        Timestamp = article.PublishedAt
+                        Timestamp = article.Timestamp
                     }
 
                 Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Articles"
@@ -168,7 +168,7 @@ let fetchArticlesForSubscriptionTests =
                     {
                         Title = article.Title
                         Content = article.Content
-                        Timestamp = article.PublishedAt
+                        Timestamp = article.Timestamp
                     }
 
                 Expect.equal result (Ok 0) "No fetched articles"
@@ -192,7 +192,7 @@ let fetchArticlesForSubscriptionTests =
                     {
                         Title = article.Title
                         Content = article.Content
-                        Timestamp = article.PublishedAt
+                        Timestamp = article.Timestamp
                     }
                 
                 Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Article fetched for first sub"

@@ -39,6 +39,6 @@ let tests =
 
             Expect.equal article.Guid feedItemThatConvertsToArticle.Id "Guid"
             Expect.equal article.Content feedItemThatConvertsToArticle.Content "Content"
-            Expect.equal article.PublishedAt feedItemThatConvertsToArticle.Timestamp.Value "Timestamp"
+            Expect.equal article.Timestamp feedItemThatConvertsToArticle.Timestamp.Value "Timestamp"
             Expect.equal article.Title feedItemThatConvertsToArticle.Title "Title"
     ]

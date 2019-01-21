@@ -10,5 +10,5 @@ let article (): Article = {
     Subscription = Guid.NewGuid()
     Content = "Content"
     IsRead = false
-    PublishedAt = DateTimeOffset.MinValue
+    Timestamp = DateTimeOffset.MinValue
 }

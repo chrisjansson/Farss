@@ -17,7 +17,7 @@ type Article =
         Subscription: SubscriptionId
         Content: string
         IsRead: bool
-        PublishedAt: ArticleTimestamp
+        Timestamp: ArticleTimestamp
     }
 and ArticleId = Guid
 and ArticleGuid = string //TODO: wrap in DU?
@@ -44,7 +44,7 @@ module Article =
             Guid = guid; 
             Subscription = subscription; 
             Content = content; 
-            PublishedAt = timestamp; 
+            Timestamp = timestamp; 
             IsRead = false 
         }
 

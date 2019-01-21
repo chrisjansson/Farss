@@ -62,7 +62,7 @@ let tests = testList "Create article" [
                 Expect.equal actual.Guid "guid" "Guid"
                 Expect.equal actual.Subscription subscriptionId "Subscription id"
                 Expect.equal actual.Content "content" "Content"
-                Expect.equal actual.PublishedAt timestamp "Timestamp"
+                Expect.equal actual.Timestamp timestamp "Timestamp"
                 Expect.isFalse actual.IsRead "IsRead"
         ]
     ]
