@@ -1,4 +1,4 @@
-﻿module FetchEntriesWorkflow
+﻿module FetchArticlesWorkflow
 
 open Domain
 open Persistence

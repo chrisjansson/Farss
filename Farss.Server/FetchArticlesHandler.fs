@@ -9,7 +9,7 @@ open Microsoft.Extensions.DependencyInjection
 open System
 
 let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
-    let runFetchArticlesForSubscription: FetchEntriesWorkflow.FetchArticlesForSubscription = 
+    let runFetchArticlesForSubscription: FetchArticlesWorkflow.FetchArticlesForSubscription = 
         fun id -> task {
             //todo: uow
             use scope = serviceProvider.CreateScope()
@@ -17,12 +17,12 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
             let adapter = services.GetService<FeedReaderAdapter>()
             let subscriptionRepository = services.GetService<SubscriptionRepository>()
             let articleRepository = services.GetService<ArticleRepository>()
-            return! FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subscriptionRepository articleRepository adapter id
+            return! FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subscriptionRepository articleRepository adapter id
         }
             
     let subscriptionRepository = serviceProvider.GetService<SubscriptionRepository>()
 
-    FetchEntriesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
+    FetchArticlesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
 
 let fetchEntriesHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->

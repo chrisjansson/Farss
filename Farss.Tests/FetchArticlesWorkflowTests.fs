@@ -7,7 +7,7 @@ open FakeFeedReaderAdapter
 open System
 open FeedReaderAdapter
 open System.Threading.Tasks
-open FetchEntriesWorkflow
+open FetchArticlesWorkflow
 
 let setup test = async {
         let subscriptionRepository = Persistence.create () 
@@ -38,7 +38,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = feedItems }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 let! result = workflow subscriptionId |> Async.AwaitTask
                 
                 let isItemError result =
@@ -53,7 +53,7 @@ let fetchArticlesForSubscriptionTests =
     testList "Fetch articles for subscription workflow" [
         let tests = [
             "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 
                 let op () = workflow  (Guid.NewGuid()) |> Async.AwaitTask |> Async.Ignore
                 
@@ -64,7 +64,7 @@ let fetchArticlesForSubscriptionTests =
                 subs.save ({ Url = "feed url"; Id = subId })
                 adapterStub.SetResult ("feed url", Ok emptyFeed)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 let! result = workflow subId |> Async.AwaitTask
                 
                 Expect.equal result (Ok 0) "Number of fetched articles"
@@ -76,7 +76,7 @@ let fetchArticlesForSubscriptionTests =
                 let expectedError = (FeedError.ParseError (exn("error")))
                 adapterStub.SetResult ("feed url", Error expectedError)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 let! result = workflow id |> Async.AwaitTask
                 
                 Expect.equal result (Error (FeedError expectedError)) "Expected error"
@@ -92,7 +92,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = feedItems }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 let! result = workflow subscriptionId |> Async.AwaitTask
                 
                 let isItemError result =
@@ -121,7 +121,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = items }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 let! result = workflow subscriptionId |> Async.AwaitTask
                 
                 let project (article: Article): ExpectedArticle =
@@ -141,7 +141,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)) } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 do! workflow subscriptionId |> Async.AwaitTask |> Async.Ignore
                 
                 let project (article: Article): ExpectedArticle =
@@ -160,7 +160,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)) } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 do! workflow subscriptionId |> Async.AwaitTask |> Async.Ignore
                 let! result = workflow subscriptionId |> Async.AwaitTask
                 
@@ -182,7 +182,7 @@ let fetchArticlesForSubscriptionTests =
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))) } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
-                let workflow = FetchEntriesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
+                let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
                 do! workflow subscriptionId0 |> Async.AwaitTask |> Async.Ignore
                 do! workflow subscriptionId0 |> Async.AwaitTask |> Async.Ignore
                 do! workflow subscriptionId1 |> Async.AwaitTask |> Async.Ignore
@@ -218,7 +218,7 @@ let fetchArticlesForAllSubscriptionsTests =
                 s.save ({ Subscription.Id = s1; Url = "0" })
                 s.save ({ Subscription.Id = s2; Url = "0" })
 
-                let stubFetch: FetchEntriesWorkflow.FetchArticlesForSubscription =
+                let stubFetch: FetchArticlesWorkflow.FetchArticlesForSubscription =
                     fun subId -> 
                         let r = 
                             match subId with
@@ -227,7 +227,7 @@ let fetchArticlesForAllSubscriptionsTests =
                             | _ -> raise expectedException
                         Task.FromResult(r)
 
-                let workflow = FetchEntriesWorkflow.fetchEntries s stubFetch
+                let workflow = FetchArticlesWorkflow.fetchEntries s stubFetch
 
                 let! result = workflow () |> Async.AwaitTask
                 
