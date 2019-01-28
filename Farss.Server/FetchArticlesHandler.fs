@@ -1,4 +1,4 @@
-﻿module FetchEntriesHandler
+﻿module FetchArticlesHandler
 
 open Persistence
 open FeedReaderAdapter

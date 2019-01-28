@@ -18,7 +18,7 @@ type FetchArticlesHostedService(serviceProvider: IServiceProvider) =
 
                 do! using(serviceProvider.CreateScope()) (fun scope -> task {
                     let scopedServiceProvider = scope.ServiceProvider
-                    let fetchEntries = FetchEntriesHandler.constructFetchEntriesHandler scopedServiceProvider
+                    let fetchEntries = FetchArticlesHandler.constructFetchEntriesHandler scopedServiceProvider
 
                     let! x = fetchEntries ()
                     x |> ignore
