@@ -17,7 +17,8 @@ module Types =
         Id: string option; 
         Content: string option; 
         PublishingDate: DateTimeOffset option
-        UpdatedDate: DateTimeOffset option }
+        UpdatedDate: DateTimeOffset option
+        Link: string option }
 
 type StringWriterWithEncoding(encoding: System.Text.Encoding) =
     inherit System.IO.StringWriter()
@@ -27,7 +28,7 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 let feedItem (title: string) = SyndicationItem(Title = title)
 
 let feedItem2 (title: string) = 
-    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None; Types.Item.UpdatedDate = None }
+    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None; Types.Item.UpdatedDate = None; Types.Item.Link = None }
 
 let withId (id: string) (item: Types.Item) = 
     { item with Types.Item.Id = Some id }
@@ -41,6 +42,8 @@ let withPublishingDate (publishingDate: DateTimeOffset) (item: Types.Item) =
 let withUpdatedDate (updatedDate: DateTimeOffset) (item: Types.Item) =
     { item with Types.Item.UpdatedDate = Some updatedDate }
 
+let withLink (link: string) (item: Types.Item) =
+    { item with Types.Item.Link = Some link }
 
 let withDescription (description: string) (item: SyndicationItem) =
     item.Description <- description
@@ -107,6 +110,9 @@ let toAtom (feed: Types.Feed) =
             feedItem.Description <- item.Content.Value
         if item.PublishingDate.IsSome then do
             feedItem.Published <- item.PublishingDate.Value
+            
+        if item.Link.IsSome then do
+            feedItem.AddLink(SyndicationLink(Uri(item.Link.Value)))
         feedItem.LastUpdated <- DateTimeOffset.Now
         if item.UpdatedDate.IsSome then do
             feedItem.LastUpdated <- item.UpdatedDate.Value

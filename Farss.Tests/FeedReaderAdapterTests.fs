@@ -36,7 +36,10 @@ let tests =
                         |> withId "a guid" 
                         |> withContent "content for item 1" 
                         |> withPublishingDate (DateTimeOffset(2001, 3, 2, 12, 1, 2, TimeSpan.Zero))
-                        |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)))
+                        |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero))
+                        |> withUpdatedDate (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)) //set link
+                        
+                        )
                     |> withItem (
                         feedItem2 "item 2" 
                         |> withId "item 2 guid" 
@@ -52,8 +55,8 @@ let tests =
                 Expect.equal 
                     unboxed.Items 
                     [
-                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)) }
-                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)) } 
+                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = null }
+                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = null } 
                     ] 
                     "Feed items"
             }

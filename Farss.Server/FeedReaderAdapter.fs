@@ -20,6 +20,7 @@ and Item =
         Id: string
         Content: string
         Timestamp: DateTimeOffset option
+        Link: string
     }
 
 type FeedReaderAdapter = 
@@ -90,6 +91,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                     Id = item.Id
                     Content = item.Content
                     Timestamp = extractedTimestamp |> Option.map (ensureUtcTimestamp >> toDateTimeOffset >> zeroTimeZoneOffset)
+                    Link = null
                 }
 
             let items = 

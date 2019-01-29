@@ -18,10 +18,12 @@ type Article =
         Content: string
         IsRead: bool
         Timestamp: ArticleTimestamp
+        Link: ArticleLink
     }
 and ArticleId = Guid
 and ArticleGuid = string //TODO: wrap in DU?
 and ArticleTimestamp = DateTimeOffset //TODO: wrap in DU?
+and ArticleLink = string
 
 module ArticleGuid =
     let create (str: string) = 
@@ -46,6 +48,7 @@ module Article =
             Content = content; 
             Timestamp = timestamp; 
             IsRead = false 
+            Link = ""
         }
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }
