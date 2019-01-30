@@ -14,7 +14,7 @@ let tests =
                 Id = "guid"
                 Content = "content"
                 Timestamp = Some (DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero))
-                Link = "a link"
+                Link = Some "a link"
             }
 
         yield testCase "Item id is required" <| fun _ ->

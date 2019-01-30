@@ -113,13 +113,14 @@ let toAtom (feed: Types.Feed) =
             
         if item.Link.IsSome then do
             feedItem.AddLink(SyndicationLink(Uri(item.Link.Value)))
+        else 
+            feedItem.AddLink(SyndicationLink(Uri("http://builder_link")))
         feedItem.LastUpdated <- DateTimeOffset.Now
         if item.UpdatedDate.IsSome then do
             feedItem.LastUpdated <- item.UpdatedDate.Value
         else do
             feedItem.LastUpdated <- DateTimeOffset.Now
         feedItem.AddContributor(SyndicationPerson("temp", "tempemail"))
-        feedItem.AddLink(SyndicationLink(Uri("http://another")))
         writer.Write(feedItem).Wait()
 
     (writer.Flush()).Wait()
