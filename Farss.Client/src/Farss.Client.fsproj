@@ -11,6 +11,7 @@
     <Compile Include="Html.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="GuiCmd.fs" />
+    <Compile Include="AddSubscriptionModal.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
