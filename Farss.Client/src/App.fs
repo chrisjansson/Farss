@@ -139,7 +139,8 @@ let view (model:Model) dispatch =
     | Loading -> Html.run (renderLoading ()) dispatch
     | Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = s } -> Html.run (renderLoaded (subs, articles, s)) dispatch
 
+//TODO: add error handler
 Program.mkProgram init update view
-    |> Program.withReact "elmish-app"
+    |> Program.withReact ReactSettings.appRootId
     |> Program.withConsoleTrace
     |> Program.run

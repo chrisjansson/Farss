@@ -12,6 +12,8 @@
     <Compile Include="Model.fs" />
     <Compile Include="GuiCmd.fs" />
     <Compile Include="AddSubscriptionModal.fs" />
+    <Compile Include="ReactSettings.fs" />
+    <Compile Include="ModalPortal.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
