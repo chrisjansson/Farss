@@ -58,6 +58,7 @@ module CardModal =
         {
             Title: string
             Buttons: ButtonModel<'msg> list
+            Close: (unit -> 'msg) option
         }
 
     and ButtonModel<'msg> = 
@@ -71,9 +72,10 @@ module CardModal =
         {
             Title = "Default text"
             Buttons = []
+            Close = None
         }
 
-    let cardModal (settings: Settings<_>) closeDisplay dispatch =
+    let cardModal (settings: Settings<_>) dispatch =
         let renderButton (model: ButtonModel<'msg>) =
             let onClick = Button.Option.OnClick (fun _ -> dispatch (model.OnClick ()))
             Button.button (onClick::model.Options) [ str model.Title ]
@@ -85,8 +87,10 @@ module CardModal =
             Modal.background [ ] [ ]
             Modal.Card.card [ ] [ 
                 Modal.Card.head [ ] [ 
-                    Modal.Card.title [ ] [ str settings.Title ]
-                    Delete.delete [ Delete.OnClick closeDisplay ] [ ] 
+                    yield Modal.Card.title [ ] [ str settings.Title ]
+                    match settings.Close with
+                    | Some m -> yield Delete.delete [ Delete.OnClick (fun _ -> dispatch (m ())) ] [ ] 
+                    | None -> yield! []
                 ]
                 Modal.Card.body [ ] [ str "Some content" ]
                 Modal.Card.foot [] (renderFooterButtons settings.Buttons)
@@ -114,7 +118,7 @@ let view model =
     modalPortal [
 
 
-        CardModal.cardModal modalSettings ignore ignore
+        CardModal.cardModal modalSettings ignore
         //R.button [] [ R.str "Hello!!" ]
     ]
 
