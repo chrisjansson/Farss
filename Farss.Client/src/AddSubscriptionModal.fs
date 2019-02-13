@@ -75,7 +75,7 @@ module CardModal =
             Close = None
         }
 
-    let cardModal (settings: Settings<_>) dispatch =
+    let cardModal (settings: Settings<_>) children dispatch =
         let renderButton (model: ButtonModel<'msg>) =
             let onClick = Button.Option.OnClick (fun _ -> dispatch (model.OnClick ()))
             Button.button (onClick::model.Options) [ str model.Title ]
@@ -92,8 +92,8 @@ module CardModal =
                     | Some m -> yield Delete.delete [ Delete.OnClick (fun _ -> dispatch (m ())) ] [ ] 
                     | None -> yield! []
                 ]
-                Modal.Card.body [ ] [ str "Some content" ]
-                Modal.Card.foot [] (renderFooterButtons settings.Buttons)
+                Modal.Card.body [ ] children
+                Modal.Card.foot [ ] (renderFooterButtons settings.Buttons)
             ]
         ]
 
@@ -116,10 +116,7 @@ let view model =
         }
     
     modalPortal [
-
-
-        CardModal.cardModal modalSettings ignore
-        //R.button [] [ R.str "Hello!!" ]
+        CardModal.cardModal modalSettings [ Fable.Helpers.React.str "Some content" ] ignore
     ]
 
 
