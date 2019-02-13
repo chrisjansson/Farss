@@ -22,3 +22,6 @@ type ModalPortal() =
 
 let modalPortal (children: React.ReactElement seq) = 
     Fable.Helpers.React.ofType<ModalPortal, _, _> () children
+
+let HtmlModalPortal (children: Html.Html<'msg> seq): Html.Html<'msg> =
+    fun d -> modalPortal (Html.runChildren children d)
