@@ -19,7 +19,6 @@ type ModalPortal() =
     override this.render() = 
         ReactDom.createPortal(Fable.Helpers.React.fragment [] this.children, element)
 
-
 let modalPortal (children: React.ReactElement seq) = 
     Fable.Helpers.React.ofType<ModalPortal, _, _> () children
 
