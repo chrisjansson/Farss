@@ -41,8 +41,7 @@ let udpate (msg: Message) (model: Model) =
 
 let view model = 
     let modalSettings = 
-        { Modal.defaultSettings () with 
-            Title = TextResources.AddSubscriptionModalTitle 
+        { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
             Buttons = [
                 { 
                     Title = TextResources.OkButtonTitle; 
@@ -58,7 +57,7 @@ let view model =
         }
     
     modalPortal [
-        Modal.cardModal modalSettings [ Fable.Helpers.React.str "Some content" ] ignore
+        Modal.modal modalSettings [ Html.str "Some content" ] ignore
     ]
 
 

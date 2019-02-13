@@ -64,3 +64,6 @@ let span (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
 
 let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
     html dispatch
+
+let runChildren (children: Html<'msg> seq) (dispatch: Dispatch<'msg>) =
+    Seq.map (fun c -> run c dispatch) children
