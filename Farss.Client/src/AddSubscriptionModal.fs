@@ -39,17 +39,6 @@ let udpate (msg: Message) (model: Model) =
     | (LoadingPreview, SubscriptionPreviewReceived (Error e)) ->
         PreviewFeedFailed, Cmd.none
 
-module TextResources =
-    [<Literal>]
-    let AddSubscriptionModalTitle = "Add subscription"
-
-    [<Literal>]
-    let OkButtonTitle = "Ok"
-
-    [<Literal>]
-    let CancelButtonTitle = "Cancel"
-
-
 let view model = 
     let modalSettings = 
         { Modal.defaultSettings () with 
