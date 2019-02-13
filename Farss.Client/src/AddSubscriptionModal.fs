@@ -77,18 +77,21 @@ module CardModal =
         let renderButton (model: ButtonModel<'msg>) =
             let onClick = Button.Option.OnClick (fun _ -> dispatch (model.OnClick ()))
             Button.button (onClick::model.Options) [ str model.Title ]
+
         let renderFooterButtons (buttons: ButtonModel<'msg> list) =
             buttons |> List.map renderButton
-        Modal.modal [ Modal.IsActive true ]
-            [ Modal.background [ Props [ Props.OnClick closeDisplay ] ] [ ]
-              Modal.Card.card [ ]
-                [ Modal.Card.head [ ]
-                    [ Modal.Card.title [ ]
-                        [ str settings.Title ]
-                      Delete.delete [ Delete.OnClick closeDisplay ] [ ] ]
-                  Modal.Card.body [ ]
-                    [ str "Some content" ]
-                  Modal.Card.foot [ ] (renderFooterButtons settings.Buttons) ] ]
+
+        Modal.modal [ Modal.IsActive true ] [ 
+            Modal.background [ ] [ ]
+            Modal.Card.card [ ] [ 
+                Modal.Card.head [ ] [ 
+                    Modal.Card.title [ ] [ str settings.Title ]
+                    Delete.delete [ Delete.OnClick closeDisplay ] [ ] 
+                ]
+                Modal.Card.body [ ] [ str "Some content" ]
+                Modal.Card.foot [] (renderFooterButtons settings.Buttons)
+            ]
+        ]
 
 let view model = 
     let modalSettings = 
