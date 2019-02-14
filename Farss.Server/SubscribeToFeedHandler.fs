@@ -28,5 +28,5 @@ let subscribeToFeedHandler : HttpHandler =
 
             let! result = SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto 
                         
-            return! (result |> convertToHandler) next ctx
+            return! (result |> convertToJsonResultHandler) next ctx
         }

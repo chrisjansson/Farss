@@ -6,9 +6,25 @@ type Subscription =
     {
         Id: SubscriptionId
         Url: string
-        Title: string
+        Title: SubscriptionTitle
     }
 and SubscriptionId = Guid
+and SubscriptionTitle = string
+
+module SubscriptionTitle =
+    let create v =
+        if String.IsNullOrWhiteSpace(v) then //TODO: Extract validation helpers for common rules
+            Error "Article guid cannot be null or empty"
+        else
+            Ok v
+
+module Subscription =
+    let create url title: Subscription =
+        {
+            Id = Guid.NewGuid()
+            Url = url
+            Title = title
+        }
 
 type Article =
     {

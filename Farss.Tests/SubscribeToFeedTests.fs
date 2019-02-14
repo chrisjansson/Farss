@@ -72,7 +72,14 @@ let tests = testList "subscribe to feed tests" [
                 Expect.all (r.getAll()) (fun f -> f.Id <> Guid())  "all feeds should have non empty guid ids"
             }
 
-            //TODO: Add, title must be non empty
+            "fails subscribe when title is empty", fun r -> async {
+                let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
+                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+
+                let result = subscribeToFeed adapter r { Url = "any url"; Title = "" }
+
+                do! expectBadRequest result "title error"
+            }
         ]
 
         let createTest (name, f) =
