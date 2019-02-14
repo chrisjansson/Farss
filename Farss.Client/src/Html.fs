@@ -72,3 +72,26 @@ let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
     html dispatch
 
 let runChildren (children: Html<'msg> seq) (dispatch: Dispatch<'msg>) = applyDispatch children dispatch
+
+module Bulma =
+
+    let inline input (props: Attr<'msg> list) = 
+        className "input" :: props |> input
+
+    let inline field (children: Html<'msg> seq): Html<'msg> =
+        div [ className "field" ] children
+
+    let inline control (children: Html<'msg> seq): Html<'msg> =
+        div [ className "control" ] children
+
+    let inline label (text: string) =
+        label [ className "label" ] [ str text ]
+
+    module Field =
+        let inline input text (props: Attr<'msg> list) =
+            field [
+                label text
+                control [
+                    input props
+                ]
+            ]
