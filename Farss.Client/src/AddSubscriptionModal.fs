@@ -51,7 +51,7 @@ let view model =
 
         HtmlModalPortal [
             Modal.modal modalSettings [ 
-                Html.input [ Value m.Url; OnInput (fun s -> EditUrl s) ]
+                Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
             ]
         ]
     | _ -> Html.div [] []

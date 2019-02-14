@@ -11,7 +11,7 @@
 * F#
 * Giraffe
 * Postgres
-* Martena
+* Marten
 * Fable
 * Elmish
 * Reverse proxy support

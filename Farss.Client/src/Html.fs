@@ -14,12 +14,14 @@ type Attr<'msg> =
     | Type of string
     | Value of string
     | ClassName of string
+    | Placeholder of string
 
 let inline onClick msg = OnClick msg
 let inline _type t = Type t
 let inline value v = Value v
 let inline onInput f = OnInput f
 let inline className cn = ClassName cn
+let inline placeholder text = Placeholder text
 
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 
@@ -35,6 +37,7 @@ let convertToProp attr dispatch =
     | Value v -> Props.Value v :> IHTMLProp
     | OnInput f -> Props.OnChange (fun e -> onChangeR e f) :> IHTMLProp
     | ClassName cn -> Props.ClassName cn :> IHTMLProp
+    | Placeholder text -> Props.Placeholder text :> IHTMLProp
 
 let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) props
 
@@ -44,7 +47,7 @@ let applyDispatch (elements: Html<'msg> seq) (dispatch: Dispatch<'msg>) =
 let fragment () (elements: Html<'msg> seq): Html<'msg> =
     fun d -> R.fragment [] (applyDispatch elements d)
 
-let str (str: string): Html<'msg> =
+let inline str (str: string): Html<'msg> =
     fun _ -> R.str str
     
 let input (props: Attr<'msg> seq): Html<'msg> =
@@ -52,6 +55,9 @@ let input (props: Attr<'msg> seq): Html<'msg> =
 
 let div (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.div (convertToProps props d) (applyDispatch children d)
+
+let label (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+    fun d -> R.label (convertToProps props d) (applyDispatch children d)
         
 let h1 (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.h1 (convertToProps props d) (applyDispatch children d)

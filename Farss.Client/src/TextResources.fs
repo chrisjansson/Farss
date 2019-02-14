@@ -8,3 +8,6 @@ let OkButtonTitle = "Ok"
 
 [<Literal>]
 let CancelButtonTitle = "Cancel"
+
+[<Literal>]
+let SubscriptionUrlInputPlaceholder = "Subscription url"
