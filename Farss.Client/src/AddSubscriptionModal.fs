@@ -1,7 +1,7 @@
 ﻿module AddSubscriptionModal
 
 open Elmish
-open ModalPortal
+open AddSubscriptionModel
 
 module R =  Fable.Helpers.React
 //Open
@@ -11,19 +11,6 @@ module R =  Fable.Helpers.React
         //show subscribe
     //if error show error
 
-
-type Model = 
-    | EnterFeedUrl of EnterFeedUrlModel
-    | LoadingPreview
-    | PreviewSubscription
-    | PreviewFeedFailed
-and EnterFeedUrlModel = { Url: string }
-
-
-type Message =
-    | EditUrl of string
-    | PreviewSubscription
-    | SubscriptionPreviewReceived of Result<unit, unit>
 
 let createLoadPreviewCmd (url: string) = 
     Cmd.none
@@ -39,25 +26,34 @@ let udpate (msg: Message) (model: Model) =
     | (LoadingPreview, SubscriptionPreviewReceived (Error e)) ->
         PreviewFeedFailed, Cmd.none
 
+open Html
+open ModalPortal
+
 let view model = 
     let modalSettings = 
         { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
             Buttons = [
                 { 
                     Title = TextResources.OkButtonTitle; 
-                    OnClick = fun _ -> (); 
+                    OnClick = fun _ -> Ignore; 
                     Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
                 }
                 {
                     Title = TextResources.CancelButtonTitle; 
-                    OnClick = fun _ -> (); 
+                    OnClick = fun _ -> Ignore; 
                     Options = [] 
                 }
             ]
         }
     
-    modalPortal [
-        Modal.modal modalSettings [ Html.str "Some content" ] ignore
-    ]
+    match model with
+    | EnterFeedUrl m -> 
+
+        HtmlModalPortal [
+            Modal.modal modalSettings [ 
+                Html.input [ Value m.Url; OnInput (fun s -> EditUrl s) ]
+            ]
+        ]
+    | _ -> Html.div [] []
 
 

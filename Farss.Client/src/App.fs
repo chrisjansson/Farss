@@ -13,7 +13,7 @@ let init(): Model * Cmd<Msg> =
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = "" }, Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = AddSubscriptionModel.EnterFeedUrl { Url = "" } }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id
@@ -38,6 +38,15 @@ let update (msg:Msg) (model:Model) =
         model, GuiCmd.alert "Succeeded"
     | Msg.SubscriptionFailed exn ->
         model, GuiCmd.alert (sprintf "Failed %A" exn.Message)
+    | Msg.AddSubscriptionMsg msg ->
+        match model with 
+        | Model.Loaded m ->
+            let asm, asmCmd = AddSubscriptionModal.udpate msg m.AddSubscriptionModel
+            let m = { m with AddSubscriptionModel = asm }
+            let cmd = Cmd.map Msg.AddSubscriptionMsg asmCmd
+            Model.Loaded m, cmd
+        | _ -> model, Cmd.none
+    
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]
@@ -134,10 +143,11 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * strin
 
 
 let view (model:Model) dispatch =
-    //Nav.NavComp ()
+    ////Nav.NavComp ()
     match model with
     | Loading -> Html.run (renderLoading ()) dispatch
-    | Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = s } -> Html.run (renderLoaded (subs, articles, s)) dispatch
+    | Model.Loaded m -> Html.run (AddSubscriptionModal.view m.AddSubscriptionModel) (Msg.AddSubscriptionMsg >> dispatch)
+    //| Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = s } -> Html.run (renderLoaded (subs, articles, s)) dispatch
 
 //TODO: add error handler
 Program.mkProgram init update view

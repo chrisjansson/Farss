@@ -10,6 +10,7 @@ and Loaded =
         Articles: Dto.ArticleDto list
         Subscriptions: Dto.SubscriptionDto list
         SubInput: string
+        AddSubscriptionModel: AddSubscriptionModel.Model
     }
 
 type Msg = 
@@ -25,3 +26,4 @@ type Msg =
     | AddSubscription
     | SubscriptionSucceeded
     | SubscriptionFailed of exn
+    | AddSubscriptionMsg of AddSubscriptionModel.Message
