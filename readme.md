@@ -2,11 +2,16 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/0acrgm8eq2xjrws0?svg=true)](https://ci.appveyor.com/project/ChrisJansson/farss)
 
+# Run it in development
+* docker run --name farss_postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:11.1
+* cd Farss.Server && dotnet watch run
+* cd Farrs.Client/src && npm run start
+
 ### Tech must haves!
 * F#
 * Giraffe
 * Postgres
-* Marten
+* Martena
 * Fable
 * Elmish
 * Reverse proxy support
