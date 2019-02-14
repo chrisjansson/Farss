@@ -130,10 +130,11 @@ let toAtom (feed: Types.Feed) =
 
     sw.ToString()
 
-let toRss (feed: SyndicationItem) = 
+let toRss (title: string) (feed: SyndicationItem) = 
     let sw = new StringWriterWithEncoding(System.Text.Encoding.UTF8);
     use xmlWriter = XmlWriter.Create(sw, XmlWriterSettings(Async=true))
     let writer = RssFeedWriter(xmlWriter)
+    (writer.WriteTitle(title)).Wait()
     (writer.Write(feed)).Wait()
     (writer.Flush()).Wait()
     xmlWriter.Flush()

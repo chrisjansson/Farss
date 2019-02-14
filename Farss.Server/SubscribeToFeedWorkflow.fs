@@ -14,8 +14,21 @@ type PreviewSubscribeToFeedResponse =
         Title: string
     }
 
-let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQuery) =
-    BadRequest ("Meh", exn "Meh") |> Error
+let private convertToWorkflowError r: Result<_, WorkflowError> =
+    match r with
+    | Ok r -> Ok r
+    | Error (FetchError e) -> BadRequest (e.Message, e) |> Error
+    | Error (ParseError e) -> BadRequest (e.Message, e) |> Error
+
+let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQuery) =   
+    let toResponse (feed: Feed) =
+        {
+            Title = feed.Title
+        }
+    
+    feedReader.getFromUrl query.Url
+    |> AsyncResult.mapResult toResponse
+    |> Async.map convertToWorkflowError
 
 type SubscribeToFeedCommand = 
     {
@@ -28,12 +41,6 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
     let saveFeed _ =
         let feed: Subscription = { Url = command.Url; Id = Guid.NewGuid() }
         repository.save feed
-
-    let convertToWorkflowError r: Result<Unit, WorkflowError> =
-        match r with
-        | Ok r -> Ok r
-        | Error (FetchError e) -> BadRequest (e.Message, e) |> Error
-        | Error (ParseError e) -> BadRequest (e.Message, e) |> Error
 
     feedReader.getFromUrl command.Url
     |> AsyncResult.mapResult saveFeed

@@ -220,15 +220,16 @@ let should_remain: AsyncTestStep<string, _> =
 [<Tests>]
 let tests = 
     specs "Subscribe to feed specs" [
+        //TODO: Extend this usecase with fetching sites that contain links to rss feeds
         spec "Preview subscription" <| fun _ ->
-            let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
+            let feedContent = FeedBuilder.feedItem "feed item title" |> FeedBuilder.toRss "feed title"         
             
             Given >> feed_available_at_url "a feed url" feedContent >>
             When >> a_user_previews_feed_subscription_for "a feed url" >>
-            Then >> a_preview_with_title "a feed url" >> should_be_shown
+            Then >> a_preview_with_title "feed title" >> should_be_shown
 
         spec "Subscribe to feed" <| fun _->
-            let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
+            let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss "feed title"             
 
             //TODO: Allow user to enter title 
             Given >> feed_available_at_url "a feed url" feedContent >>

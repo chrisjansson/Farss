@@ -14,9 +14,9 @@ let previewSubscribeToFeedHandler: HttpHandler =
             let adapter = ctx.GetService<FeedReaderAdapter>()
             let! dto = ctx.BindJsonAsync<PreviewSubscribeToFeedQuery>()            
 
-            let result = SubscribeToFeedWorkflow.previewSubscribeToFeed adapter dto 
+            let! result = SubscribeToFeedWorkflow.previewSubscribeToFeed adapter dto 
                             
-            return! (result |> convertToHandler) next ctx
+            return! (result |> convertToJsonResultHandler) next ctx
         }
 
 let subscribeToFeedHandler : HttpHandler =

@@ -43,7 +43,7 @@ let tests = testList "subscribe to feed tests" [
 
             "result is ok when successful", fun r -> async {
                 let fr = TestStartup.createInMemoryFeedReader()
-                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
                 let! result = subscribeToFeed fr.Adapter r { Url = "any url" }
@@ -53,7 +53,7 @@ let tests = testList "subscribe to feed tests" [
 
             "saves feed when successful", fun r -> async {
                 let fr = TestStartup.createInMemoryFeedReader()
-                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
                 do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
@@ -64,7 +64,7 @@ let tests = testList "subscribe to feed tests" [
 
             "created feed has non empty guid", fun r -> async {
                 let fr = TestStartup.createInMemoryFeedReader()
-                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss 
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
                 do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
