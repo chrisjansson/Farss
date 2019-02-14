@@ -31,7 +31,7 @@ let fetchArticlesForSubscriptionTests =
     let assertYieldsItemError title feedItem =
         title,  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let feedItems = [ 
                     feedItem
                 ]
@@ -61,7 +61,7 @@ let fetchArticlesForSubscriptionTests =
             }
             "Does nothing when no items exists in feed", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subId })
+                subs.save ({ Url = "feed url"; Id = subId; Title = "title" })
                 adapterStub.SetResult ("feed url", Ok emptyFeed)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -72,7 +72,7 @@ let fetchArticlesForSubscriptionTests =
             }
             "Returns failure when feed fails", fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let id = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = id })
+                subs.save ({ Url = "feed url"; Id = id; Title = "title" })
                 let expectedError = (FeedError.ParseError (exn("error")))
                 adapterStub.SetResult ("feed url", Error expectedError)
 
@@ -84,7 +84,7 @@ let fetchArticlesForSubscriptionTests =
             }
             "Does not fetch any articles when one fails",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let feedItems = [ 
                     { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = (Some DateTimeOffset.Now); Link = None } 
                     { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = None; Link = None } 
@@ -112,7 +112,7 @@ let fetchArticlesForSubscriptionTests =
             
             "Feed with one new article adds article",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let items = [ 
                     { 
                         FeedReaderAdapter.Item.Title = "Item title"
@@ -141,7 +141,7 @@ let fetchArticlesForSubscriptionTests =
             }
             "Fetch one article associates with subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = None } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
@@ -160,7 +160,7 @@ let fetchArticlesForSubscriptionTests =
             }
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId })
+                subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = None } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
@@ -181,8 +181,8 @@ let fetchArticlesForSubscriptionTests =
             "Fetches are grouped by subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId0 = Guid.NewGuid()
                 let subscriptionId1 = Guid.NewGuid()
-                subs.save ({ Url = "feed url"; Id = subscriptionId0 })
-                subs.save ({ Url = "feed url"; Id = subscriptionId1 })
+                subs.save ({ Url = "feed url"; Id = subscriptionId0; Title = "title" })
+                subs.save ({ Url = "feed url"; Id = subscriptionId1; Title = "title" })
                 let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))); Link = None } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
@@ -218,9 +218,9 @@ let fetchArticlesForAllSubscriptionsTests =
                 let expectedFetchError = (FeedError (FetchError (exn "fetch error exception")))
                 let expectedException = exn "throwing fetch"
 
-                s.save ({ Subscription.Id = s0; Url = "0" })
-                s.save ({ Subscription.Id = s1; Url = "0" })
-                s.save ({ Subscription.Id = s2; Url = "0" })
+                s.save ({ Subscription.Id = s0; Url = "0"; Title = "title"})
+                s.save ({ Subscription.Id = s1; Url = "0"; Title = "title" })
+                s.save ({ Subscription.Id = s2; Url = "0"; Title = "title" })
 
                 let stubFetch: FetchArticlesWorkflow.FetchArticlesForSubscription =
                     fun subId -> 

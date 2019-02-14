@@ -18,7 +18,7 @@ type SpecArticle =
 
 let subscription (subscriptionUrl: string): AsyncTestStep<unit, Subscription> =
     Spec.Step.map (fun (_, f: TestWebApplicationFactory) -> 
-            let subscription = { Subscription.Id = Guid.NewGuid(); Url = subscriptionUrl }
+            let subscription = { Subscription.Id = Guid.NewGuid(); Url = subscriptionUrl; Title = "title" }
         
             f.InScope(fun (sr: SubscriptionRepository) -> sr.save(subscription), f) |> ignore
 

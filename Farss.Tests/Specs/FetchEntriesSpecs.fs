@@ -18,7 +18,7 @@ type ExpectedArticle =
 let a_subscription_for_feed (url: string) =
     Spec.Step.map (fun (_, f) ->
             withService<SubscriptionRepository> (fun r -> 
-                let a = { Url = url; Id = Guid.NewGuid() }
+                let a = { Url = url; Id = Guid.NewGuid(); Title = "title" }
                 r.save a
             ) f
         )

@@ -48,10 +48,10 @@ module HttpClient =
         client.PostAsync(url, content) |> Async.AwaitTask
 
 
-type FeedProjection = { Url: string }
+type FeedProjection = { Url: string; Title: string }
 
 let project (feed: Domain.Subscription): FeedProjection =
-    { Url = feed.Url }
+    { Url = feed.Url; Title = feed.Title }
 
 let feed_available_at_url (url: string) (feed: string): AsyncTestStep<_, unit> =
     fun atc -> async {
@@ -62,11 +62,11 @@ let feed_available_at_url (url: string) (feed: string): AsyncTestStep<_, unit> =
         return ((), f)
     }
 
-let a_user_subscribes_to_feed (url: string): AsyncTestStep<_, unit> =
+let a_user_subscribes_to_feed (url: string) (title: string) : AsyncTestStep<_, unit> =
     fun atc -> async {
         let! (_, f) = atc
             
-        let payload: SubscribeToFeedCommand = { Url = url }
+        let payload: SubscribeToFeedCommand = { Url = url; Title = title }
         let client = f.CreateClient()
         let! response = client |> HttpClient.postAsync ApiUrls.GetSubscriptions payload
         response.EnsureSuccessStatusCode() |> ignore
@@ -103,7 +103,13 @@ let should_be_shown : AsyncTestStep<string * PreviewSubscribeToFeedResponse, _> 
 let default_feed_with_url (url: string): AsyncTestStep<_, _> =
     fun atc -> async {
         let! (_, f) = atc
-        return ({ FeedProjection.Url = url }, f)
+        return ({ FeedProjection.Url = url; Title = "" }, f)
+    }
+
+let and_title (title: string): AsyncTestStep<FeedProjection, FeedProjection> =
+    fun atc -> async {
+        let! (feedProjection, f) = atc
+        return ({ feedProjection with Title = title }, f)
     }
 
 let should_have_been_saved: AsyncTestStep<FeedProjection, _> =
@@ -123,7 +129,7 @@ let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
 
         inScope (fun s -> 
             let r = s.GetService<SubscriptionRepository>()
-            let feed = { Domain.Url = url; Id = Guid.NewGuid() }
+            let feed = { Domain.Url = url; Id = Guid.NewGuid(); Title = "stub title" }
             r.save feed
         ) f
 
@@ -231,10 +237,9 @@ let tests =
         spec "Subscribe to feed" <| fun _->
             let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss "feed title"             
 
-            //TODO: Allow user to enter title 
             Given >> feed_available_at_url "a feed url" feedContent >>
-            When >> a_user_subscribes_to_feed "a feed url" >>
-            Then >> default_feed_with_url "a feed url" >> should_have_been_saved
+            When >> a_user_subscribes_to_feed "a feed url" "user chosen title" >>
+            Then >> default_feed_with_url "a feed url" >> and_title "user chosen title" >> should_have_been_saved
             
         spec "Get subscriptions" <| fun _ ->
             Given >> a_feed_with_url "http://whatevs" >> 

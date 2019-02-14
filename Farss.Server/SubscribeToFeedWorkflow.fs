@@ -33,13 +33,12 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
 type SubscribeToFeedCommand = 
     {
         Url: string
+        Title: string
     }
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedCommand) =
-    //todo: handle atom feeds betters
-    //todo: rss2.0 only? Does that change anything?
     let saveFeed _ =
-        let feed: Subscription = { Url = command.Url; Id = Guid.NewGuid() }
+        let feed: Subscription = { Url = command.Url; Id = Guid.NewGuid(); Title = command.Title }
         repository.save feed
 
     feedReader.getFromUrl command.Url

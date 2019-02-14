@@ -15,10 +15,10 @@ let expectBadRequest actual message = async {
         | _ -> Tests.failtest "Expected bad request"
     }
 
-type FeedProjection = { Url: string }
+type SubscriptionProjection = { Url: string; Title: string }
 
-let project (feed: Domain.Subscription): FeedProjection =
-    { Url = feed.Url }
+let project (subscription: Domain.Subscription): SubscriptionProjection =
+    { Url = subscription.Url; Title = subscription.Title }
 
 [<Tests>]
 let tests = testList "subscribe to feed tests" [
@@ -27,7 +27,7 @@ let tests = testList "subscribe to feed tests" [
                 let fetchResult = FakeFeedReaderAdapter.fetchError "fetch error"
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
-                let result = subscribeToFeed adapter r { Url = "any url" }
+                let result = subscribeToFeed adapter r { Url = "any url"; Title = "any title" }
 
                 do! expectBadRequest result "fetch error"
             }
@@ -36,7 +36,7 @@ let tests = testList "subscribe to feed tests" [
                 let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
-                let result = subscribeToFeed adapter r { Url = "any url" }
+                let result = subscribeToFeed adapter r { Url = "any url"; Title = "any title" }
 
                 do! expectBadRequest result "parse error"
             }
@@ -46,7 +46,7 @@ let tests = testList "subscribe to feed tests" [
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
-                let! result = subscribeToFeed fr.Adapter r { Url = "any url" }
+                let! result = subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" }
 
                 Expect.isOk result "should return ok when successful"
             }
@@ -56,9 +56,9 @@ let tests = testList "subscribe to feed tests" [
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
-                do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Async.Ignore
 
-                let expected = { FeedProjection.Url = "any url" }
+                let expected = { SubscriptionProjection.Url = "any url"; Title = "any title" }
                 Expect.equal (r.getAll() |> List.map project) [ expected ] "should save feed"
             }
 
@@ -67,10 +67,12 @@ let tests = testList "subscribe to feed tests" [
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
-                do! subscribeToFeed fr.Adapter r { Url = "any url" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Async.Ignore
 
                 Expect.all (r.getAll()) (fun f -> f.Id <> Guid())  "all feeds should have non empty guid ids"
             }
+
+            //TODO: Add, title must be non empty
         ]
 
         let createTest (name, f) =

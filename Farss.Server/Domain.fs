@@ -6,6 +6,7 @@ type Subscription =
     {
         Id: SubscriptionId
         Url: string
+        Title: string
     }
 and SubscriptionId = Guid
 
