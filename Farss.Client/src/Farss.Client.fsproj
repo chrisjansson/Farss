@@ -25,4 +25,7 @@
     <PackageReference Include="Fable.Fetch" Version="1.0.0" />
     <PackageReference Include="Fulma" Version="1.1.0" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.6.2" />
+  </ItemGroup>
 </Project>
