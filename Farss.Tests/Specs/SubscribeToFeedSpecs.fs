@@ -182,19 +182,19 @@ let tests =
         spec "Subscribe to feed" <| fun _->
             let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
 
-            Given >>> feed_available_at_url "a feed url" feedContent >>>
-            When >>> a_user_subscribes_to_feed "a feed url" >>
-            Then >>> default_feed_with_url "a feed url" >>> should_have_been_saved
+            Given >> feed_available_at_url "a feed url" feedContent >>
+            When >> a_user_subscribes_to_feed "a feed url" >>
+            Then >> default_feed_with_url "a feed url" >> should_have_been_saved
             
         spec "Get subscriptions" <| fun _ ->
-            Given >>> a_feed_with_url "http://whatevs" >>> 
-            When >>> subscriptions_are_fetched >>> 
-            Then >>> subscription_with_url "http://whatevs" >>> is_returned
+            Given >> a_feed_with_url "http://whatevs" >> 
+            When >> subscriptions_are_fetched >> 
+            Then >> subscription_with_url "http://whatevs" >> is_returned
         
         spec "Delete subscription" <| fun _ ->
-            Given >>> a_feed_with_url "feed 1" >>> 
-            And >>> a_feed_with_url "feed 2" >>> 
-            When >>> feed_with_url "feed 2" >>> is_deleted >>>
-            Then >>> only_feed_with_url "feed 1" >>> should_remain
+            Given >> a_feed_with_url "feed 1" >> 
+            And >> a_feed_with_url "feed 2" >> 
+            When >> feed_with_url "feed 2" >> is_deleted >>
+            Then >> only_feed_with_url "feed 1" >> should_remain
     ]
 
