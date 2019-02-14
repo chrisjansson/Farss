@@ -25,6 +25,21 @@ module HttpClient =
                 let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
                 return JsonConvert.DeserializeObject<'a>(json)
         }
+
+    let getAsJsonAsyncWithPayload<'a, 'p> (url: string) (content: 'p) (client: System.Net.Http.HttpClient): Async<'a> = async {
+        let json = Thoth.Json.Net.Encode.Auto.toString(0, content)
+        let content = new StringContent(json)
+        let message = new HttpRequestMessage(HttpMethod.Get, url)
+        message.Content <- content
+        let! response = client.SendAsync(message) |> Async.AwaitTask
+        if not response.IsSuccessStatusCode then
+            let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            failwith content
+            return Unchecked.defaultof<'a>
+        else
+            let! json = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+            return JsonConvert.DeserializeObject<'a>(json)
+    }
         
     let postAsync (url: string) (content: 'a) (client: System.Net.Http.HttpClient) =
         //TODO: Create both snapshots and characterization tests for thoth?
@@ -56,6 +71,32 @@ let a_user_subscribes_to_feed (url: string): AsyncTestStep<_, unit> =
         let! response = client |> HttpClient.postAsync ApiUrls.GetSubscriptions payload
         response.EnsureSuccessStatusCode() |> ignore
 
+        return ((), f)
+    }
+
+let a_user_previews_feed_subscription_for (url: string): AsyncTestStep<_, _> =
+   fun atc -> async {
+       let! (_, f) = atc
+           
+       let payload: PreviewSubscribeToFeedQuery = { Url = url }
+       let client = f.CreateClient()
+       let! result = client |> HttpClient.getAsJsonAsyncWithPayload<PreviewSubscribeToFeedResponse, _> ApiUrls.PreviewSubscribeToFeed payload
+
+       return (result, f)
+   }
+
+let a_preview_with_title (title: string): AsyncTestStep<PreviewSubscribeToFeedResponse, string * PreviewSubscribeToFeedResponse> =
+    fun atc -> async {
+        let! (r, f) = atc
+        return ((title, r), f)
+    }
+
+let should_be_shown : AsyncTestStep<string * PreviewSubscribeToFeedResponse, _> =
+    fun atc -> async {
+        let! ((expected, actual), f) = atc
+        
+        Expect.equal actual.Title expected "Subscription preview title"
+        
         return ((), f)
     }
 
@@ -179,9 +220,17 @@ let should_remain: AsyncTestStep<string, _> =
 [<Tests>]
 let tests = 
     specs "Subscribe to feed specs" [
+        spec "Preview subscription" <| fun _ ->
+            let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
+            
+            Given >> feed_available_at_url "a feed url" feedContent >>
+            When >> a_user_previews_feed_subscription_for "a feed url" >>
+            Then >> a_preview_with_title "a feed url" >> should_be_shown
+
         spec "Subscribe to feed" <| fun _->
             let feedContent = FeedBuilder.feedItem "feed title" |> FeedBuilder.toRss            
 
+            //TODO: Allow user to enter title 
             Given >> feed_available_at_url "a feed url" feedContent >>
             When >> a_user_subscribes_to_feed "a feed url" >>
             Then >> default_feed_with_url "a feed url" >> should_have_been_saved

@@ -7,6 +7,7 @@ let createWebApp () =
         route "/ping"   >=> text "pong"
         route "/"       >=> htmlFile "/pages/index.html"
         route ApiUrls.SubscribeToFeed >=> POST >=> SubscribeToFeedHandler.subscribeToFeedHandler
+        route ApiUrls.PreviewSubscribeToFeed >=> GET >=> SubscribeToFeedHandler.previewSubscribeToFeedHandler
         route ApiUrls.GetSubscriptions >=> GET >=> GetSubscriptionsHandler.getSubscriptionsHandler
         route ApiUrls.DeleteSubscription >=> POST >=> DeleteSubscriptionHandler.deleteSubscriptionHandler
         route ApiUrls.PollSubscriptions >=> POST >=> FetchArticlesHandler.fetchEntriesHandler

@@ -4,6 +4,19 @@ open Domain
 open Persistence
 open FeedReaderAdapter
 
+type PreviewSubscribeToFeedQuery =
+    {
+        Url: string
+    }
+
+type PreviewSubscribeToFeedResponse =
+    {
+        Title: string
+    }
+
+let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQuery) =
+    BadRequest ("Meh", exn "Meh") |> Error
+
 type SubscribeToFeedCommand = 
     {
         Url: string

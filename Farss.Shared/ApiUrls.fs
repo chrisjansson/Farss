@@ -4,6 +4,9 @@
 let SubscribeToFeed = "/api/feeds"
 
 [<Literal>]
+let PreviewSubscribeToFeed = "/api/previewsubscribe"
+
+[<Literal>]
 let GetSubscriptions = "/api/feeds"
 
 [<Literal>]

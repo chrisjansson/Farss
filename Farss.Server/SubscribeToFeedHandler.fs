@@ -8,6 +8,17 @@ open FeedReaderAdapter
 open Persistence
 open GiraffeUtils
 
+let previewSubscribeToFeedHandler: HttpHandler =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            let adapter = ctx.GetService<FeedReaderAdapter>()
+            let! dto = ctx.BindJsonAsync<PreviewSubscribeToFeedQuery>()            
+
+            let result = SubscribeToFeedWorkflow.previewSubscribeToFeed adapter dto 
+                            
+            return! (result |> convertToHandler) next ctx
+        }
+
 let subscribeToFeedHandler : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
