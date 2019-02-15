@@ -2,11 +2,11 @@ module SubscribeToFeedTests
 
 open Expecto
 open SubscribeToFeedWorkflow
-open FeedReaderAdapter
 open System
 open Persistence
+open FSharp.Control.Tasks.V2
 
-let expectBadRequest actual message = async {
+let expectBadRequest actual message = task {
         let! actual' = actual
         match actual' with        
         | Error (BadRequest (m, e)) ->
@@ -23,7 +23,7 @@ let project (subscription: Domain.Subscription): SubscriptionProjection =
 [<Tests>]
 let tests = testList "subscribe to feed tests" [
         let cases = [
-            "fails subscribe when fetching fails", fun r -> async {
+            "fails subscribe when fetching fails", fun r -> task {
                 let fetchResult = FakeFeedReaderAdapter.fetchError "fetch error"
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
@@ -32,7 +32,7 @@ let tests = testList "subscribe to feed tests" [
                 do! expectBadRequest result "fetch error"
             }
 
-            "fails subscribe when feed parsing fails", fun r -> async {
+            "fails subscribe when feed parsing fails", fun r -> task {
                 let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
@@ -41,7 +41,7 @@ let tests = testList "subscribe to feed tests" [
                 do! expectBadRequest result "parse error"
             }
 
-            "result is ok when successful", fun r -> async {
+            "result is ok when successful", fun r -> task {
                 let fr = TestStartup.createInMemoryFeedReader()
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
@@ -51,28 +51,28 @@ let tests = testList "subscribe to feed tests" [
                 Expect.isOk result "should return ok when successful"
             }
 
-            "saves feed when successful", fun r -> async {
+            "saves feed when successful", fun r -> task {
                 let fr = TestStartup.createInMemoryFeedReader()
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
-                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Task.ignore
 
                 let expected = { SubscriptionProjection.Url = "any url"; Title = "any title" }
                 Expect.equal (r.getAll() |> List.map project) [ expected ] "should save feed"
             }
 
-            "created feed has non empty guid", fun r -> async {
+            "created feed has non empty guid", fun r -> task {
                 let fr = TestStartup.createInMemoryFeedReader()
                 let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
                 fr.Add("any url", xml)
 
-                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Async.Ignore
+                do! subscribeToFeed fr.Adapter r { Url = "any url"; Title = "any title" } |> Task.ignore
 
                 Expect.all (r.getAll()) (fun f -> f.Id <> Guid())  "all feeds should have non empty guid ids"
             }
 
-            "fails subscribe when title is empty", fun r -> async {
+            "fails subscribe when title is empty", fun r -> task {
                 let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
                 let adapter = FakeFeedReaderAdapter.stubResult fetchResult
 
@@ -83,7 +83,7 @@ let tests = testList "subscribe to feed tests" [
         ]
 
         let createTest (name, f) =
-            testAsync name {
+            testTask name {
                 let repository = Persistence.create ()
                 do! f repository
             }

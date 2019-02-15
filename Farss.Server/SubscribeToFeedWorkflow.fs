@@ -27,8 +27,9 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
         }
     
     feedReader.getFromUrl query.Url
-    |> AsyncResult.mapResult toResponse
-    |> Async.map convertToWorkflowError
+    |> Async.StartAsTask
+    |> TaskResult.map toResponse
+    |> Task.map convertToWorkflowError
 
 type SubscribeToFeedCommand = 
     {
@@ -51,6 +52,7 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
     let getFromUrl url =
         feedReader.getFromUrl url
         |> Async.map (Result.mapError SubscribeToFeedError.FeedError)
+        |> Async.StartAsTask
 
     let createSubscription command _ = result {
         let! title = 
@@ -61,19 +63,9 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
     }
 
     let saveSubscription = repository.save
-
-    let tee onOk rA = async {
-        let! r = rA
-        match r with
-        | Ok v -> 
-            onOk v
-        | Error _ -> 
-            ()
-        return r
-    }
     
     command.Url
     |> getFromUrl
-    |> AsyncResult.bind (createSubscription command)
-    |> tee saveSubscription
-    |> Async.map convertToWorkflowError2
+    |> TaskResult.bind (createSubscription command)
+    |> TaskResult.tee saveSubscription
+    |> Task.map convertToWorkflowError2

@@ -19,3 +19,8 @@ let traverse (tasks: Task<_> list) =
                 return! inner tail acc
         }
     inner tasks []
+
+let ignore (t: Task<_>) = task {
+    let! _ = t
+    return ()
+}
