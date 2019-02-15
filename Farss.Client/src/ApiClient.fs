@@ -1,8 +1,25 @@
 ﻿module ApiClient
 
+open Fable.Core.JsInterop
 open Fable.PowerPack
 
 //TODO: Fetch convenience methods does not return response body as error
+
+module Fetch =
+    open Thoth.Json
+    open Fetch.Fetch_types
+
+    let tryFetchAsWithPayload<'response> url =
+        let responseDecoder = Decode.Auto.generateDecoder<'response>()
+        //Return partially applied lambda so responseDecoder can be cached at will
+        fun payload -> 
+            let serializedPayload = Thoth.Json.Encode.Auto.toString(0, payload)
+            let body = Body !^ serializedPayload
+
+            Fetch.tryFetchAs url responseDecoder [ body ]
+
+let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedDto) =
+    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []

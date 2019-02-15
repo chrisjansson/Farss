@@ -2,6 +2,16 @@
 
 open System
 
+type PreviewSubscribeToFeedDto = 
+    {
+        Url: string
+    }
+
+type PreviewSubscribeToFeedResponseDto =
+    {
+        Title: string
+    }
+
 type SubscribeToFeedDto = 
     {
         Url: string
