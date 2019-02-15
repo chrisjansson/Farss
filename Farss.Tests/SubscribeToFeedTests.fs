@@ -73,12 +73,13 @@ let tests = testList "subscribe to feed tests" [
             }
 
             "fails subscribe when title is empty", fun r -> task {
-                let fetchResult = FakeFeedReaderAdapter.parseError "parse error"
-                let adapter = FakeFeedReaderAdapter.stubResult fetchResult
+                let fr = TestStartup.createInMemoryFeedReader()
+                let xml =FeedBuilder.feedItem "item" |> FeedBuilder.toRss "feed title"
+                fr.Add("any url", xml)
 
-                let result = subscribeToFeed adapter r { Url = "any url"; Title = "" }
+                let result = subscribeToFeed fr.Adapter r { Url = "any url"; Title = "" }
 
-                do! expectBadRequest result "title error"
+                do! expectBadRequest result "[\"Article guid cannot be null or empty\"]"
             }
         ]
 
