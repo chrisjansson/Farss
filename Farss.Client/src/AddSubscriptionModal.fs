@@ -13,7 +13,8 @@ module R =  Fable.Helpers.React
 
 
 let createLoadPreviewCmd (url: string) = 
-    Cmd.none
+    let dto: Dto.PreviewSubscribeToFeedQueryDto = { Url = url }
+    Cmd.ofPromiseResult ApiClient.previewSubscribeToFeed dto (fun r -> SubscriptionPreviewReceived (Ok r)) (fun e -> SubscriptionPreviewReceived (Error e))
 
 let udpate (msg: Message) (model: Model) =
     match (model, msg) with
@@ -30,30 +31,31 @@ open Html
 open ModalPortal
 
 let view model = 
-    let modalSettings = 
-        { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
-            Buttons = [
-                { 
-                    Title = TextResources.OkButtonTitle; 
-                    OnClick = fun _ -> Ignore; 
-                    Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
-                }
-                {
-                    Title = TextResources.CancelButtonTitle; 
-                    OnClick = fun _ -> Ignore; 
-                    Options = [] 
-                }
-            ]
-        }
-    
     match model with
     | EnterFeedUrl m -> 
+        let modalSettings = 
+            { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
+                Buttons = [
+                    { 
+                        Title = TextResources.OkButtonTitle; 
+                        OnClick = fun _ -> PreviewSubscription; 
+                        Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
+                    }
+                    {
+                        Title = TextResources.CancelButtonTitle;    
+                        OnClick = fun _ -> Ignore; 
+                        Options = [] 
+                    }
+                ]
+            }
 
         HtmlModalPortal [
             Modal.modal modalSettings [ 
                 Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
             ]
         ]
-    | _ -> Html.div [] []
+    | LoadingPreview -> Html.div [] [ Html.str "Loading..." ] 
+    | Model.PreviewSubscription -> Html.div [] [ Html.str "Preview here" ] 
+    | PreviewFeedFailed -> Html.div [] [ Html.str "Error here" ] 
 
 

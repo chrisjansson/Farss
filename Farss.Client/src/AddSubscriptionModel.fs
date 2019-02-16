@@ -10,5 +10,5 @@ and EnterFeedUrlModel = { Url: string }
 type Message =
     | EditUrl of string
     | PreviewSubscription
-    | SubscriptionPreviewReceived of Result<unit, unit>
+    | SubscriptionPreviewReceived of Result<Dto.PreviewSubscribeToFeedResponseDto, string>
     | Ignore

@@ -9,13 +9,13 @@ module Fetch =
     open Thoth.Json
     open Fetch.Fetch_types
 
-    let tryFetchAsWithPayload<'response> url =
+    let inline tryFetchAsWithPayload<'response> url =
         let responseDecoder = Decode.Auto.generateDecoder<'response>()
         //Return partially applied lambda so responseDecoder can be cached at will
         fun payload -> 
             let serializedPayload = Thoth.Json.Encode.Auto.toString(0, payload)
             let body = Body !^ serializedPayload
-
+            printfn "Hej"
             Fetch.tryFetchAs url responseDecoder [ body ]
 
 let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
