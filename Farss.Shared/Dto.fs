@@ -2,7 +2,7 @@
 
 open System
 
-type PreviewSubscribeToFeedDto = 
+type PreviewSubscribeToFeedQueryDto = 
     {
         Url: string
     }
@@ -15,6 +15,7 @@ type PreviewSubscribeToFeedResponseDto =
 type SubscribeToFeedDto = 
     {
         Url: string
+        Title: string
     }
 
 type SubscriptionDto =

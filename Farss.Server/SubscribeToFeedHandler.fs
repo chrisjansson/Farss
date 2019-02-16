@@ -12,7 +12,7 @@ let previewSubscribeToFeedHandler: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
             let adapter = ctx.GetService<FeedReaderAdapter>()
-            let! dto = ctx.BindJsonAsync<PreviewSubscribeToFeedQuery>()            
+            let! dto = ctx.BindJsonAsync<Dto.PreviewSubscribeToFeedQueryDto>()            
 
             let! result = SubscribeToFeedWorkflow.previewSubscribeToFeed adapter dto 
                             
@@ -24,7 +24,7 @@ let subscribeToFeedHandler : HttpHandler =
         task {
             let adapter = ctx.GetService<FeedReaderAdapter>()
             let repository = ctx.GetService<SubscriptionRepository>()
-            let! dto = ctx.BindJsonAsync<SubscribeToFeedCommand>()            
+            let! dto = ctx.BindJsonAsync<Dto.SubscribeToFeedDto>()            
 
             let! result = SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto 
                         

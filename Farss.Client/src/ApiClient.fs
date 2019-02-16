@@ -18,7 +18,7 @@ module Fetch =
 
             Fetch.tryFetchAs url responseDecoder [ body ]
 
-let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedDto) =
+let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
     Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =

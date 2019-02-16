@@ -31,7 +31,7 @@ let update (msg:Msg) (model:Model) =
     | AddSubscription ->
         match model with
         | Model.Loaded m ->
-            let cmd = GuiCmd.subscribeToFeed m.SubInput
+            let cmd = GuiCmd.subscribeToFeed m.SubInput ""
             model, cmd
         | _ -> model, Cmd.none
     | SubscriptionSucceeded ->

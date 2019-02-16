@@ -2,16 +2,7 @@ module SubscribeToFeedWorkflow
 
 open Persistence
 open FeedReaderAdapter
-
-type PreviewSubscribeToFeedQuery =
-    {
-        Url: string
-    }
-
-type PreviewSubscribeToFeedResponse =
-    {
-        Title: string
-    }
+open Dto
 
 let private convertToWorkflowError r: Result<_, WorkflowError> =
     match r with
@@ -20,8 +11,8 @@ let private convertToWorkflowError r: Result<_, WorkflowError> =
     | Error (ParseError e) -> BadRequest (e.Message, e) |> Error
 
 
-let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQuery) =   
-    let toResponse (feed: Feed) =
+let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto) =   
+    let toResponse (feed: Feed): PreviewSubscribeToFeedResponseDto =
         {
             Title = feed.Title
         }
@@ -31,13 +22,7 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
     |> TaskResult.map toResponse
     |> Task.map convertToWorkflowError
 
-type SubscribeToFeedCommand = 
-    {
-        Url: string
-        Title: string
-    }
-
- type SubscribeToFeedError =
+type SubscribeToFeedError =
     | FeedError of FeedError
     | SubscriptionError of string list
 
@@ -48,13 +33,13 @@ let private convertToWorkflowError2 r: Result<_, WorkflowError> =
     | Error (FeedError (ParseError e)) -> BadRequest (e.Message, e) |> Error
     | Error (SubscriptionError errors) -> BadRequest (sprintf "%A" errors, exn "wut") |> Error
 
-let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedCommand) =
+let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedDto) =
     let getFromUrl url =
         feedReader.getFromUrl url
         |> Async.map (Result.mapError SubscribeToFeedError.FeedError)
         |> Async.StartAsTask
 
-    let createSubscription command _ = result {
+    let createSubscription (command: SubscribeToFeedDto) _ = result {
         let! title = 
             Domain.SubscriptionTitle.create command.Title 
             |> Result.mapError (fun e -> SubscriptionError [e])

@@ -66,7 +66,7 @@ let a_user_subscribes_to_feed (url: string) (title: string) : AsyncTestStep<_, u
     fun atc -> async {
         let! (_, f) = atc
             
-        let payload: SubscribeToFeedCommand = { Url = url; Title = title }
+        let payload: Dto.SubscribeToFeedDto = { Url = url; Title = title }
         let client = f.CreateClient()
         let! response = client |> HttpClient.postAsync ApiUrls.GetSubscriptions payload
         response.EnsureSuccessStatusCode() |> ignore
@@ -78,20 +78,20 @@ let a_user_previews_feed_subscription_for (url: string): AsyncTestStep<_, _> =
    fun atc -> async {
        let! (_, f) = atc
            
-       let payload: PreviewSubscribeToFeedQuery = { Url = url }
+       let payload: Dto.PreviewSubscribeToFeedQueryDto = { Url = url }
        let client = f.CreateClient()
-       let! result = client |> HttpClient.getAsJsonAsyncWithPayload<PreviewSubscribeToFeedResponse, _> ApiUrls.PreviewSubscribeToFeed payload
+       let! result = client |> HttpClient.getAsJsonAsyncWithPayload<Dto.PreviewSubscribeToFeedResponseDto, _> ApiUrls.PreviewSubscribeToFeed payload
 
        return (result, f)
    }
 
-let a_preview_with_title (title: string): AsyncTestStep<PreviewSubscribeToFeedResponse, string * PreviewSubscribeToFeedResponse> =
+let a_preview_with_title (title: string): AsyncTestStep<Dto.PreviewSubscribeToFeedResponseDto, string * Dto.PreviewSubscribeToFeedResponseDto> =
     fun atc -> async {
         let! (r, f) = atc
         return ((title, r), f)
     }
 
-let should_be_shown : AsyncTestStep<string * PreviewSubscribeToFeedResponse, _> =
+let should_be_shown : AsyncTestStep<string * Dto.PreviewSubscribeToFeedResponseDto, _> =
     fun atc -> async {
         let! ((expected, actual), f) = atc
         
