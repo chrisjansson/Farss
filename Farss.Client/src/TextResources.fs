@@ -7,7 +7,13 @@ let AddSubscriptionModalTitle = "Add subscription"
 let OkButtonTitle = "Ok"
 
 [<Literal>]
+let NextButtonTitle = "Next"
+
+[<Literal>]
 let CancelButtonTitle = "Cancel"
 
 [<Literal>]
-let SubscriptionUrlInputPlaceholder = "Subscription url"
+let SubscriptionUrlInputPlaceholder = "URL"
+
+[<Literal>]
+let SubscriptionTitlePlaceholder = "Title"

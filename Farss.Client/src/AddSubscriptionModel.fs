@@ -2,8 +2,8 @@
 
 type Model = 
     | EnterFeedUrl of EnterFeedUrlModel
-    | LoadingPreview
-    | PreviewSubscription
+    | LoadingPreview of url: string
+    | PreviewSubscription of url: string * title: string
     | PreviewFeedFailed
 and EnterFeedUrlModel = { Url: string }
 

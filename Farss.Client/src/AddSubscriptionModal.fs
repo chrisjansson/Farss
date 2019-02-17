@@ -21,10 +21,10 @@ let udpate (msg: Message) (model: Model) =
     | (EnterFeedUrl _, EditUrl url) -> 
         EnterFeedUrl ({ Url = url }), Cmd.none
     | (EnterFeedUrl m, PreviewSubscription) ->
-        LoadingPreview, (createLoadPreviewCmd m.Url)
-    | (LoadingPreview, SubscriptionPreviewReceived (Ok r)) ->
-        Model.PreviewSubscription, Cmd.none
-    | (LoadingPreview, SubscriptionPreviewReceived (Error e)) ->
+        LoadingPreview m.Url, (createLoadPreviewCmd m.Url)
+    | (LoadingPreview url, SubscriptionPreviewReceived (Ok r)) ->
+        Model.PreviewSubscription (url, r.Title), Cmd.none
+    | (LoadingPreview _, SubscriptionPreviewReceived (Error e)) ->
         PreviewFeedFailed, Cmd.none
 
 open Html
@@ -37,7 +37,7 @@ let view model =
             { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
                 Buttons = [
                     { 
-                        Title = TextResources.OkButtonTitle; 
+                        Title = TextResources.NextButtonTitle; 
                         OnClick = fun _ -> PreviewSubscription; 
                         Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
                     }
@@ -54,8 +54,31 @@ let view model =
                 Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
             ]
         ]
-    | LoadingPreview -> Html.div [] [ Html.str "Loading..." ] 
-    | Model.PreviewSubscription -> Html.div [] [ Html.str "Preview here" ] 
+    | LoadingPreview _ -> Html.div [] [ Html.str "Loading..." ] 
+    | Model.PreviewSubscription (url, title) -> 
+        let modalSettings = 
+                { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
+                    Buttons = [
+                        { 
+                            Title = TextResources.OkButtonTitle; 
+                            OnClick = fun _ -> Ignore; 
+                            Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
+                        }
+                        {
+                            Title = TextResources.CancelButtonTitle;    
+                            OnClick = fun _ -> Ignore; 
+                            Options = [] 
+                        }
+                    ]
+                }
+
+        HtmlModalPortal [
+            Modal.modal modalSettings [ 
+                Html.Bulma.Field.readonlyInput TextResources.SubscriptionUrlInputPlaceholder [ value url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
+                Html.Bulma.Field.input TextResources.SubscriptionTitlePlaceholder [ value title; placeholder TextResources.SubscriptionTitlePlaceholder ]
+            ]
+        ]
+        //Html.div [] [ Html.str "Preview here"; Html.str url; Html.str title ] 
     | PreviewFeedFailed -> Html.div [] [ Html.str "Error here" ] 
 
 
