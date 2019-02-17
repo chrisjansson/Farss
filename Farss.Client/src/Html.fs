@@ -15,6 +15,7 @@ type Attr<'msg> =
     | Value of string
     | ClassName of string
     | Placeholder of string
+    | ReadOnly
 
 let inline onClick msg = OnClick msg
 let inline _type t = Type t
@@ -22,6 +23,7 @@ let inline value v = Value v
 let inline onInput f = OnInput f
 let inline className cn = ClassName cn
 let inline placeholder text = Placeholder text
+let readonly = ReadOnly
 
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 
@@ -38,6 +40,7 @@ let convertToProp attr dispatch =
     | OnInput f -> Props.OnChange (fun e -> onChangeR e f) :> IHTMLProp
     | ClassName cn -> Props.ClassName cn :> IHTMLProp
     | Placeholder text -> Props.Placeholder text :> IHTMLProp
+    | ReadOnly -> Props.ReadOnly true :> IHTMLProp
 
 let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) props
 
@@ -76,7 +79,12 @@ let runChildren (children: Html<'msg> seq) (dispatch: Dispatch<'msg>) = applyDis
 module Bulma =
 
     let inline input (props: Attr<'msg> list) = 
+    
         className "input" :: props |> input
+
+    let inline readonlyInput (props: Attr<'msg> list) = 
+        className "input is-static" :: readonly :: props |> input
+
 
     let inline field (children: Html<'msg> seq): Html<'msg> =
         div [ className "field" ] children
@@ -93,5 +101,13 @@ module Bulma =
                 label text
                 control [
                     input props
+                ]
+            ]
+
+        let inline readonlyInput text (props: Attr<'msg> list) =
+            field [
+                label text
+                control [
+                    readonlyInput props
                 ]
             ]
