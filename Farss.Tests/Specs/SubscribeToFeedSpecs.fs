@@ -26,10 +26,10 @@ module HttpClient =
                 return JsonConvert.DeserializeObject<'a>(json)
         }
 
-    let getAsJsonAsyncWithPayload<'a, 'p> (url: string) (content: 'p) (client: System.Net.Http.HttpClient): Async<'a> = async {
+    let postAsJsonAsyncWithPayload<'a, 'p> (url: string) (content: 'p) (client: System.Net.Http.HttpClient): Async<'a> = async {
         let json = Thoth.Json.Net.Encode.Auto.toString(0, content)
         let content = new StringContent(json)
-        let message = new HttpRequestMessage(HttpMethod.Get, url)
+        let message = new HttpRequestMessage(HttpMethod.Post, url)
         message.Content <- content
         let! response = client.SendAsync(message) |> Async.AwaitTask
         if not response.IsSuccessStatusCode then
@@ -80,7 +80,7 @@ let a_user_previews_feed_subscription_for (url: string): AsyncTestStep<_, _> =
            
        let payload: Dto.PreviewSubscribeToFeedQueryDto = { Url = url }
        let client = f.CreateClient()
-       let! result = client |> HttpClient.getAsJsonAsyncWithPayload<Dto.PreviewSubscribeToFeedResponseDto, _> ApiUrls.PreviewSubscribeToFeed payload
+       let! result = client |> HttpClient.postAsJsonAsyncWithPayload<Dto.PreviewSubscribeToFeedResponseDto, _> ApiUrls.PreviewSubscribeToFeed payload
 
        return (result, f)
    }

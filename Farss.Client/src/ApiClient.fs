@@ -15,8 +15,8 @@ module Fetch =
         fun payload -> 
             let serializedPayload = Thoth.Json.Encode.Auto.toString(0, payload)
             let body = Body !^ serializedPayload
-            printfn "Hej"
-            Fetch.tryFetchAs url responseDecoder [ body ]
+            let method = Method HttpMethod.POST
+            Fetch.tryFetchAs url responseDecoder [ method; body ]
 
 let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
     Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto> ApiUrls.PreviewSubscribeToFeed dto
