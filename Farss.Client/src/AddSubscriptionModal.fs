@@ -31,54 +31,41 @@ open Html
 open ModalPortal
 
 let view model = 
-    match model with
-    | EnterFeedUrl m -> 
-        let modalSettings = 
-            { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
-                Buttons = [
-                    { 
-                        Title = TextResources.NextButtonTitle; 
-                        OnClick = fun _ -> PreviewSubscription; 
-                        Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
-                    }
-                    {
-                        Title = TextResources.CancelButtonTitle;    
-                        OnClick = fun _ -> Ignore; 
-                        Options = [] 
-                    }
-                ]
-            }
+    let modalContent =
+        match model with
+        | EnterFeedUrl m -> 
+            let footer = [
+                Html.Bulma.Button.success TextResources.NextButtonTitle PreviewSubscription
+                Html.Bulma.Button.button TextResources.CancelButtonTitle Ignore
+            ]
 
-        HtmlModalPortal [
-            Modal.modal modalSettings [ 
+            let content = [ 
                 Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
             ]
-        ]
-    | LoadingPreview _ -> Html.div [] [ Html.str "Loading..." ] 
-    | Model.PreviewSubscription (url, title) -> 
-        let modalSettings = 
-                { Modal.defaultSettings TextResources.AddSubscriptionModalTitle with 
-                    Buttons = [
-                        { 
-                            Title = TextResources.OkButtonTitle; 
-                            OnClick = fun _ -> Ignore; 
-                            Options = [ Fulma.Button.Color Fulma.Color.IsSuccess ] 
-                        }
-                        {
-                            Title = TextResources.CancelButtonTitle;    
-                            OnClick = fun _ -> Ignore; 
-                            Options = [] 
-                        }
-                    ]
-                }
+            (content, footer)
+            
+        | LoadingPreview _ -> 
+            let content = [ Html.str "Loading..." ] 
+            (content, [])
+        | Model.PreviewSubscription (url, title) -> 
+            let footer = [
+                Html.Bulma.Button.success TextResources.NextButtonTitle Ignore
+                Html.Bulma.Button.button TextResources.CancelButtonTitle Ignore
+            ]
 
-        HtmlModalPortal [
-            Modal.modal modalSettings [ 
+            let content = [ 
                 Html.Bulma.Field.readonlyInput TextResources.SubscriptionUrlInputPlaceholder [ value url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
                 Html.Bulma.Field.input TextResources.SubscriptionTitlePlaceholder [ value title; placeholder TextResources.SubscriptionTitlePlaceholder ]
             ]
-        ]
-        //Html.div [] [ Html.str "Preview here"; Html.str url; Html.str title ] 
-    | PreviewFeedFailed -> Html.div [] [ Html.str "Error here" ] 
+            (content, footer)
+        | PreviewFeedFailed -> 
+            let content = [ Html.str "Error here" ] 
+            (content, [])
 
+    let modalSettings = Modal.defaultSettings TextResources.AddSubscriptionModalTitle
+    let (content, footer) = modalContent
+
+    HtmlModalPortal [
+        Modal.modal modalSettings content footer
+    ]
 

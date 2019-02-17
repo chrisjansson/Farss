@@ -71,6 +71,9 @@ let h4 (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
 let span (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.span (convertToProps props d) (applyDispatch children d)
 
+let button (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+    fun d -> R.button (convertToProps props d) (applyDispatch children d)
+
 let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
     html dispatch
 
@@ -85,7 +88,6 @@ module Bulma =
     let inline readonlyInput (props: Attr<'msg> list) = 
         className "input is-static" :: readonly :: props |> input
 
-
     let inline field (children: Html<'msg> seq): Html<'msg> =
         div [ className "field" ] children
 
@@ -94,6 +96,13 @@ module Bulma =
 
     let inline label (text: string) =
         label [ className "label" ] [ str text ]
+
+    module Button =
+        let inline button (text: string) onClickMsg =
+            input [ value text; onClick onClickMsg; _type "button"; className "button"; ]
+
+        let inline success (text: string) onClickMsg =
+            input [ value text; onClick onClickMsg; _type "button"; className "button is-success";]
 
     module Field =
         let inline input text (props: Attr<'msg> list) =
