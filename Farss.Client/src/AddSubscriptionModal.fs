@@ -18,14 +18,14 @@ let createLoadPreviewCmd (url: string) =
 
 let udpate (msg: Message) (model: Model) =
     match (model, msg) with
-    | (EnterFeedUrl _, EditUrl url) -> 
-        EnterFeedUrl ({ Url = url }), Cmd.none
+    | (EnterFeedUrl m, EditUrl url) -> 
+        EnterFeedUrl ({ m with Url = url }), Cmd.none
     | (EnterFeedUrl m, PreviewSubscription) ->
         LoadingPreview m.Url, (createLoadPreviewCmd m.Url)
     | (LoadingPreview url, SubscriptionPreviewReceived (Ok r)) ->
         Model.PreviewSubscription (url, r.Title), Cmd.none
     | (LoadingPreview url, SubscriptionPreviewReceived (Error e)) ->
-        PreviewFeedFailed (url, e), Cmd.none
+        EnterFeedUrl ({ Url = url; Error = (Some e) }), Cmd.none
 
 open Html
 open ModalPortal
@@ -40,16 +40,20 @@ let view model =
             ]
 
             let content = [ 
-                Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
+                yield Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
+                match m.Error with
+                | Some error -> 
+                    yield Html.Bulma.label "Error"
+                    yield Html.Bulma.notification [ str error ]
+                | _ -> () 
             ]
             (content, footer)
-            
         | LoadingPreview _ -> 
             let content = [ Html.str "Loading..." ] 
             (content, [])
         | Model.PreviewSubscription (url, title) -> 
             let footer = [
-                Html.Bulma.Button.success TextResources.NextButtonTitle Ignore
+                Html.Bulma.Button.success TextResources.SubscribeButtonTitle Ignore
                 Html.Bulma.Button.button TextResources.CancelButtonTitle Ignore
             ]
 
@@ -57,18 +61,6 @@ let view model =
                 Html.Bulma.Field.readonlyInput TextResources.SubscriptionUrlInputPlaceholder [ value url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
                 Html.Bulma.Field.input TextResources.SubscriptionTitlePlaceholder [ value title; placeholder TextResources.SubscriptionTitlePlaceholder ]
             ]
-            (content, footer)
-        | PreviewFeedFailed (url, error) ->
-            let footer = [
-                Html.Bulma.Button.success TextResources.NextButtonTitle PreviewSubscription
-                Html.Bulma.Button.button TextResources.CancelButtonTitle Ignore
-            ]
-            
-            let content = [ 
-                Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
-                Html.str "Error here"
-                Html.pre [] [ str error ]
-            ] 
             (content, footer)
 
     let modalSettings = Modal.defaultSettings TextResources.AddSubscriptionModalTitle

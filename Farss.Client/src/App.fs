@@ -13,7 +13,7 @@ let init(): Model * Cmd<Msg> =
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = AddSubscriptionModel.EnterFeedUrl { Url = "" } }, Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = AddSubscriptionModel.EnterFeedUrl { Url = ""; Error = None } }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id

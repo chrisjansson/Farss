@@ -13,6 +13,9 @@ let NextButtonTitle = "Next"
 let CancelButtonTitle = "Cancel"
 
 [<Literal>]
+let SubscribeButtonTitle = "Subscribe"
+
+[<Literal>]
 let SubscriptionUrlInputPlaceholder = "URL"
 
 [<Literal>]
