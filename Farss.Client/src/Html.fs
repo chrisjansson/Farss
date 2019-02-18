@@ -99,6 +99,9 @@ module Bulma =
 
     let inline label (text: string) =
         label [ className "label" ] [ str text ]
+            
+    let inline notification (children: Html<'msg> seq): Html<'msg> = 
+        div [ className "notification" ] children
 
     module Button =
         let inline button (text: string) onClickMsg =
