@@ -24,8 +24,8 @@ let udpate (msg: Message) (model: Model) =
         LoadingPreview m.Url, (createLoadPreviewCmd m.Url)
     | (LoadingPreview url, SubscriptionPreviewReceived (Ok r)) ->
         Model.PreviewSubscription (url, r.Title), Cmd.none
-    | (LoadingPreview _, SubscriptionPreviewReceived (Error e)) ->
-        PreviewFeedFailed, Cmd.none
+    | (LoadingPreview url, SubscriptionPreviewReceived (Error e)) ->
+        PreviewFeedFailed (url, e), Cmd.none
 
 open Html
 open ModalPortal
@@ -58,9 +58,18 @@ let view model =
                 Html.Bulma.Field.input TextResources.SubscriptionTitlePlaceholder [ value title; placeholder TextResources.SubscriptionTitlePlaceholder ]
             ]
             (content, footer)
-        | PreviewFeedFailed -> 
-            let content = [ Html.str "Error here" ] 
-            (content, [])
+        | PreviewFeedFailed (url, error) ->
+            let footer = [
+                Html.Bulma.Button.success TextResources.NextButtonTitle PreviewSubscription
+                Html.Bulma.Button.button TextResources.CancelButtonTitle Ignore
+            ]
+            
+            let content = [ 
+                Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
+                Html.str "Error here"
+                Html.pre [] [ str error ]
+            ] 
+            (content, footer)
 
     let modalSettings = Modal.defaultSettings TextResources.AddSubscriptionModalTitle
     let (content, footer) = modalContent

@@ -74,6 +74,9 @@ let span (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
 let button (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.button (convertToProps props d) (applyDispatch children d)
 
+let pre (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+    fun d -> R.pre (convertToProps props d) (applyDispatch children d)
+
 let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
     html dispatch
 
