@@ -3,6 +3,7 @@
 // https://github.com/fable-compiler/webpack-config-template
 
 var path = require("path");
+var webpack = require("webpack");
 
 module.exports = {
     mode: "development",
@@ -17,12 +18,18 @@ module.exports = {
         port: 8080,
         proxy: {
             "/api": "http://localhost:5000"
-        }
+        },
+        hot: true,
+        inline: true
     },
     module: {
         rules: [{
             test: /\.fs(x|proj)?$/,
             use: "fable-loader"
         }]
-    }
+    },
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NamedModulesPlugin()
+    ]
 }

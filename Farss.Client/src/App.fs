@@ -3,6 +3,8 @@ module App
 open System
 open Elmish
 open Elmish.React
+//TODO: Only shadow HMR in development. Requires change in webpack.config as well. See Fable.Elmish.HMR
+open Elmish.HMR
 open Dto
 open Html
 open Model
