@@ -16,14 +16,17 @@ type Attr<'msg> =
     | ClassName of string
     | Placeholder of string
     | ReadOnly
+    | Disabled
+    | DisabledB of bool
 
 let inline onClick msg = OnClick msg
 let inline _type t = Type t
 let inline value v = Value v
 let inline onInput f = OnInput f
-let inline className cn = ClassName cn
+let inline className<'msg> cn: Attr<'msg> = ClassName cn
 let inline placeholder text = Placeholder text
 let readonly = ReadOnly
+let disabled = Disabled
 
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 
@@ -41,6 +44,8 @@ let convertToProp attr dispatch =
     | ClassName cn -> Props.ClassName cn :> IHTMLProp
     | Placeholder text -> Props.Placeholder text :> IHTMLProp
     | ReadOnly -> Props.ReadOnly true :> IHTMLProp
+    | Disabled -> Props.Disabled true :> IHTMLProp
+    | DisabledB b -> Props.Disabled b :> IHTMLProp
 
 let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) props
 
@@ -77,6 +82,9 @@ let button (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
 let pre (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
     fun d -> R.pre (convertToProps props d) (applyDispatch children d)
 
+let fieldset (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+    fun d -> R.fieldset (convertToProps props d) (applyDispatch children d)
+
 let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
     html dispatch
 
@@ -103,12 +111,38 @@ module Bulma =
     let inline notification (children: Html<'msg> seq): Html<'msg> = 
         div [ className "notification" ] children
 
-    module Button =
-        let inline button (text: string) onClickMsg =
-            input [ value text; onClick onClickMsg; _type "button"; className "button"; ]
+    let inline fieldset isDisabled (children: Html<'msg> seq): Html<'msg> =
+        if isDisabled then 
+            fieldset [ disabled ] children
+        else 
+            fieldset [] children
 
-        let inline success (text: string) onClickMsg =
-            input [ value text; onClick onClickMsg; _type "button"; className "button is-success";]
+    module Button =
+        let aggregateClassName (props: Attr<'msg> list) =
+            let folder ((classNames, props): string * (Attr<'msg> list)) (a: Attr<'msg>) =
+                match a with
+                | ClassName c -> (c + " " + classNames, props)
+                | p -> (classNames, p::props)
+
+            let (cn, props) = List.fold folder ("", []) props
+            className cn::props
+
+        let inline button props text =
+            let props = (className "button"::props)
+            let props = aggregateClassName props
+
+            button props [ str text ]
+
+        let inline isSuccess<'msg> = className<'msg> "is-success"
+
+        let inline isDisabled<'msg> isDisabled: Attr<'msg> =
+            DisabledB isDisabled
+
+        let inline isLoading<'msg> isLoading = 
+            if isLoading then 
+                className<'msg> "is-loading"
+            else    
+                className<'msg> ""
 
     module Field =
         let inline input text (props: Attr<'msg> list) =
