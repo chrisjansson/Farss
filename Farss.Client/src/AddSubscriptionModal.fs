@@ -18,11 +18,11 @@ let udpate (msg: Message) (model: Model) =
     | (EnterFeedUrl m, EditUrl url) -> 
         EnterFeedUrl ({ m with Url = url }), Cmd.none
     | (EnterFeedUrl m, PreviewSubscription) ->
-        LoadingPreview m.Url, (createLoadPreviewCmd m.Url)
-    | (LoadingPreview url, SubscriptionPreviewReceived (Ok r)) ->
-        Model.PreviewSubscription ({ Url = url; Title = r.Title; Error = None }), Cmd.none
-    | (LoadingPreview url, SubscriptionPreviewReceived (Error e)) ->
-        EnterFeedUrl ({ Url = url; Error = (Some e) }), Cmd.none
+        LoadingPreview m, (createLoadPreviewCmd m.Url)
+    | (LoadingPreview m, SubscriptionPreviewReceived (Ok r)) ->
+        Model.PreviewSubscription ({ Url = m.Url; Title = r.Title; Error = None }), Cmd.none
+    | (LoadingPreview m, SubscriptionPreviewReceived (Error e)) ->
+        EnterFeedUrl ({ m with Error = (Some e) }), Cmd.none
     | (Model.PreviewSubscription m, EditTitle title) ->
         Model.PreviewSubscription ({ m with Title = title }), Cmd.none
     | (Model.PreviewSubscription m, Subscribe) ->
@@ -60,26 +60,30 @@ let view model =
         ]
         (content, footer)
 
-    let modalContent =
-        match model with
-        | EnterFeedUrl m -> 
-            let footer = [
-                Html.Bulma.Button.button [ onClick PreviewSubscription; Bulma.Button.isSuccess ] TextResources.NextButtonTitle; 
-                Html.Bulma.Button.button [ onClick Close ] TextResources.CancelButtonTitle; 
-            ]
+    let renderEnterUrl (model: EnterFeedUrlModel) isLoading =
+        let footer = [
+            Html.Bulma.Button.button [ onClick PreviewSubscription; Bulma.Button.isSuccess; Bulma.Button.isLoading isLoading; Bulma.Button.isDisabled isLoading ] TextResources.NextButtonTitle; 
+            Html.Bulma.Button.button [ onClick Close ] TextResources.CancelButtonTitle; 
+        ]
 
-            let content = [ 
-                yield Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value m.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
-                match m.Error with
+        let content = [ 
+            Html.Bulma.fieldset isLoading [
+                yield Html.Bulma.Field.input TextResources.SubscriptionUrlInputPlaceholder [ value model.Url; placeholder TextResources.SubscriptionUrlInputPlaceholder; onInput EditUrl ]
+                match model.Error with
                 | Some error -> 
                     yield Html.Bulma.label "Error"
                     yield Html.Bulma.notification [ str error ]
                 | _ -> () 
             ]
-            (content, footer)
-        | LoadingPreview _  ->
-            let content = [ Html.str "Loading..." ] 
-            (content, [])
+        ]
+        (content, footer)
+
+    let modalContent =
+        match model with
+        | EnterFeedUrl m -> 
+            renderEnterUrl m false
+        | LoadingPreview m  ->
+            renderEnterUrl m true
         | LoadingSubscribe m -> 
             renderPreview m true
         | Model.PreviewSubscription m -> 

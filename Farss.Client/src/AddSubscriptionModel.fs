@@ -7,7 +7,7 @@
 //Another is to simple fold loading into a boolean like error instead of an explicit state?
 type Model = 
     | EnterFeedUrl of EnterFeedUrlModel
-    | LoadingPreview of url: string
+    | LoadingPreview of EnterFeedUrlModel
     | PreviewSubscription of PreviewSubscriptionModel
     | LoadingSubscribe of PreviewSubscriptionModel
 
