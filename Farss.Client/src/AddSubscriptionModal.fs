@@ -5,6 +5,10 @@ open AddSubscriptionModel
 
 module R =  Fable.Helpers.React
 
+//TODO: Command validation for both steps
+// Form submission on enter
+// Default selected
+
 let createLoadPreviewCmd (url: string) = 
     let dto: Dto.PreviewSubscribeToFeedQueryDto = { Url = url }
     Cmd.ofPromiseResult ApiClient.previewSubscribeToFeed dto (fun r -> SubscriptionPreviewReceived (Ok r)) (fun e -> SubscriptionPreviewReceived (Error e))
