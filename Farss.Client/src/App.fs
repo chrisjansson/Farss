@@ -57,7 +57,9 @@ let renderLoaded (model: Loaded) =
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
             span [ className "has-text-weight-semibold feed-header2 truncate" ] [ str subscription.Title ]
-            span [ className "has-text-weight-semibold" ] [ str "???" ]
+            span [ className "has-text-weight-semibold" ] [ 
+                Html.button [ onClick (Msg.DeleteSubscription subscription.Id) ] [ str "x" ]
+            ]
         ]
 
     let renderFeeds feeds = List.map renderFeed feeds
