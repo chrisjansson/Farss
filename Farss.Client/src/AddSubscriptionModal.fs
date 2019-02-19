@@ -13,30 +13,36 @@ let createSubscribeCmd (url: string) (title: string) =
     let dto: Dto.SubscribeToFeedDto = { Url = url; Title = title }
     Cmd.ofPromiseResult ApiClient.subscribeToFeed dto (fun _ -> SubscribeToFeedReceived (Ok ())) (fun e -> SubscribeToFeedReceived (Error (e.ToString())))
         
-let init (): Model option = 
+let init (): Model = 
     Some (EnterFeedUrl { Url = ""; Error = None })
 
 let udpate (msg: Message) (model: Model) =
-    match (model, msg) with
-    | (EnterFeedUrl m, EditUrl url) -> 
-        EnterFeedUrl ({ m with Url = url }), Cmd.none
-    | (EnterFeedUrl m, PreviewSubscription) ->
-        LoadingPreview m, (createLoadPreviewCmd m.Url)
-    | (LoadingPreview m, SubscriptionPreviewReceived (Ok r)) ->
-        Model.PreviewSubscription ({ Url = m.Url; Title = r.Title; Error = None }), Cmd.none
-    | (LoadingPreview m, SubscriptionPreviewReceived (Error e)) ->
-        EnterFeedUrl ({ m with Error = (Some e) }), Cmd.none
-    | (Model.PreviewSubscription m, EditTitle title) ->
-        Model.PreviewSubscription ({ m with Title = title }), Cmd.none
-    | (Model.PreviewSubscription m, Subscribe) ->
-        let cmd = createSubscribeCmd m.Url m.Title
-        Model.LoadingSubscribe m, cmd
-    | (Model.LoadingSubscribe _, SubscribeToFeedReceived (Ok _)) ->
-        model, Cmd.ofMsg Close
-    | (Model.LoadingSubscribe m, SubscribeToFeedReceived (Error e)) ->
-        let model = Model.PreviewSubscription ({ Url = m.Url; Title = m.Title; Error = (Some e) })
-        model, Cmd.none
-    | _ ->
+    match model with
+    | Some model ->
+        let (m, cmd) =
+            match (model, msg) with
+            | (EnterFeedUrl m, EditUrl url) -> 
+                EnterFeedUrl ({ m with Url = url }), Cmd.none
+            | (EnterFeedUrl m, PreviewSubscription) ->
+                LoadingPreview m, (createLoadPreviewCmd m.Url)
+            | (LoadingPreview m, SubscriptionPreviewReceived (Ok r)) ->
+                AddSubscriptionModal.PreviewSubscription ({ Url = m.Url; Title = r.Title; Error = None }), Cmd.none
+            | (LoadingPreview m, SubscriptionPreviewReceived (Error e)) ->
+                EnterFeedUrl ({ m with Error = (Some e) }), Cmd.none
+            | (AddSubscriptionModal.PreviewSubscription m, EditTitle title) ->
+                AddSubscriptionModal.PreviewSubscription ({ m with Title = title }), Cmd.none
+            | (AddSubscriptionModal.PreviewSubscription m, Subscribe) ->
+                let cmd = createSubscribeCmd m.Url m.Title
+                AddSubscriptionModal.LoadingSubscribe m, cmd
+            | (AddSubscriptionModal.LoadingSubscribe _, SubscribeToFeedReceived (Ok _)) ->
+                model, Cmd.ofMsg Close
+            | (AddSubscriptionModal.LoadingSubscribe m, SubscribeToFeedReceived (Error e)) ->
+                let model = AddSubscriptionModal.PreviewSubscription ({ Url = m.Url; Title = m.Title; Error = (Some e) })
+                model, Cmd.none
+            | _ ->
+                model, Cmd.none
+        (Some m, cmd)
+    | None ->
         model, Cmd.none
 
 open Html
@@ -92,7 +98,7 @@ let view model =
             renderEnterUrl m true
         | LoadingSubscribe m -> 
             renderPreview m true
-        | Model.PreviewSubscription m -> 
+        | AddSubscriptionModal.PreviewSubscription m -> 
             renderPreview m false
 
     let modalSettings = Modal.defaultSettings TextResources.AddSubscriptionModalTitle

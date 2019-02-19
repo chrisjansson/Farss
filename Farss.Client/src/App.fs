@@ -45,19 +45,8 @@ let update (msg:Msg) (model:Model) =
             | AddSubscriptionModel.Close ->
                 Model.Loaded { m with AddSubscriptionModel = None }, Cmd.none
             | _ ->
-                match m.AddSubscriptionModel with
-                | Some asm -> 
-                    ////TODO: Chilld.map
-                    //let asm, asmCmd = AddSubscriptionModal.udpate msg asm
-                    //let m = { m with AddSubscriptionModel = Some asm }
-                    //let cmd = Cmd.map AddSubscriptionMsg asmCmd
-                    //Model.Loaded m, cmd
-
-                    Msg.map (fun cm -> Model.Loaded { m with AddSubscriptionModel = Some cm }) AddSubscriptionMsg AddSubscriptionModal.udpate msg asm
-                | None ->
-                    model, Cmd.none
+                Msg.map (fun cm -> Model.Loaded { m with AddSubscriptionModel = cm }) AddSubscriptionMsg AddSubscriptionModal.udpate msg m.AddSubscriptionModel
         | _ -> model, Cmd.none
-    
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]

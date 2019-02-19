@@ -5,7 +5,8 @@
 // Loading of next: 'msg -> 'model, 'cmd //For every message evaluate if we should stay or progress to another state
 
 //Another is to simple fold loading into a boolean like error instead of an explicit state?
-type Model = 
+type Model = AddSubscriptionModal option
+and AddSubscriptionModal = 
     | EnterFeedUrl of EnterFeedUrlModel
     | LoadingPreview of EnterFeedUrlModel
     | PreviewSubscription of PreviewSubscriptionModel

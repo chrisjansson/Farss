@@ -9,7 +9,7 @@ and Loaded =
     {
         Articles: Dto.ArticleDto list
         Subscriptions: Dto.SubscriptionDto list
-        AddSubscriptionModel: AddSubscriptionModel.Model option
+        AddSubscriptionModel: AddSubscriptionModel.Model
     }
 
 type Msg = 
