@@ -8,6 +8,14 @@ open Dto
 open Html
 open Model
 
+module Msg =
+    let map modelMap msgMap update msg model =
+        let m, cmd = update msg model
+
+        let m = modelMap m
+        let cmd = Cmd.map msgMap cmd
+        m,cmd
+
 let init(): Model * Cmd<Msg> = 
     let cmd = GuiCmd.loadSubsAndArticles
     Loading, cmd
@@ -39,11 +47,13 @@ let update (msg:Msg) (model:Model) =
             | _ ->
                 match m.AddSubscriptionModel with
                 | Some asm -> 
-                    //TODO: Chilld.map
-                    let asm, asmCmd = AddSubscriptionModal.udpate msg asm
-                    let m = { m with AddSubscriptionModel = Some asm }
-                    let cmd = Cmd.map AddSubscriptionMsg asmCmd
-                    Model.Loaded m, cmd
+                    ////TODO: Chilld.map
+                    //let asm, asmCmd = AddSubscriptionModal.udpate msg asm
+                    //let m = { m with AddSubscriptionModel = Some asm }
+                    //let cmd = Cmd.map AddSubscriptionMsg asmCmd
+                    //Model.Loaded m, cmd
+
+                    Msg.map (fun cm -> Model.Loaded { m with AddSubscriptionModel = Some cm }) AddSubscriptionMsg AddSubscriptionModal.udpate msg asm
                 | None ->
                     model, Cmd.none
         | _ -> model, Cmd.none
