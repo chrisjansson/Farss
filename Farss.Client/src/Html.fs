@@ -90,6 +90,9 @@ let run (html: Html<'msg>) (dispatch: Dispatch<'msg>) =
 
 let runChildren (children: Html<'msg> seq) (dispatch: Dispatch<'msg>) = applyDispatch children dispatch
 
+let map (mapper: 'msgA -> 'msgB) (html: Html<'msgA>): Html<'msgB> =
+    fun d -> html (fun m -> d (mapper m))
+
 module Bulma =
 
     let inline input (props: Attr<'msg> list) = 

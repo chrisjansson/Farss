@@ -100,8 +100,7 @@ let renderLoaded (model: Loaded) =
         ]
 
         match model.AddSubscriptionModel with
-        //TODO: Html.map
-        | Some m -> yield (fun d -> AddSubscriptionModal.view m ignore)
+        | Some m -> yield Html.map Msg.AddSubscriptionMsg (AddSubscriptionModal.view m)
         | None-> ()
     ]
 
