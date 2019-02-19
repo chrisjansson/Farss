@@ -27,7 +27,9 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
             a.RegisterDocumentType<Domain.Subscription>()
             a.RegisterDocumentType<Domain.Article>()
             a.PLV8Enabled <- false
-            a.DdlRules.TableCreation <- CreationStyle.DropThenCreate)
+            a.DdlRules.TableCreation <- CreationStyle.DropThenCreate
+            a.Schema.For<Domain.Article>().ForeignKey<Domain.Subscription>(fun a -> a.Subscription :> obj) |> ignore
+            )
         store.Schema.ApplyAllConfiguredChangesToDatabase() |> ignore
         store :> IDocumentStore) |> ignore
 

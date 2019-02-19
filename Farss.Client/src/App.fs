@@ -43,7 +43,8 @@ let update (msg:Msg) (model:Model) =
         | Model.Loaded m ->
             match msg with
             | AddSubscriptionModel.Close ->
-                Model.Loaded { m with AddSubscriptionModel = None }, Cmd.none
+                init()
+                //Model.Loaded { m with AddSubscriptionModel = None }, Cmd.none
             | _ ->
                 Msg.map (fun cm -> Model.Loaded { m with AddSubscriptionModel = cm }) AddSubscriptionMsg AddSubscriptionModal.udpate msg m.AddSubscriptionModel
         | _ -> model, Cmd.none
