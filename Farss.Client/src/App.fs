@@ -14,7 +14,7 @@ let init(): Model * Cmd<Msg> =
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = None }, Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; AddSubscriptionModel = None }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id
@@ -24,22 +24,13 @@ let update (msg:Msg) (model:Model) =
     | SubscriptionDeleteFailed _ -> model, (GuiCmd.alert "Subscription delete failed")
     | Poll -> model, GuiCmd.poll
     | Reload -> Loading, GuiCmd.loadSubsAndArticles
-    | OnChangeSub str -> 
-        match model with 
-        | Model.Loaded l ->
-            Model.Loaded ({ l with SubInput = str }), Cmd.none
-        | _ -> model, Cmd.none
-    | AddSubscription ->
+    | OpenAddSubscription ->
         match model with
         | Model.Loaded m ->
             let m = { m with AddSubscriptionModel = AddSubscriptionModal.init () }
             Model.Loaded m, Cmd.none
         | _ -> model, Cmd.none
-    | SubscriptionSucceeded ->
-        model, GuiCmd.alert "Succeeded"
-    | Msg.SubscriptionFailed exn ->
-        model, GuiCmd.alert (sprintf "Failed %A" exn.Message)
-    | Msg.AddSubscriptionMsg msg ->
+    | AddSubscriptionMsg msg ->
         match model with 
         | Model.Loaded m ->
             match msg with
@@ -51,7 +42,7 @@ let update (msg:Msg) (model:Model) =
                     //TODO: Chilld.map
                     let asm, asmCmd = AddSubscriptionModal.udpate msg asm
                     let m = { m with AddSubscriptionModel = Some asm }
-                    let cmd = Cmd.map Msg.AddSubscriptionMsg asmCmd
+                    let cmd = Cmd.map AddSubscriptionMsg asmCmd
                     Model.Loaded m, cmd
                 | None ->
                     model, Cmd.none
@@ -62,7 +53,7 @@ let renderLoading () =
     div [] [ str "Loading..."  ]
 
 let renderLoaded (model: Loaded) =
-    let { Subscriptions = subscriptions; Articles = articles; SubInput = inp } = model
+    let { Subscriptions = subscriptions; Articles = articles } = model
     
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
@@ -83,12 +74,13 @@ let renderLoaded (model: Loaded) =
                 h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
             ]
             div [ className "toolbar has-background-info" ] [
-                input [ value inp; onInput Msg.OnChangeSub ]
-                input [ _type "button"; value "Add"; onClick Msg.AddSubscription ]
             ]
             div [ className "left-pane" ] [
                 div [] [
-                    h4 [ className "has-text-weight-semibold feed-header" ] [ str "Feeds" ]
+                    h4 [ className "has-text-weight-semibold feed-header" ] [ 
+                        str "Feeds" 
+                        input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
+                    ]
                 ]
                 
                 div [ className "feeds-container" ] (renderFeeds subscriptions)
@@ -163,7 +155,6 @@ let view (model:Model) dispatch =
     ////Nav.NavComp ()
     match model with
     | Loading -> Html.run (renderLoading ()) dispatch
-    //| Model.Loaded m -> Html.run (AddSubscriptionModal.view m.AddSubscriptionModel) (Msg.AddSubscriptionMsg >> dispatch)
     | Model.Loaded m-> Html.run (renderLoaded m) dispatch
 
 //TODO: add error handler

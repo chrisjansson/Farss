@@ -14,12 +14,6 @@ let deleteSubscription (id: Guid) =
     let dto: Dto.DeleteSubscriptionDto = { Id = Some id }
     Cmd.ofPromiseResult ApiClient.deleteSubscription dto (fun _ -> SubscriptionDeleted) SubscriptionDeleteFailed
 
-//TODO: Merge
-let subscribeToFeed (url: string) (title: string) =
-    let dto: Dto.SubscribeToFeedDto = { Url = url; Title = title }
-    Cmd.ofPromiseResult ApiClient.subscribeToFeed dto (fun _ -> SubscriptionSucceeded) SubscriptionFailed 
-    
-
 let alert (message: string) =
     Cmd.ofSub (fun _ -> Fable.Import.Browser.window.alert message)
 
