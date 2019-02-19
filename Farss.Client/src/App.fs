@@ -1,6 +1,5 @@
 module App
 
-open System
 open Elmish
 open Elmish.React
 //TODO: Only shadow HMR in development. Requires change in webpack.config as well. See Fable.Elmish.HMR
@@ -15,7 +14,7 @@ let init(): Model * Cmd<Msg> =
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = AddSubscriptionModel.EnterFeedUrl { Url = ""; Error = None } }, Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = ""; AddSubscriptionModel = None }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id
@@ -33,8 +32,8 @@ let update (msg:Msg) (model:Model) =
     | AddSubscription ->
         match model with
         | Model.Loaded m ->
-            let cmd = GuiCmd.subscribeToFeed m.SubInput ""
-            model, cmd
+            let m = { m with AddSubscriptionModel = AddSubscriptionModal.init () }
+            Model.Loaded m, Cmd.none
         | _ -> model, Cmd.none
     | SubscriptionSucceeded ->
         model, GuiCmd.alert "Succeeded"
@@ -43,18 +42,27 @@ let update (msg:Msg) (model:Model) =
     | Msg.AddSubscriptionMsg msg ->
         match model with 
         | Model.Loaded m ->
-            let asm, asmCmd = AddSubscriptionModal.udpate msg m.AddSubscriptionModel
-            let m = { m with AddSubscriptionModel = asm }
-            let cmd = Cmd.map Msg.AddSubscriptionMsg asmCmd
-            Model.Loaded m, cmd
+            match msg with
+            | AddSubscriptionModel.Close ->
+                Model.Loaded { m with AddSubscriptionModel = None }, Cmd.none
+            | _ ->
+                match m.AddSubscriptionModel with
+                | Some asm -> 
+                    //TODO: Chilld.map
+                    let asm, asmCmd = AddSubscriptionModal.udpate msg asm
+                    let m = { m with AddSubscriptionModel = Some asm }
+                    let cmd = Cmd.map Msg.AddSubscriptionMsg asmCmd
+                    Model.Loaded m, cmd
+                | None ->
+                    model, Cmd.none
         | _ -> model, Cmd.none
     
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]
 
-let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * string)) =
-    let subscriptions, articles, inp = model
+let renderLoaded (model: Loaded) =
+    let { Subscriptions = subscriptions; Articles = articles; SubInput = inp } = model
     
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
@@ -69,26 +77,34 @@ let renderLoaded (model: (Dto.SubscriptionDto list * Dto.ArticleDto list * strin
 
     let renderArticles = List.map renderArticle
 
-    div [ className "root-grid" ] [
-        div [ className "head has-background-info" ] [
-            h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
-        ]
-        div [ className "toolbar has-background-info" ] [
-            input [ value inp; onInput Msg.OnChangeSub ]
-            input [ _type "button"; value "Add"; onClick Msg.AddSubscription ]
-        ]
-        div [ className "left-pane" ] [
-            div [] [
-                h4 [ className "has-text-weight-semibold feed-header" ] [ str "Feeds" ]
+    fragment () [
+        yield div [ className "root-grid" ] [
+            div [ className "head has-background-info" ] [
+                h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
             ]
-            
-            div [ className "feeds-container" ] (renderFeeds subscriptions)
+            div [ className "toolbar has-background-info" ] [
+                input [ value inp; onInput Msg.OnChangeSub ]
+                input [ _type "button"; value "Add"; onClick Msg.AddSubscription ]
+            ]
+            div [ className "left-pane" ] [
+                div [] [
+                    h4 [ className "has-text-weight-semibold feed-header" ] [ str "Feeds" ]
+                ]
+                
+                div [ className "feeds-container" ] (renderFeeds subscriptions)
+            ]
+            div [ className "main" ] [
+                str "Articles n stufffsnsnsn"
+                fragment () (renderArticles articles)
+            ]
         ]
-        div [ className "main" ] [
-            str "Articles n stufffsnsnsn"
-            fragment () (renderArticles articles)
-        ]
+
+        match model.AddSubscriptionModel with
+        //TODO: Html.map
+        | Some m -> yield (fun d -> AddSubscriptionModal.view m ignore)
+        | None-> ()
     ]
+
 
 //module Nav =    
 //    open Fulma
@@ -148,8 +164,8 @@ let view (model:Model) dispatch =
     ////Nav.NavComp ()
     match model with
     | Loading -> Html.run (renderLoading ()) dispatch
-    | Model.Loaded m -> Html.run (AddSubscriptionModal.view m.AddSubscriptionModel) (Msg.AddSubscriptionMsg >> dispatch)
-    //| Model.Loaded { Subscriptions = subs; Articles = articles; SubInput = s } -> Html.run (renderLoaded (subs, articles, s)) dispatch
+    //| Model.Loaded m -> Html.run (AddSubscriptionModal.view m.AddSubscriptionModel) (Msg.AddSubscriptionMsg >> dispatch)
+    | Model.Loaded m-> Html.run (renderLoaded m) dispatch
 
 //TODO: add error handler
 Program.mkProgram init update view

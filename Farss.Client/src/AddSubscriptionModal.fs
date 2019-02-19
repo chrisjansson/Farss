@@ -12,6 +12,9 @@ let createLoadPreviewCmd (url: string) =
 let createSubscribeCmd (url: string) (title: string) =
     let dto: Dto.SubscribeToFeedDto = { Url = url; Title = title }
     Cmd.ofPromiseResult ApiClient.subscribeToFeed dto (fun _ -> SubscribeToFeedReceived (Ok ())) (fun e -> SubscribeToFeedReceived (Error (e.ToString())))
+        
+let init (): Model option = 
+    Some (EnterFeedUrl { Url = ""; Error = None })
 
 let udpate (msg: Message) (model: Model) =
     match (model, msg) with
@@ -33,7 +36,7 @@ let udpate (msg: Message) (model: Model) =
     | (Model.LoadingSubscribe m, SubscribeToFeedReceived (Error e)) ->
         let model = Model.PreviewSubscription ({ Url = m.Url; Title = m.Title; Error = (Some e) })
         model, Cmd.none
-    | (_, Close) ->
+    | _ ->
         model, Cmd.none
 
 open Html
