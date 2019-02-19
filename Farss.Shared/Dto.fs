@@ -21,6 +21,7 @@ type SubscribeToFeedDto =
 type SubscriptionDto =
     {
         Id: Guid
+        Title: string
         Url: string
     }
 

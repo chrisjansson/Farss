@@ -2,7 +2,7 @@
 
 module SubscriptionDto = 
 
-    let toDto (feed: Domain.Subscription): SubscriptionDto = { Id = feed.Id; Url = feed.Url }
+    let toDto (subscription: Domain.Subscription): SubscriptionDto = { Id = subscription.Id; Url = subscription.Url; Title = subscription.Title }
 
 
 module DeleteSubscriptionDto =

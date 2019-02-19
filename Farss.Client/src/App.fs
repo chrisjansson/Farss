@@ -56,7 +56,7 @@ let renderLoaded (model: Loaded) =
     
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
-            span [ className "has-text-weight-semibold feed-header2 truncate" ] [ str subscription.Url ]
+            span [ className "has-text-weight-semibold feed-header2 truncate" ] [ str subscription.Title ]
             span [ className "has-text-weight-semibold" ] [ str "???" ]
         ]
 
@@ -151,7 +151,6 @@ let renderLoaded (model: Loaded) =
 
 
 let view (model:Model) dispatch =
-    ////Nav.NavComp ()
     match model with
     | Loading -> Html.run (renderLoading ()) dispatch
     | Model.Loaded m-> Html.run (renderLoaded m) dispatch
