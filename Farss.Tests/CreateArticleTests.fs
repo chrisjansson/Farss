@@ -48,6 +48,7 @@ let tests = testList "Create article" [
             testCase "Create" <| fun _ ->
                 let subscriptionId = Guid.NewGuid()
                 let timestamp = DateTimeOffset(2000, 1, 1, 1, 1, 1, TimeSpan.Zero)
+                let link = "link"
                 
                 let actual = 
                     Article.create 
@@ -56,6 +57,7 @@ let tests = testList "Create article" [
                         subscriptionId
                         "content" 
                         timestamp
+                        link
 
                 Expect.notEqual actual.Id Guid.Empty "Should create article id"
                 Expect.equal actual.Title "title" "Title"

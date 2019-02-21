@@ -26,9 +26,9 @@ let subscription (subscriptionUrl: string): AsyncTestStep<unit, Subscription> =
         )
 
 let with_articles (articles: SpecArticle list): AsyncTestStep<Subscription, unit> =
-    Spec.Step.map (fun (_, f: TestWebApplicationFactory) -> 
+    Spec.Step.map (fun (s, f: TestWebApplicationFactory) -> 
             let toArticle (specArticle: SpecArticle) = 
-                { Build.article () with Title = specArticle.Title; Timestamp = specArticle.PublishedAt; IsRead = specArticle.IsRead }
+                { Build.article () with Title = specArticle.Title; Timestamp = specArticle.PublishedAt; IsRead = specArticle.IsRead; Subscription = s.Id }
 
             let articles = articles |> List.map toArticle
         

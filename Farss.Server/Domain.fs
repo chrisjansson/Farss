@@ -55,8 +55,14 @@ module ArticleTimestamp =
         | Some dto -> Ok dto
         | None -> Error "Timestamp is required"
 
+module ArticleLink = 
+    let create (str: string option) =
+        match str with
+        | Some dto -> Ok dto
+        | None -> Error "Link is required"
+
 module Article =
-    let create title guid subscription content timestamp =
+    let create title guid subscription content timestamp link =
         { 
             Id = Guid.NewGuid(); 
             Title = title; 
@@ -65,7 +71,7 @@ module Article =
             Content = content; 
             Timestamp = timestamp; 
             IsRead = false 
-            Link = ""
+            Link = link
         }
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }

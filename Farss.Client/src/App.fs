@@ -66,8 +66,14 @@ let renderLoaded (model: Loaded) =
     let renderFeeds feeds = List.map renderFeed feeds
 
     let renderArticle (article: ArticleDto) =
-        div [] [ str article.Title ]
-
+        if article.IsRead then
+            div [] [ str article.Title ]
+        else    
+            div [ className "has-text-weight-semibold" ] [ 
+                a [ href article.Link ] [ str article.Title ]
+                str (sprintf "%A" article.PublishedAt)
+            ]
+        
     let renderArticles = List.map renderArticle
 
     fragment () [

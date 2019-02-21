@@ -35,8 +35,9 @@ module FeedItem =
     let toArticle subscriptionId (item: Item) = result {
         let! guid = ArticleGuid.create item.Id
         let! timestamp = ArticleTimestamp.create item.Timestamp
+        let! link = ArticleLink.create item.Link
 
-        return Article.create item.Title guid subscriptionId item.Content timestamp
+        return Article.create item.Title guid subscriptionId item.Content timestamp link
     }
 
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask

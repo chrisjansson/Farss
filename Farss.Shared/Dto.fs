@@ -30,6 +30,8 @@ type ArticleDto =
         Title: string
         IsRead: bool
         PublishedAt: DateTimeOffset
+        Content: string
+        Link: string
     }
 
 type DeleteSubscriptionDto = { Id: Guid option }

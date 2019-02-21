@@ -18,6 +18,7 @@ type Attr<'msg> =
     | ReadOnly
     | Disabled
     | DisabledB of bool
+    | Href of string
 
 let inline onClick msg = OnClick msg
 let inline _type t = Type t
@@ -27,6 +28,7 @@ let inline className<'msg> cn: Attr<'msg> = ClassName cn
 let inline placeholder text = Placeholder text
 let readonly = ReadOnly
 let disabled = Disabled
+let inline href s = Href s
 
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 
@@ -46,6 +48,7 @@ let convertToProp attr dispatch =
     | ReadOnly -> Props.ReadOnly true :> IHTMLProp
     | Disabled -> Props.Disabled true :> IHTMLProp
     | DisabledB b -> Props.Disabled b :> IHTMLProp
+    | Href s -> Props.Href s :> IHTMLProp
 
 let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) props
 
@@ -57,6 +60,9 @@ let fragment () (elements: Html<'msg> seq): Html<'msg> =
 
 let inline str (str: string): Html<'msg> =
     fun _ -> R.str str
+    
+let a (props: Attr<'msg> seq) (children: Html<'msg> seq): Html<'msg> =
+    fun d -> R.a (convertToProps props d) (applyDispatch children d)
     
 let input (props: Attr<'msg> seq): Html<'msg> =
     fun d -> R.input (convertToProps props d)
