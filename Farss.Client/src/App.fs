@@ -19,10 +19,13 @@ module Msg =
 let init(): Model * Cmd<Msg> = 
     let cmd = GuiCmd.loadSubsAndArticles
     Loading, cmd
+    
+let mapArticles articles =
+    articles |> List.map (fun (a: Dto.ArticleDto) -> { Dto = a; IsExpanded = false })
 
 let update (msg:Msg) (model:Model) =
     match msg with
-    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = articles; AddSubscriptionModel = None }, Cmd.none
+    | Loaded (subs, articles) -> Model.Loaded { Subscriptions = subs; Articles = mapArticles articles; AddSubscriptionModel = None }, Cmd.none
     | LoadingError _ -> model, (GuiCmd.alert "Datta loading error hurr durr")
     | DeleteSubscription id -> 
         let cmd = GuiCmd.deleteSubscription id
@@ -48,6 +51,18 @@ let update (msg:Msg) (model:Model) =
             | _ ->
                 Msg.map (fun cm -> Model.Loaded { m with AddSubscriptionModel = cm }) AddSubscriptionMsg AddSubscriptionModal.udpate msg m.AddSubscriptionModel
         | _ -> model, Cmd.none
+    | ToggleExpanded article ->
+        match model with
+        | Model.Loaded m ->
+            let articles =
+                List.map (fun a ->
+                if a = article then
+                    { a with IsExpanded = not a.IsExpanded }
+                else
+                    a) m.Articles
+            Model.Loaded { m with Articles = articles }, Cmd.none
+        | _ -> model, Cmd.none
+            
 
 let renderLoading () = 
     div [] [ str "Loading..."  ]
@@ -65,14 +80,33 @@ let renderLoaded (model: Loaded) =
 
     let renderFeeds feeds = List.map renderFeed feeds
 
-    let renderArticle (article: ArticleDto) =
-        if article.IsRead then
-            div [] [ str article.Title ]
-        else    
-            div [ className "has-text-weight-semibold" ] [ 
-                a [ href article.Link ] [ str article.Title ]
-                str (sprintf "%A" article.PublishedAt)
+    let renderArticle (article: Article) =
+        
+        if article.Dto.IsRead then
+            let sign = if article.IsExpanded then "-" else "+"
+            fragment () [
+                div [ className "expander" ] [ str sign ]
+                div [ className "title title-container" ] [
+                    str article.Dto.Title
+                ]
+                div [ className "date" ] [
+                    str (article.Dto.PublishedAt.ToString("yyyy-MM-dd"))
+                ]
             ]
+            
+        else
+            let sign = if article.IsExpanded then "-" else "+"
+            fragment () [
+                div [ className "expander" ] [ str sign ]
+                div [ className "has-text-weight-semibold title-container"; onClick (ToggleExpanded article) ] [ 
+                    a [ href article.Dto.Link ] [ str article.Dto.Title ]
+                ]
+                div [ className "date" ] [
+
+                    str (article.Dto.PublishedAt.ToString("yyyy-MM-dd"))
+                ]
+            ]
+            
         
     let renderArticles = List.map renderArticle
 
@@ -96,7 +130,9 @@ let renderLoaded (model: Loaded) =
             ]
             div [ className "main" ] [
                 str "Articles n stufffsnsnsn"
-                fragment () (renderArticles articles)
+                div [ className "articles-grid" ] [
+                    fragment () (renderArticles articles)
+                ]
             ]
         ]
 

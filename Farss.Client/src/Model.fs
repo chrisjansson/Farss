@@ -7,9 +7,14 @@ type Model =
     | Loaded of Loaded
 and Loaded =
     {
-        Articles: Dto.ArticleDto list
+        Articles: Article list
         Subscriptions: Dto.SubscriptionDto list
         AddSubscriptionModel: AddSubscriptionModel.Model
+    }
+and Article =
+    {
+        Dto: Dto.ArticleDto
+        IsExpanded: bool
     }
 
 type Msg = 
@@ -23,3 +28,4 @@ type Msg =
     | Reload
     | OpenAddSubscription
     | AddSubscriptionMsg of AddSubscriptionModel.Message
+    | ToggleExpanded of Article
