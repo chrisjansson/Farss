@@ -57,8 +57,8 @@ let renderLoaded (model: Loaded) =
     
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
-            span [ className "has-text-weight-semibold feed-header2 truncate" ] [ str subscription.Title ]
-            span [ className "has-text-weight-semibold" ] [ 
+            span [ className "feed-header2 truncate" ] [ str subscription.Title ]
+            span [ ] [ 
                 Html.button [ onClick (Msg.DeleteSubscription subscription.Id) ] [ str "x" ]
             ]
         ]
@@ -82,12 +82,13 @@ let renderLoaded (model: Loaded) =
                 h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
             ]
             div [ className "toolbar has-background-info" ] [
+                input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
+                input [ _type "button"; value "Poll"; onClick Msg.Poll ]
             ]
             div [ className "left-pane" ] [
                 div [] [
                     h4 [ className "has-text-weight-semibold feed-header" ] [ 
                         str "Feeds" 
-                        input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
                     ]
                 ]
                 
@@ -103,61 +104,6 @@ let renderLoaded (model: Loaded) =
         | Some m -> yield Html.map Msg.AddSubscriptionMsg (AddSubscriptionModal.view m)
         | None-> ()
     ]
-
-
-//module Nav =    
-//    open Fulma
-//    open Fable.Helpers.React
-
-//    module P = Fable.Helpers.React.Props
-//    module R = Fable.Helpers.React
-
-//    let nav (isOpen: bool) dispatch =
-//        let brandLogo _ =
-//            Navbar.Item.a [ Navbar.Item.Props [ (P.Href "/") ]; Navbar.Item.CustomClass "has-text-white has-text-weight-bold" ] [
-//                unbox "FARSS"
-//            ]
-
-//        let burger _ =
-//            let classes = R.classList [
-//                "is-active", isOpen
-//                "navbar-burger", true
-//                "has-text-white", true
-//            ]
-
-//            let click = P.OnClick (fun _ -> dispatch ())
-
-//            R.a [ classes; click ] [
-//                R.span [] [] 
-//                R.span [] [] 
-//                R.span [] [] 
-//            ]
-
-//        Navbar.navbar [ Navbar.CustomClass "has-background-primary" ] [
-//            Navbar.Brand.div [] [
-//                brandLogo ()
-//                burger ()
-//            ]
-
-//            Navbar.menu [ 
-//                if isOpen then
-//                    yield Navbar.Menu.CustomClass "is-active"
-//            ] [
-//                Navbar.Start.div [] [
-//                    Navbar.Item.a [ 
-//                        if not isOpen then
-//                            yield Navbar.Item.CustomClass "has-text-white"
-//                    ] [ unbox "Home" ]
-//                ]
-//            ]
-//        ]
-    
-//    let NavComp _ =
-//        let init _ = false
-//        let update () state = not state
-//        let view (m: ReactiveComponents.Model<_, bool>) d = nav m.state d
-//        Fable.Helpers.React.reactiveCom init update view "" () []
-
 
 let view (model:Model) dispatch =
     match model with

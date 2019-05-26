@@ -38,13 +38,23 @@
 
         .toolbar {
             grid-area: toolbar;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 10px;
+        }
+        
+        .toolbar input {
+            margin-left: 5px;
         }
 
         .left-pane {
             grid-area: left-pane;
-            border-right: 2px solid hsl(0, 0%, 86%);
-
+            border-right: 1px solid #f0f0f0;
             padding: 1rem;
+            background-color: #fafafa;
+            color: rgb(112, 112, 112);
         }
 
         .feed-header {

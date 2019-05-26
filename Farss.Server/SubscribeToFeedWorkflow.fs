@@ -10,7 +10,6 @@ let private convertToWorkflowError r: Result<_, WorkflowError> =
     | Error (FetchError e) -> BadRequest (e.Message, e) |> Error
     | Error (ParseError e) -> BadRequest (e.Message, e) |> Error
 
-
 let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto) =   
     let toResponse (feed: Feed): PreviewSubscribeToFeedResponseDto =
         {
