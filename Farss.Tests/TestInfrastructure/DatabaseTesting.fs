@@ -78,7 +78,7 @@ let buildConfiguration () =
 
 let createFixture2 () = 
     let configuration = buildConfiguration ()
-    let connectionStringData = Postgres.loadConnectionString configuration
+    let connectionStringData = loadConnectionString configuration
     
     let databaseName = "farss_tests"
     initializeTestDatabase connectionStringData databaseName
