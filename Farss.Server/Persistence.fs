@@ -17,6 +17,7 @@ type ArticleRepository =
         getAllBySubscription: SubscriptionId -> Article list
     }
 
+//TODO: Move to test assembly
 let create () =
     let mutable feeds = []
     let getAll () = feeds
@@ -119,6 +120,7 @@ module ArticleRepositoryImpl =
             filterExistingArticles = filterExistingArticles
         }
 
+    //TODO: move to test assembly
     let createInMemory () =
         let mutable articles = []
         let getAll () = articles
