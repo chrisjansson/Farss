@@ -7,9 +7,12 @@
   <ItemGroup>
     <Compile Include="Dto.fs" />
     <Compile Include="ApiUrls.fs" />
-    <Compile Include="Library.fs" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Content Include="*.fsproj; **\*.fs" PackagePath="fable\" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>

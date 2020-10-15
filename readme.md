@@ -29,6 +29,9 @@
         Giraffe's does.
         How does AI work?
 - [ ] Split integration tests that require WebSdk into separate assembly, these don't behave well with normal test integration supplied by expecto runner
+- [ ] Replace giraffe with Falco
+- [ ] Replace marten with EF
+- [ ] Replace Elmish with simple Feliz
 
 #### Stuff
 - [ ] Use the same store setup in tests
