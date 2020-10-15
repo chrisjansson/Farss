@@ -66,12 +66,31 @@ type PersistedSubscription() =
     member val Url: string = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
 
+[<AllowNullLiteral>]
+type PersistedArticle() =
+    member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val Title: string = Unchecked.defaultof<_> with get, set
+    member val Guid: string = Unchecked.defaultof<_> with get, set
+    member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
+    member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
+    member val Content: string = Unchecked.defaultof<_> with get, set
+    member val IsRead: bool = Unchecked.defaultof<_> with get, set
+    member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
+    member val Link: string = Unchecked.defaultof<_> with get, set
+
 open Microsoft.EntityFrameworkCore
 
 type ReaderContext(options) =
     inherit DbContext(options)
     
     member val Subscriptions: DbSet<PersistedSubscription> = null with get, set
+    member val Articles: DbSet<PersistedArticle> = null with get, set
+
+    override x.OnModelCreating(mb) =
+        mb.Entity<PersistedArticle>()
+            .HasOne(fun x -> x.Subscription)
+            .WithMany()
+            |> ignore
 
 module SubscriptionRepositoryImpl =
     let E = Query.Expr.Quote
@@ -88,6 +107,15 @@ module SubscriptionRepositoryImpl =
         t.Title <- s.Title
         t.Url <- t.Url
     
+    let getOrAddNew<'T when 'T : (new: unit -> 'T) and 'T : not struct and 'T : null> (id: Guid) (set: DbSet<_>) =
+        set.Find id
+        |> Option.ofObj
+        |> Option.defaultWith (fun () ->
+            let instance = new 'T()
+            set.Add(instance) |> ignore
+            instance)
+        
+    
     
     let create (context: ReaderContext) =
         let getAll () = 
@@ -96,12 +124,7 @@ module SubscriptionRepositoryImpl =
             |> Seq.map mapToSubscription
             |> List.ofSeq
         let save (subscription: Subscription) =
-            context.Subscriptions.Find(subscription.Id)
-            |> Option.ofObj
-            |> Option.defaultWith (fun () ->
-                let i = PersistedSubscription()
-                context.Subscriptions.Add(i) |> ignore
-                i)
+            getOrAddNew subscription.Id context.Subscriptions
             |> mapFromSubscription subscription
             context.SaveChanges() |> ignore
         let delete (subscriptionId: SubscriptionId) =
@@ -123,20 +146,46 @@ module SubscriptionRepositoryImpl =
 module ArticleRepositoryImpl =
     open Marten
 
-    let create (documentSession: IDocumentSession): ArticleRepository =
-        let getAll () = 
-            documentSession.Query<Article>()
+    let private mapToArticle (s: PersistedArticle): Article =
+        {
+            Id = s.Id
+            Title = s.Title
+            Guid = s.Guid
+            Subscription = s.SubscriptionId
+            Content = s.Content
+            IsRead = s.IsRead
+            Timestamp = s.Timestamp
+            Link = s.Link
+        }
+    
+    let private mapFromArticle (s: Article) (t: PersistedArticle) =
+        t.Id <- s.Id
+        t.Title <- s.Title
+        t.Guid <- s.Guid
+        t.SubscriptionId <- s.Subscription
+        t.Content <- s.Content
+        t.IsRead <- s.IsRead
+        t.Timestamp <- s.Timestamp
+        t.Link <- s.Link
+    
+    let create (context: ReaderContext): ArticleRepository =
+        let getAll () =
+            context.Articles
             |> Query.toList
+            |> Seq.map mapToArticle
             |> List.ofSeq
+            
         let getAllBySubscription (subscriptionId: SubscriptionId) =
-            documentSession.Query<Article>()
-            |> Query.where (Query.Expr.Quote(fun a -> a.Subscription = subscriptionId))
+            context.Articles
+                .Where(fun x -> x.SubscriptionId = subscriptionId)
             |> Query.toList
+            |> Seq.map mapToArticle
             |> List.ofSeq
 
         let save (article: Article) =
-            documentSession.Store<Article>(article)
-            documentSession.SaveChanges()
+            SubscriptionRepositoryImpl.getOrAddNew article.Id context.Articles
+            |> mapFromArticle article
+            context.SaveChanges() |> ignore
 
         let filterExistingArticles (subscriptionId: SubscriptionId) (guids: string list) =
             if List.length guids = 0 then
@@ -145,11 +194,12 @@ module ArticleRepositoryImpl =
                 failwith "Feed GUID is null"
             else
                 let guidsA = Array.ofList guids
-                let query = """SELECT unnest(?) as guid
-                except
-                SELECT data ->> 'Guid' from mt_doc_domain_article WHERE data ->> 'Subscription' = ?"""
-                let query = documentSession.Query<string>(query, guidsA, subscriptionId.ToString())
-                List.ofSeq query
+                context.Articles
+                    .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
+                    .Select(fun x -> x.Guid)
+                    .ToList()
+                |> List.ofSeq
+                
         {
             getAll = getAll
             getAllBySubscription = getAllBySubscription
