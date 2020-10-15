@@ -1,5 +1,6 @@
 ﻿module CompositionRoot
 
+open System
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Hosting
 open Postgres
@@ -20,16 +21,11 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
 
     services.AddGiraffe() |> ignore
         
-    services.AddScoped<ReaderContext>(fun sp ->
-        let cs = sp.GetRequiredService<PostgresConnectionString>()
+    services.AddDbContext<ReaderContext>((fun sp options ->
         let cs = Postgres.createConnectionString connectionString
-        let databaseOptions =
-            DbContextOptionsBuilder<ReaderContext>()
-                .UseNpgsql(cs)
-                .Options
-
-        new ReaderContext(databaseOptions)
-        ) |> ignore
+        options.UseNpgsql(cs) |> ignore
+        ()
+        )) |> ignore
         
     services.AddSingleton<IDocumentStore>(fun s -> 
         let connectionString = s.GetRequiredService<PostgresConnectionString>()
