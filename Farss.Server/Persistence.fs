@@ -83,8 +83,13 @@ open Microsoft.EntityFrameworkCore
 type ReaderContext(options) =
     inherit DbContext(options)
     
-    member val Subscriptions: DbSet<PersistedSubscription> = null with get, set
-    member val Articles: DbSet<PersistedArticle> = null with get, set
+    [<DefaultValue>]
+    val mutable subscriptions : DbSet<PersistedSubscription>
+    member x.Subscriptions with get() = x.subscriptions and set v = x.subscriptions <- v 
+    
+    [<DefaultValue>]
+    val mutable articles : DbSet<PersistedArticle>
+    member x.Articles with get() = x.articles and set v = x.articles <- v
 
     override x.OnModelCreating(mb) =
         mb.Entity<PersistedArticle>()
