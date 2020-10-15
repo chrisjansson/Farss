@@ -3,6 +3,7 @@
 open Elmish
 open Fable.Import.React
 open Fable.Core.JsInterop
+open Fable.Helpers.React.Props
 
 module R = Fable.Helpers.React
 module Props = Fable.Helpers.React.Props
@@ -19,6 +20,7 @@ type Attr<'msg> =
     | Disabled
     | DisabledB of bool
     | Href of string
+    | DangerouslySetInnerHTML of string
 
 let inline onClick msg = OnClick msg
 let inline _type t = Type t
@@ -30,6 +32,8 @@ let readonly = ReadOnly
 let disabled = Disabled
 let inline href s = Href s
 
+let dangerouslySetInnerHTML s = DangerouslySetInnerHTML s
+
 type Html<'msg> = Dispatch<'msg> -> Fable.Import.React.ReactElement
 
 let convertToProp attr dispatch =
@@ -39,7 +43,12 @@ let convertToProp attr dispatch =
         dispatch msg
 
     match attr with
-    | OnClick msg -> Props.OnClick (fun _ -> dispatch msg) :> IHTMLProp
+    | OnClick msg -> Props.OnClick (
+                                       fun e ->
+                                           if not e.ctrlKey then do
+                                            e.preventDefault()
+                                            dispatch msg
+                                   ) :> IHTMLProp
     | Type t -> Props.Type t :> IHTMLProp
     | Value v -> Props.Value v :> IHTMLProp
     | OnInput f -> Props.OnChange (fun e -> onChangeR e f) :> IHTMLProp
@@ -49,6 +58,7 @@ let convertToProp attr dispatch =
     | Disabled -> Props.Disabled true :> IHTMLProp
     | DisabledB b -> Props.Disabled b :> IHTMLProp
     | Href s -> Props.Href s :> IHTMLProp
+    | DangerouslySetInnerHTML s -> Props.DangerouslySetInnerHTML ({ DangerousHtml.__html = s }) :> IHTMLProp
 
 let convertToProps props dispatch = Seq.map (fun p -> convertToProp p dispatch) props
 

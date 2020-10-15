@@ -59,7 +59,7 @@ let update (msg:Msg) (model:Model) =
                 if a = article then
                     { a with IsExpanded = not a.IsExpanded }
                 else
-                    a) m.Articles
+                    { a with IsExpanded = false }) m.Articles
             Model.Loaded { m with Articles = articles }, Cmd.none
         | _ -> model, Cmd.none
             
@@ -69,6 +69,7 @@ let renderLoading () =
 
 let renderLoaded (model: Loaded) =
     let { Subscriptions = subscriptions; Articles = articles } = model
+    let articles = articles |>  List.sortByDescending (fun a -> a.Dto.PublishedAt) 
     
     let renderFeed (subscription: SubscriptionDto) = 
         div [ className "feed-container" ] [
@@ -97,14 +98,19 @@ let renderLoaded (model: Loaded) =
         else
             let sign = if article.IsExpanded then "-" else "+"
             fragment () [
-                div [ className "expander" ] [ str sign ]
-                div [ className "has-text-weight-semibold title-container"; onClick (ToggleExpanded article) ] [ 
+                yield div [ className "expander" ] [ str sign ]
+                yield div [ className "has-text-weight-semibold title-container"; onClick (ToggleExpanded article) ] [ 
                     a [ href article.Dto.Link ] [ str article.Dto.Title ]
                 ]
-                div [ className "date" ] [
+                yield div [ className "date" ] [
 
                     str (article.Dto.PublishedAt.ToString("yyyy-MM-dd"))
                 ]
+                
+                if article.IsExpanded then
+                    yield div [ className "article-container" ] [
+                        div [ dangerouslySetInnerHTML article.Dto.Content ] []
+                    ]
             ]
             
         
@@ -115,7 +121,7 @@ let renderLoaded (model: Loaded) =
             div [ className "head has-background-info" ] [
                 h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
             ]
-            div [ className "toolbar has-background-info" ] [
+            div [ className "toolbar" ] [
                 input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
                 input [ _type "button"; value "Poll"; onClick Msg.Poll ]
             ]

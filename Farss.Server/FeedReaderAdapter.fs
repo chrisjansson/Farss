@@ -18,7 +18,7 @@ and Item =
     {
         Title: string
         Id: string
-        Content: string
+        Content: string option
         Timestamp: DateTimeOffset option
         Link: string option
     }
@@ -37,7 +37,7 @@ module FeedItem =
         let! timestamp = ArticleTimestamp.create item.Timestamp
         let! link = ArticleLink.create item.Link
 
-        return Article.create item.Title guid subscriptionId item.Content timestamp link
+        return Article.create item.Title guid subscriptionId (Option.defaultValue "" item.Content) timestamp link
     }
 
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
@@ -87,10 +87,14 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                 let zeroTimeZoneOffset (timestamp: DateTimeOffset) =
                     timestamp.ToUniversalTime()
 
+                let content = 
+                    Option.ofObj item.Content
+                    |> Option.orElse (Option.ofObj item.Description)
+                
                 { 
                     Item.Title = item.Title
                     Id = item.Id
-                    Content = item.Content
+                    Content = content
                     Timestamp = extractedTimestamp |> Option.map (ensureUtcTimestamp >> toDateTimeOffset >> zeroTimeZoneOffset)
                     Link = Some item.Link
                 }
