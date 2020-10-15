@@ -56,8 +56,8 @@ let tests =
                 Expect.equal 
                     unboxed.Items 
                     [
-                        { Item.Title = "item 1"; Id = "a guid"; Content = "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = Some "http://alink/" }
-                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = Some "http://another_link/" } 
+                        { Item.Title = "item 1"; Id = "a guid"; Content = Some "content for item 1"; Timestamp = Some (DateTimeOffset(2002, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = Some "http://alink/" }
+                        { Item.Title = "item 2"; Id = "item 2 guid"; Content = Some "content for item 2"; Timestamp = Some(DateTimeOffset(2000, 3, 2, 12, 1, 2, TimeSpan.Zero)); Link = Some "http://another_link/" } 
                     ] 
                     "Feed items"
             }

@@ -12,7 +12,7 @@ let tests =
             {
                 Title = "title"
                 Id = "guid"
-                Content = "content"
+                Content = Some "content"
                 Timestamp = Some (DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero))
                 Link = Some "a link"
             }
@@ -39,7 +39,7 @@ let tests =
             let article: Domain.Article = result |> fun (Ok(article)) -> article
 
             Expect.equal article.Guid feedItemThatConvertsToArticle.Id "Guid"
-            Expect.equal article.Content feedItemThatConvertsToArticle.Content "Content"
+            Expect.equal (Some article.Content) feedItemThatConvertsToArticle.Content "Content"
             Expect.equal article.Timestamp feedItemThatConvertsToArticle.Timestamp.Value "Timestamp"
             Expect.equal article.Title feedItemThatConvertsToArticle.Title "Title"
     ]

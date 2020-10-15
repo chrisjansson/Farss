@@ -50,7 +50,7 @@ let fetchArticlesForSubscriptionTests =
                 Expect.equal (articles.getAll().Length) 0 "Articles"
         }
 
-    let validItem =  { Title = "Item title"; Id = "Article Guid"; Content = "Content"; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, 6, TimeSpan.Zero)); Link = Some "http://link.com" }
+    let validItem =  { Title = "Item title"; Id = "Article Guid"; Content = Some "Content"; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, 6, TimeSpan.Zero)); Link = Some "http://link.com" }
 
     testList "Fetch articles for subscription workflow" [
         let tests = [
@@ -88,8 +88,8 @@ let fetchArticlesForSubscriptionTests =
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
                 let feedItems = [ 
-                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = (Some DateTimeOffset.Now); Link = None } 
-                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = "Item content"; Timestamp = None; Link = None } 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = (Some DateTimeOffset.Now); Link = None } 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = None; Link = None } 
                 ]
                 let feedResult = { emptyFeed with Items = feedItems }
                 adapterStub.SetResult ("feed url", Ok feedResult)
@@ -119,7 +119,7 @@ let fetchArticlesForSubscriptionTests =
                     { 
                         FeedReaderAdapter.Item.Title = "Item title"
                         Id = "Article Guid"
-                        Content = "Item content"
+                        Content = Some "Item content"
                         Timestamp = Some (DateTimeOffset(2002, 2, 3, 4, 5, 7, TimeSpan.Zero)) 
                         Link = Some "link"
                     } 
@@ -144,7 +144,7 @@ let fetchArticlesForSubscriptionTests =
             "Fetch one article associates with subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -163,7 +163,7 @@ let fetchArticlesForSubscriptionTests =
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title" })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -185,7 +185,7 @@ let fetchArticlesForSubscriptionTests =
                 let subscriptionId1 = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId0; Title = "title" })
                 subs.save ({ Url = "feed url"; Id = subscriptionId1; Title = "title" })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = ""; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))); Link = Some "link" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
