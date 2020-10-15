@@ -1,11 +1,12 @@
 ﻿module CompositionRoot
 
+open Microsoft.EntityFrameworkCore
+open Microsoft.Extensions.Hosting
 open Postgres
 open Microsoft.Extensions.DependencyInjection
 open Marten
 open Giraffe
 open Persistence
-open Microsoft.Extensions.Hosting
 
 type IServiceCollection with    
     member x.Add(source: IServiceCollection) =
@@ -18,6 +19,17 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
     services.AddSingleton(connectionString) |> ignore
 
     services.AddGiraffe() |> ignore
+        
+    services.AddScoped<ReaderContext>(fun sp ->
+        let cs = sp.GetRequiredService<PostgresConnectionString>()
+        let cs = Postgres.createConnectionString connectionString
+        let databaseOptions =
+            DbContextOptionsBuilder<ReaderContext>()
+                .UseNpgsql(cs)
+                .Options
+
+        new ReaderContext(databaseOptions)
+        ) |> ignore
         
     services.AddSingleton<IDocumentStore>(fun s -> 
         let connectionString = s.GetRequiredService<PostgresConnectionString>()
@@ -33,18 +45,17 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         store.Schema.ApplyAllConfiguredChangesToDatabase() |> ignore
         store :> IDocumentStore) |> ignore
 
-
     services.AddScoped<IDocumentSession>(fun s ->
         let store = s.GetRequiredService<IDocumentStore>()
         store.LightweightSession()) |> ignore
 
     services.AddScoped<SubscriptionRepository>(fun s -> 
-        let session = s.GetRequiredService<IDocumentSession>()
-        Persistence.SubscriptionRepositoryImpl.create session) |> ignore
+        let context = s.GetRequiredService<ReaderContext>()
+        SubscriptionRepositoryImpl.create context) |> ignore
 
     services.AddScoped<ArticleRepository>(fun s -> 
-        let session = s.GetRequiredService<IDocumentSession>()
-        Persistence.ArticleRepositoryImpl.create session) |> ignore
+        let context = s.GetRequiredService<ReaderContext>()
+        ArticleRepositoryImpl.create context) |> ignore
 
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
