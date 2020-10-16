@@ -98,8 +98,6 @@ type ReaderContext(options) =
             |> ignore
 
 module SubscriptionRepositoryImpl =
-    let E = Query.Expr.Quote
-    
     let private mapToSubscription (s: PersistedSubscription): Subscription =
         {
             Id = s.Id
@@ -110,7 +108,7 @@ module SubscriptionRepositoryImpl =
     let private mapFromSubscription (s: Subscription) (t: PersistedSubscription) =
         t.Id <- s.Id
         t.Title <- s.Title
-        t.Url <- t.Url
+        t.Url <- s.Url
     
     let getOrAddNew<'T when 'T : (new: unit -> 'T) and 'T : not struct and 'T : null> (id: Guid) (set: DbSet<_>) =
         set.Find id
@@ -120,8 +118,6 @@ module SubscriptionRepositoryImpl =
             set.Add(instance) |> ignore
             instance)
         
-    
-    
     let create (context: ReaderContext) =
         let getAll () = 
             context.Subscriptions
@@ -149,8 +145,6 @@ module SubscriptionRepositoryImpl =
 
 
 module ArticleRepositoryImpl =
-    open Marten
-
     let private mapToArticle (s: PersistedArticle): Article =
         {
             Id = s.Id
@@ -199,11 +193,17 @@ module ArticleRepositoryImpl =
                 failwith "Feed GUID is null"
             else
                 let guidsA = Array.ofList guids
-                context.Articles
-                    .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
-                    .Select(fun x -> x.Guid)
-                    .ToList()
-                |> List.ofSeq
+                let existing =
+                    context.Articles
+                        .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
+                        .Select(fun x -> x.Guid)
+                        .ToList()
+                        |> Set.ofSeq
+                
+                guids
+                |> Set.ofList
+                |> (fun x -> Set.difference x existing)
+                |> Set.toList
                 
         {
             getAll = getAll

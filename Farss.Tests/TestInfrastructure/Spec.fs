@@ -44,9 +44,10 @@ let Then = pipe
 let And = pipe
 
 let toTest (testStep: unit -> AsyncTestStep<unit, _>) = async {
-        use df = DatabaseTesting.createFixture2 ()
+        let df = DatabaseTesting.createFixture2 ()
         use f = new TestWebApplicationFactory(df)
         f.CreateClient() |> ignore
+        f.Server.AllowSynchronousIO <- true
 
         let stuff: ATC<unit> = async.Return ((), f)
         do! testStep() stuff |> Async.Ignore
@@ -56,6 +57,7 @@ let spec name t =
     testAsync name {
         do! t |> toTest
     }
+
 
 module Step =
     let mapAsync (step: TC<_> -> _): AsyncTestStep<_, _> =
