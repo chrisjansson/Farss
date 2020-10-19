@@ -9,10 +9,6 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
 open CompositionRoot
 open Microsoft.Extensions.Hosting
-open Microsoft.AspNetCore.Builder
-open Microsoft.AspNetCore.Hosting    
-open Microsoft.Extensions.DependencyInjection    
-open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Falco
 
@@ -39,13 +35,21 @@ type Startup(configuration: IConfiguration) =
         let cr = createCompositionRoot connectionString
         services.Add(cr) |> ignore
         
+        services.AddSpaStaticFiles(
+            fun c ->
+                c.RootPath <- "wwwroot"
+                ()
+                                  )
+        
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->
                 opt.AllowSynchronousIO <- true
         ) |> ignore
         
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
-        if env.EnvironmentName = Environments.Development then 
+        let isDevelopment = env.EnvironmentName = Environments.Development
+        
+        if  isDevelopment then 
             app.UseDeveloperExceptionPage() |> ignore
         else
             app.UseExceptionMiddleware(defaultExceptionHandler) |> ignore
@@ -55,7 +59,18 @@ type Startup(configuration: IConfiguration) =
             .UseStaticFiles()
             .UseRouting()
             .UseHttpEndPoints(Farss.Giraffe.createWebAppFalco ())
-            .UseNotFoundHandler(defaultNotFoundHandler)
+            |> ignore
+            
+        app.UseSpa(
+            fun spa ->
+                if isDevelopment then
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:8080")
+                else
+                    ()
+                )
+            |> ignore
+            
+
         
 //        app.UseExceptionMiddleware(defaultExceptionHandler)
 //            .UseResponseCaching()

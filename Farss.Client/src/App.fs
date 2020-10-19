@@ -1,12 +1,6 @@
 module App
 
-open Elmish
-open Elmish.React
-//TODO: Only shadow HMR in development. Requires change in webpack.config as well. See Fable.Elmish.HMR
-open Elmish.HMR
 open Dto
-open Html
-open Model
 
 module Msg =
     let map modelMap msgMap update msg model =
@@ -102,58 +96,58 @@ let renderLoaded (model: Loaded) =
                 yield div [ className "has-text-weight-semibold title-container"; onClick (ToggleExpanded article) ] [ 
                     a [ href article.Dto.Link ] [ str article.Dto.Title ]
                 ]
-                yield div [ className "date" ] [
-
-                    str (article.Dto.PublishedAt.ToString("yyyy-MM-dd"))
-                ]
-                
-                if article.IsExpanded then
-                    yield div [ className "article-container" ] [
-                        div [ dangerouslySetInnerHTML article.Dto.Content ] []
-                    ]
-            ]
-            
-        
-    let renderArticles = List.map renderArticle
-
-    fragment () [
-        yield div [ className "root-grid" ] [
-            div [ className "head has-background-info" ] [
-                h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
-            ]
-            div [ className "toolbar" ] [
-                input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
-                input [ _type "button"; value "Poll"; onClick Msg.Poll ]
-            ]
-            div [ className "left-pane" ] [
-                div [] [
-                    h4 [ className "has-text-weight-semibold feed-header" ] [ 
-                        str "Feeds" 
-                    ]
-                ]
-                
-                div [ className "feeds-container" ] (renderFeeds subscriptions)
-            ]
-            div [ className "main" ] [
-                str "Articles n stufffsnsnsn"
-                div [ className "articles-grid" ] [
-                    fragment () (renderArticles articles)
-                ]
-            ]
-        ]
-
-        match model.AddSubscriptionModel with
-        | Some m -> yield Html.map Msg.AddSubscriptionMsg (AddSubscriptionModal.view m)
-        | None-> ()
-    ]
-
-let view (model:Model) dispatch =
-    match model with
-    | Loading -> Html.run (renderLoading ()) dispatch
-    | Model.Loaded m-> Html.run (renderLoaded m) dispatch
-
-//TODO: add error handler
-Program.mkProgram init update view
-    |> Program.withReact ReactSettings.appRootId
-    |> Program.withConsoleTrace
-    |> Program.run
+//                yield div [ className "date" ] [
+//
+//                    str (article.Dto.PublishedAt.ToString("yyyy-MM-dd"))
+//                ]
+//                
+//                if article.IsExpanded then
+//                    yield div [ className "article-container" ] [
+//                        div [ dangerouslySetInnerHTML article.Dto.Content ] []
+//                    ]
+//            ]
+//            
+//        
+//    let renderArticles = List.map renderArticle
+//
+//    fragment () [
+//        yield div [ className "root-grid" ] [
+//            div [ className "head has-background-info" ] [
+//                h4 [ className "title is-4 navbar-item has-text-white" ] [ str "Farss" ]
+//            ]
+//            div [ className "toolbar" ] [
+//                input [ _type "button"; value "Add"; onClick Msg.OpenAddSubscription ]
+//                input [ _type "button"; value "Poll"; onClick Msg.Poll ]
+//            ]
+//            div [ className "left-pane" ] [
+//                div [] [
+//                    h4 [ className "has-text-weight-semibold feed-header" ] [ 
+//                        str "Feeds" 
+//                    ]
+//                ]
+//                
+//                div [ className "feeds-container" ] (renderFeeds subscriptions)
+//            ]
+//            div [ className "main" ] [
+//                str "Articles n stufffsnsnsn"
+//                div [ className "articles-grid" ] [
+//                    fragment () (renderArticles articles)
+//                ]
+//            ]
+//        ]
+//
+//        match model.AddSubscriptionModel with
+//        | Some m -> yield Html.map Msg.AddSubscriptionMsg (AddSubscriptionModal.view m)
+//        | None-> ()
+//    ]
+//
+//let view (model:Model) dispatch =
+//    match model with
+//    | Loading -> Html.run (renderLoading ()) dispatch
+//    | Model.Loaded m-> Html.run (renderLoaded m) dispatch
+//
+////TODO: add error handler
+//Program.mkProgram init update view
+//    |> Program.withReact ReactSettings.appRootId
+//    |> Program.withConsoleTrace
+//    |> Program.run

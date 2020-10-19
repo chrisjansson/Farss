@@ -43,6 +43,7 @@
   <ItemGroup>
     <PackageReference Include="CodeHollow.FeedReader" Version="1.1.5" />
     <PackageReference Include="Falco" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.4" />

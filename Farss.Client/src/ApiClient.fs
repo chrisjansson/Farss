@@ -1,25 +1,67 @@
 ﻿module ApiClient
 
+open System
 open Fable.Core.JsInterop
-open Fable.PowerPack
+//open Fetch
 
-//TODO: Fetch convenience methods does not return response body as error
 
 module Fetch =
     open Thoth.Json
-    open Fetch.Fetch_types
+    open Fetch
 
-    let inline tryFetchAsWithPayload<'response> url =
-        let responseDecoder = Decode.Auto.generateDecoder<'response>()
-        //Return partially applied lambda so responseDecoder can be cached at will
-        fun payload -> 
-            let serializedPayload = Thoth.Json.Encode.Auto.toString(0, payload)
-            let body = Body !^ serializedPayload
-            let method = Method HttpMethod.POST
-            Fetch.tryFetchAs url responseDecoder [ method; body ]
+    let inline tryFetchAs url (responseDecoder: Decoder<_>) parameters =
+        let decode = Decode.fromString responseDecoder
+        let decodeResponse (response: Response) =
+            response.text ()
+            |> Promise.map decode
+        
+        tryFetch url parameters
+        |> Promise.bindResult decodeResponse
+
+    let inline tryFetchAsWithPayload<'response, 'payload> (url: string) (payload: 'payload) =
+        let responseDecoder = Decode.Auto.generateDecoderCached<'response>()
+        let serializedPayload = Encode.Auto.toString(0, payload)
+        let body = Body !^ serializedPayload
+        let method = Method HttpMethod.POST
+        tryFetchAs url responseDecoder [ method; body ]
+        
+    let private sendRecord (url: string) (record:'T) (properties: RequestProperties list) httpMethod : Fable.Core.JS.Promise<Response> =
+        let defaultProps =
+            [ RequestProperties.Method httpMethod
+              requestHeaders [ContentType "application/json"]
+              RequestProperties.Body !^(Encode.Auto.toString(0, record))]
+        // Append properties after defaultProps to make sure user-defined values
+        // override the default ones if necessary
+        List.append defaultProps properties
+        |> fetch url
+
+    /// Sends a HTTP post with the record serialized as JSON.
+    /// This function already sets the HTTP Method to POST sets the json into the body.
+    let postRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
+        sendRecord url record properties HttpMethod.POST
+
+    let tryPostRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Result<Response, Exception>> =
+        postRecord url record properties |> Promise.result
+
+    /// Sends a HTTP put with the record serialized as JSON.
+    /// This function already sets the HTTP Method to PUT, sets the json into the body.
+    let putRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Response> =
+        sendRecord url record properties HttpMethod.PUT
+
+    let tryPutRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Result<Response, Exception>> =
+        putRecord url record properties |> Promise.result
+
+    /// Sends a HTTP patch with the record serialized as JSON.
+    /// This function already sets the HTTP Method to PATCH sets the json into the body.
+    let patchRecord (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
+        sendRecord url record properties HttpMethod.PATCH
+
+    /// Sends a HTTP OPTIONS request.
+    let tryOptionsRequest (url:string) : Fable.Core.JS.Promise<Result<Response, Exception>> =
+        fetch url [RequestProperties.Method HttpMethod.OPTIONS] |> Promise.result
 
 let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
-    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto> ApiUrls.PreviewSubscribeToFeed dto
+    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto, _> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []
