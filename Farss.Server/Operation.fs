@@ -1,6 +1,6 @@
 ﻿module Operation
 
-open FSharp.Control.Tasks.V2.ContextInsensitive
+open FSharp.Control.Tasks
 
 let execAsync (op: 'a -> TaskResult<'b, 'c>)  (arg: 'a) = task {
     try 

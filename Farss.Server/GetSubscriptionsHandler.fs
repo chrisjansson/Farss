@@ -1,19 +1,18 @@
 ﻿module GetSubscriptionsHandler
 
-open Giraffe
+open Falco.Core
+open FalcoUtils
 open Persistence
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks.V2.ContextInsensitive
+open Microsoft.Extensions.DependencyInjection
 
 let getSubscriptionsHandler: HttpHandler = 
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let repository = ctx.GetService<SubscriptionRepository>()
+    fun (ctx: HttpContext) ->
+        let repository = ctx.RequestServices.GetService<SubscriptionRepository>()
 
-            let dtos = 
-                repository.getAll() 
-                |> List.map Dto.SubscriptionDto.toDto
-                |> Array.ofList
-
-            return! Successful.ok (json dtos) next ctx
-        }
+        let dtos = 
+            repository.getAll() 
+            |> List.map Dto.SubscriptionDto.toDto
+            |> Array.ofList
+        
+        Response.ofJson dtos ctx

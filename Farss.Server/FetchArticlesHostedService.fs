@@ -4,7 +4,7 @@ open Microsoft.Extensions.Hosting
 open System.Threading.Tasks
 open System
 open Microsoft.Extensions.DependencyInjection
-open FSharp.Control.Tasks.V2
+open FSharp.Control.Tasks
 
 let Interval = 10 * 60 * 1000
 
@@ -27,6 +27,6 @@ type FetchArticlesHostedService(serviceProvider: IServiceProvider) =
                 do! Task.Delay(Interval, cancellationToken)
 
             return ()
-        } :> Task
+        }
         
     

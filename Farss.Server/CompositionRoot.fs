@@ -1,12 +1,11 @@
 ﻿module CompositionRoot
 
-open Giraffe.Serialization
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Hosting
 open Postgres
 open Microsoft.Extensions.DependencyInjection
-open Giraffe
 open Persistence
+open Microsoft.AspNetCore.Builder
 
 type IServiceCollection with    
     member x.Add(source: IServiceCollection) =
@@ -16,10 +15,15 @@ type IServiceCollection with
 
 let createCompositionRoot (connectionString: PostgresConnectionString): IServiceCollection =
     let services = ServiceCollection()
-    services.AddSingleton(connectionString) |> ignore
 
-    services.AddGiraffe() |> ignore
-        
+    services
+        .AddRouting()
+        .AddResponseCaching()
+        .AddResponseCompression()
+        |> ignore
+
+
+    services.AddSingleton(connectionString) |> ignore
     services.AddDbContext<ReaderContext>((fun sp options ->
         let cs = Postgres.createConnectionString connectionString
         options.UseNpgsql(cs) |> ignore
@@ -35,8 +39,6 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         ArticleRepositoryImpl.create context) |> ignore
 
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
-
-    services.AddSingleton<IJsonSerializer>(Thoth.Json.Giraffe.ThothSerializer()) |> ignore
 
     services.AddSingleton<IHostedService, FetchArticlesHostedService.FetchArticlesHostedService>() |> ignore
 

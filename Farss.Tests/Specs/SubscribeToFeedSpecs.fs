@@ -10,6 +10,7 @@ open Spec
 open Persistence
 open Microsoft.Extensions.DependencyInjection
 open System
+open Thoth.Json.Net
 
 module HttpClient = 
     let getAsync (url: string) (client: System.Net.Http.HttpClient) =
@@ -27,7 +28,7 @@ module HttpClient =
         }
 
     let postAsJsonAsyncWithPayload<'a, 'p> (url: string) (content: 'p) (client: System.Net.Http.HttpClient): Async<'a> = async {
-        let json = Thoth.Json.Net.Encode.Auto.toString(0, content)
+        let json = Thoth.Json.Net.Encode.Auto.toString(0, content, caseStrategy = CaseStrategy.CamelCase)
         let content = new StringContent(json)
         let message = new HttpRequestMessage(HttpMethod.Post, url)
         message.Content <- content
@@ -43,7 +44,7 @@ module HttpClient =
         
     let postAsync (url: string) (content: 'a) (client: System.Net.Http.HttpClient) =
         //TODO: Create both snapshots and characterization tests for thoth?
-        let json = Thoth.Json.Net.Encode.Auto.toString(0, content)
+        let json = Thoth.Json.Net.Encode.Auto.toString(0, content, caseStrategy = CaseStrategy.CamelCase)
         let content = new StringContent(json)
         client.PostAsync(url, content) |> Async.AwaitTask
 
@@ -196,6 +197,7 @@ let is_deleted: AsyncTestStep<string, _> =
         let command: Domain.DeleteSubscriptionCommand = { Id = subscription.Id }
 
         let! response = f.CreateClient() |> HttpClient.postAsync ApiUrls.DeleteSubscription command
+        let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
         response.EnsureSuccessStatusCode() |> ignore
 
         return ((), f)

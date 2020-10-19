@@ -1,12 +1,20 @@
 ﻿module Task
 
-open FSharp.Control.Tasks.V2
 open System.Threading.Tasks
+open FSharp.Control.Tasks
 
-let map f (t: Task<_>) = task {
+let map (f: 'a -> 'b) (t: Task<_>) = task {
     let! result = t
     return f result
-} 
+}
+
+
+let bind (f: 'a -> Task) (t: Task<'a>) =
+    task {
+        let! result = t
+        do! f result
+        return ()
+    } :> Task
 
 let traverse (tasks: Task<_> list) = 
     let rec inner tasks acc = task {

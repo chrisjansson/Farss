@@ -34,9 +34,6 @@ let create () =
         delete = delete
     }
 
-type WorkflowError =
-    | BadRequest of string * System.Exception
-    | InvalidParameter of string list
 
 open System.Linq.Expressions
 open System.Linq

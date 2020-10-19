@@ -3,11 +3,6 @@
 open Domain
 open Persistence
 
-//todo: merge with general workflow error type
-type WorkflowError =
-    | InvalidParameter of string list
-    | ArticleNotFound
-
 type SetArticleReadStatusWorkflow = Dto.SetArticleReadStatusDto -> Result<unit, WorkflowError>
 type SetArticleReadStatusWorkflowImpl = ArticleRepository -> SetArticleReadStatusWorkflow
 
@@ -16,7 +11,7 @@ let setArticleReadStatusWorkflowImpl: SetArticleReadStatusWorkflowImpl =
         let getArticle (articleId: ArticleId) =
             match ar.getAll() |> List.tryFind (fun a -> a.Id = articleId) with
             | Some article -> Ok article
-            | None -> ArticleNotFound |> Error
+            | None -> WorkflowError.BadRequest ("ArticleNotFound", None) |> Error
 
         let setIsRead command article =
             let article = { article with IsRead = command.SetIsReadTo }

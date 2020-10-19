@@ -22,9 +22,8 @@ module Program =
         let startup () =
             use scope = webHost.Services.CreateScope()
             let readerContext = scope.ServiceProvider.GetRequiredService<ReaderContext>()
-            readerContext.Database.EnsureCreated() |> ignore
-            
-        startup ()
+            readerContext.Database.EnsureCreated()
+        
         
         webHost.Run()
         exitCode

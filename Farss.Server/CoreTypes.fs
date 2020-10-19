@@ -11,3 +11,7 @@ type OperationResult<'T, 'TError> = Result<'T, OperationError<'TError>>
 and OperationError<'TError> = 
     | OperationError of exn
     | InnerError of 'TError
+    
+type WorkflowError =
+    | BadRequest of string * (System.Exception option)
+    | InvalidParameter of string list

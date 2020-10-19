@@ -65,7 +65,7 @@ let tests =
                 let command: Dto.SetArticleReadStatusDto = { ArticleId = Some (Guid.NewGuid()); SetIsReadTo = Some (true) }
                 let result = workflow command
 
-                Expect.error result ArticleNotFound
+                Expect.error result (WorkflowError.BadRequest ("ArticleNotFound", None))
             }
 
             "Sets article to read", fun (ar: ArticleRepository) -> async {

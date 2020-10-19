@@ -1,32 +1,26 @@
 ﻿module SubscribeToFeedHandler
 
-open Giraffe
+open Falco.Core
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks.V2.ContextInsensitive
-open SubscribeToFeedWorkflow
 open FeedReaderAdapter
+open Microsoft.Extensions.DependencyInjection
 open Persistence
+open FalcoUtils
 open GiraffeUtils
 
 let previewSubscribeToFeedHandler: HttpHandler =
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let adapter = ctx.GetService<FeedReaderAdapter>()
-            let! dto = ctx.BindJsonAsync<Dto.PreviewSubscribeToFeedQueryDto>()            
+    fun (ctx: HttpContext) ->
+        let adapter = ctx.RequestServices.GetService<FeedReaderAdapter>()
 
-            let! result = SubscribeToFeedWorkflow.previewSubscribeToFeed adapter dto 
-                            
-            return! (result |> convertToJsonResultHandler) next ctx
-        }
+        Request.tryBindJsonOptions<Dto.PreviewSubscribeToFeedQueryDto> ctx
+        |> TaskResult.bindTask (SubscribeToFeedWorkflow.previewSubscribeToFeed adapter)
+        |> Task.bind (fun x -> convertToJsonResultHandler x ctx)
 
 let subscribeToFeedHandler : HttpHandler =
-    fun (next : HttpFunc) (ctx : HttpContext) ->
-        task {
-            let adapter = ctx.GetService<FeedReaderAdapter>()
-            let repository = ctx.GetService<SubscriptionRepository>()
-            let! dto = ctx.BindJsonAsync<Dto.SubscribeToFeedDto>()            
-
-            let! result = SubscribeToFeedWorkflow.subscribeToFeed adapter repository dto 
-                        
-            return! (result |> convertToJsonResultHandler) next ctx
-        }
+    fun (ctx : HttpContext) ->
+        let adapter = ctx.RequestServices.GetService<FeedReaderAdapter>()
+        let repository = ctx.RequestServices.GetService<SubscriptionRepository>()
+        
+        Request.tryBindJsonOptions<Dto.SubscribeToFeedDto> ctx
+        |> TaskResult.bindTask (SubscribeToFeedWorkflow.subscribeToFeed adapter repository)
+        |> Task.bind (fun x -> convertToJsonResultHandler x ctx)

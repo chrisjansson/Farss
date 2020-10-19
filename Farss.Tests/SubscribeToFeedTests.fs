@@ -4,7 +4,7 @@ open Expecto
 open SubscribeToFeedWorkflow
 open System
 open Persistence
-open FSharp.Control.Tasks.V2
+open FSharp.Control.Tasks
 
 let expectBadRequest actual message = task {
         let! actual' = actual
@@ -83,10 +83,10 @@ let tests = testList "subscribe to feed tests" [
             }
         ]
 
-        let createTest (name, f) =
+        let createTest (name, f: _ -> System.Threading.Tasks.Task) =
             testTask name {
                 let repository = Persistence.create ()
-                do! f repository
+                do! ((f repository).ContinueWith<unit>(fun _ -> ()))
             }
 
         yield! List.map createTest cases

@@ -1,19 +1,20 @@
 ﻿module GetArticlesHandler
 
-open Giraffe
+open System.Net
+open Falco
+open FalcoUtils
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks.V2
 open Persistence
 open GetArticlesWorkflow
+open Microsoft.Extensions.DependencyInjection
 
 let getArticlesHandler: HttpHandler =
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let ar = ctx.GetService<ArticleRepository>()
+    fun (ctx: HttpContext) ->
+        let ar = ctx.RequestServices.GetService<ArticleRepository>()
 
-            let workflow: GetArticlesWorkflow = getArticlesWorkflowImpl ar
+        let workflow: GetArticlesWorkflow = getArticlesWorkflowImpl ar
 
-            let result = workflow ()
-
-            return! Successful.ok (json result) next ctx
-        }
+        let result = workflow ()
+        ctx
+        |> Response.withStatusCode (int HttpStatusCode.OK)
+        |> Response.ofJson result

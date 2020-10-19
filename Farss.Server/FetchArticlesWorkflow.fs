@@ -3,7 +3,7 @@
 open Domain
 open Persistence
 open FeedReaderAdapter
-open FSharp.Control.Tasks.V2
+open FSharp.Control.Tasks
 open System.Threading.Tasks
 
 type FetchArticlesError =  

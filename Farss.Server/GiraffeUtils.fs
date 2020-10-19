@@ -1,19 +1,25 @@
 ﻿module GiraffeUtils
 
-open Giraffe
-open Persistence
-
-let private convertToHandlerInternal okHandler (result: Result<'r, WorkflowError>) =
-    match result with
-    | Ok result -> okHandler result
-    //todo: what to do with the exception?
-    | Error (BadRequest (message, _)) -> RequestErrors.BAD_REQUEST message
-    | Error (InvalidParameter parameters) -> 
-        let message = sprintf "Invalid parameters: %s" <| System.String.Join(",", parameters)
-        RequestErrors.BAD_REQUEST message
-
-let convertToHandler (result: Result<Unit, WorkflowError>) =
-    convertToHandlerInternal (fun _ -> Successful.NO_CONTENT) result
+open System.Net
+open Falco
+open FalcoUtils
 
 let convertToJsonResultHandler (result: Result<'a, WorkflowError>) =
-    convertToHandlerInternal (fun content -> Successful.ok (json content)) result
+    fun ctx ->
+        match result with
+        | Ok r ->
+            ctx
+            |> Response.withContentType "application/json"
+            |> Response.withStatusCode 200
+            |> Response.ofJson r
+        | Error e ->
+            match e with
+            | WorkflowError.BadRequest (message, ex) ->
+                ctx
+                |> Response.withStatusCode (int HttpStatusCode.BadRequest)
+                |> Response.ofPlainText message
+            | WorkflowError.InvalidParameter parameters ->
+                let message = sprintf "Invalid parameters: %s" <| System.String.Join(",", parameters)
+                ctx
+                |> Response.withStatusCode (int HttpStatusCode.BadRequest)
+                |> Response.ofPlainText message

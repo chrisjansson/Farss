@@ -1,10 +1,11 @@
 ﻿module FetchArticlesHandler
 
+open System.Net
+open Falco.Core
 open Persistence
 open FeedReaderAdapter
-open Giraffe
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks.V2.ContextInsensitive
+open FSharp.Control.Tasks
 open Microsoft.Extensions.DependencyInjection
 open System
 
@@ -25,14 +26,15 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
     FetchArticlesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
 
 let fetchEntriesHandler: HttpHandler =
-    fun (next: HttpFunc) (ctx: HttpContext) ->
-        task {
-            let workflow = constructFetchEntriesHandler ctx.RequestServices
-            let! result = workflow ()
+    fun (ctx: HttpContext) ->
+        let workflow = constructFetchEntriesHandler ctx.RequestServices
 
-            //todo: do something smart, like log the result or whatever
-            result |> ignore
-
-            return! Successful.NO_CONTENT next ctx
-        }        
-       
+        let successNoContent ctx =
+            ctx
+            |> Falco.Response.withStatusCode (int HttpStatusCode.NoContent)
+            |> Falco.Response.ofEmpty
+                
+        workflow ()
+        |> Task.map (fun _ -> ())
+        |> Task.bind (fun _ -> successNoContent ctx)
+   

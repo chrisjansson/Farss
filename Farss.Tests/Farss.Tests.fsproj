@@ -33,7 +33,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.9" />
     <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.0" />
     <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />
-    <PackageReference Include="Thoth.Json.Giraffe" Version="4.2.0" />
+    <PackageReference Include="Thoth.Json.Net" Version="5.0.0" />
     <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
   </ItemGroup>
