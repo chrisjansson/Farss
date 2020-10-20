@@ -1,4 +1,4 @@
-﻿module ModalPortal
+﻿module Portal
 
 open Feliz
 open Fable.React

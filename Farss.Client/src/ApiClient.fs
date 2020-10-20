@@ -16,20 +16,21 @@ module Fetch =
             |> Promise.map decode
         
         tryFetch url parameters
-        |> Promise.bindResult decodeResponse
+        |> Promise.mapResultError (fun e -> e.Message)
+        |> PromiseResult.bind decodeResponse
 
     let inline tryFetchAsWithPayload<'response, 'payload> (url: string) (payload: 'payload) =
-        let responseDecoder = Decode.Auto.generateDecoderCached<'response>()
-        let serializedPayload = Encode.Auto.toString(0, payload)
+        let responseDecoder = Decode.Auto.generateDecoderCached<'response>(caseStrategy = CaseStrategy.CamelCase)
+        let serializedPayload = Encode.Auto.toString(0, payload, caseStrategy = CaseStrategy.CamelCase)
         let body = Body !^ serializedPayload
         let method = Method HttpMethod.POST
         tryFetchAs url responseDecoder [ method; body ]
         
-    let private sendRecord (url: string) (record:'T) (properties: RequestProperties list) httpMethod : Fable.Core.JS.Promise<Response> =
+    let inline sendRecord (url: string) (record:'T) (properties: RequestProperties list) httpMethod : Fable.Core.JS.Promise<Response> =
         let defaultProps =
             [ RequestProperties.Method httpMethod
               requestHeaders [ContentType "application/json"]
-              RequestProperties.Body !^(Encode.Auto.toString(0, record))]
+              RequestProperties.Body !^(Encode.Auto.toString(0, record, caseStrategy = CaseStrategy.CamelCase))]
         // Append properties after defaultProps to make sure user-defined values
         // override the default ones if necessary
         List.append defaultProps properties
@@ -37,51 +38,51 @@ module Fetch =
 
     /// Sends a HTTP post with the record serialized as JSON.
     /// This function already sets the HTTP Method to POST sets the json into the body.
-    let postRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
+    let inline postRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
         sendRecord url record properties HttpMethod.POST
 
-    let tryPostRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Result<Response, Exception>> =
+    let inline tryPostRecord<'T> (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Result<Response, Exception>> =
         postRecord url record properties |> Promise.result
 
-    /// Sends a HTTP put with the record serialized as JSON.
-    /// This function already sets the HTTP Method to PUT, sets the json into the body.
-    let putRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Response> =
-        sendRecord url record properties HttpMethod.PUT
+//    /// Sends a HTTP put with the record serialized as JSON.
+//    /// This function already sets the HTTP Method to PUT, sets the json into the body.
+//    let putRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Response> =
+//        sendRecord url record properties HttpMethod.PUT
+//
+//    let tryPutRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Result<Response, Exception>> =
+//        putRecord url record properties |> Promise.result
+//
+//    /// Sends a HTTP patch with the record serialized as JSON.
+//    /// This function already sets the HTTP Method to PATCH sets the json into the body.
+//    let patchRecord (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
+//        sendRecord url record properties HttpMethod.PATCH
+//
+//    /// Sends a HTTP OPTIONS request.
+//    let tryOptionsRequest (url:string) : Fable.Core.JS.Promise<Result<Response, Exception>> =
+//        fetch url [RequestProperties.Method HttpMethod.OPTIONS] |> Promise.result
 
-    let tryPutRecord (url: string) (record:'T) (properties: RequestProperties list): Fable.Core.JS.Promise<Result<Response, Exception>> =
-        putRecord url record properties |> Promise.result
-
-    /// Sends a HTTP patch with the record serialized as JSON.
-    /// This function already sets the HTTP Method to PATCH sets the json into the body.
-    let patchRecord (url: string) (record:'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
-        sendRecord url record properties HttpMethod.PATCH
-
-    /// Sends a HTTP OPTIONS request.
-    let tryOptionsRequest (url:string) : Fable.Core.JS.Promise<Result<Response, Exception>> =
-        fetch url [RequestProperties.Method HttpMethod.OPTIONS] |> Promise.result
-
-let previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
-    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto, _> ApiUrls.PreviewSubscribeToFeed dto
+let inline previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
+    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto, Dto.PreviewSubscribeToFeedQueryDto> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []
     |> Promise.mapResult ignore
 
-let getSubscriptions () =
-    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.SubscriptionDto list>()
-    Fetch.tryFetchAs ApiUrls.GetSubscriptions decoder []
-    
-let deleteSubscription (dto: Dto.DeleteSubscriptionDto) =
-    Fetch.tryPostRecord ApiUrls.DeleteSubscription dto []
-    |> Promise.mapResult ignore
-
-let getArticles () =
-    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.ArticleDto list>()
-    Fetch.tryFetchAs ApiUrls.GetArticles decoder []
-
-let setArticleReadStatus (dto: Dto.SetArticleReadStatusDto) =
-    Fetch.tryPostRecord ApiUrls.SetArticleReadStatus dto []
-    |> Promise.mapResult ignore
-
-let poll () =
-    Fetch.tryPostRecord ApiUrls.PollSubscriptions () [] |> Promise.mapResult ignore
+//let getSubscriptions () =
+//    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.SubscriptionDto list>()
+//    Fetch.tryFetchAs ApiUrls.GetSubscriptions decoder []
+//    
+//let deleteSubscription (dto: Dto.DeleteSubscriptionDto) =
+//    Fetch.tryPostRecord ApiUrls.DeleteSubscription dto []
+//    |> Promise.mapResult ignore
+//
+//let getArticles () =
+//    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.ArticleDto list>()
+//    Fetch.tryFetchAs ApiUrls.GetArticles decoder []
+//
+//let setArticleReadStatus (dto: Dto.SetArticleReadStatusDto) =
+//    Fetch.tryPostRecord ApiUrls.SetArticleReadStatus dto []
+//    |> Promise.mapResult ignore
+//
+//let poll () =
+//    Fetch.tryPostRecord ApiUrls.PollSubscriptions () [] |> Promise.mapResult ignore

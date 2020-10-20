@@ -7,6 +7,7 @@
     <Compile Include="ApiClient.fs" />
     <Compile Include="ReactSettings.fs" />
     <Compile Include="Portal.fs" />
+    <Compile Include="AddFeedModal.fs" />
     <Compile Include="TextResources.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

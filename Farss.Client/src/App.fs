@@ -152,6 +152,7 @@ open Dto
 //    |> Program.withConsoleTrace
 //    |> Program.run
 
+open Farss.Client
 open Feliz
 
 let sideMenu =
@@ -167,9 +168,16 @@ let sideMenu =
             ]
         )
     
+type MenuState =
+    {
+        IsOpen: bool
+    }
+    
 let menu =
     React.functionComponent(
         fun () ->
+            let state, setState = React.useState({ IsOpen = false })
+            
             Html.div [
                 prop.style [
                     style.display.flex
@@ -183,7 +191,10 @@ let menu =
                     Html.button [
                         prop.type' "button"
                         prop.text "Add"
+                        prop.onClick (fun _ -> setState { state with IsOpen = true })
                     ]
+                    if state.IsOpen then
+                        AddFeedModal.addFeedDialog { OnClose = fun () -> setState { state with IsOpen = false } }
                 ]
                 
             ]
