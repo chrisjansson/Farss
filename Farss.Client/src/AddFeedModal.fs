@@ -25,6 +25,7 @@ let addFeedDialog =
                 fun () ->
                     match onRef.current with
                     | Some e ->
+                        DialogPolyfill.dialogPolyfill.registerDialog e
                         e?showModal()
                     | _ -> ()
                     ()
@@ -62,7 +63,7 @@ let addFeedDialog =
                 ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = title; Url = state.PreviewUrl }
                 |> Promise.mapResult (fun r -> close "ok";r)
                 |> ignore
-                
+            
             portal [
                 Html.dialog [
                     prop.ref onRef

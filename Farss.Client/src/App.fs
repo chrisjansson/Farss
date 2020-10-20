@@ -1,5 +1,7 @@
 module App
 
+Fable.Core.JsInterop.importSideEffects "dialog-polyfill/dist/dialog-polyfill.css"
+
 open Dto
 //
 //module Msg =
