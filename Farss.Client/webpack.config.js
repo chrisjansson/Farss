@@ -20,7 +20,12 @@ module.exports = {
             "/api": "http://localhost:5000"
         },
         hot: true,
-        inline: true
+        inline: true,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*"
+        }
     },
     module: {
         rules: [{
