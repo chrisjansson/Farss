@@ -41,6 +41,7 @@ module FeedItem =
         return Article.create item.Title guid subscriptionId (Option.defaultValue "" item.Content) timestamp link
     }
 
+//TODO: Download with timeout
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
 
 let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
