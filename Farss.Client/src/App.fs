@@ -157,16 +157,38 @@ open Dto
 open Farss.Client
 open Feliz
 
+type ViewModel<'T> =
+    | Loading
+    | Loaded of 'T
+    
+type SideMenuState =
+    {
+        Feeds: Dto.SubscriptionDto list
+    }
+
 let sideMenu =
     React.functionComponent(
         fun () ->
+            
+            let state, setState = React.useState(ViewModel<SideMenuState>.Loading)
+            
+            React.useEffectOnce(
+                fun () ->
+                    ApiClient.getSubscriptions ()
+                    |> PromiseResult.resultEnd (fun r -> setState(Loaded { Feeds = r })) (fun _ -> ())
+                    |> ignore
+            )
+            
             Html.div [
                 Html.div [ prop.text "Feeds" ]
-                Html.ul [
-                    Html.li [ prop.text "First" ]
-                    Html.li [ prop.text "Second" ]
-                    Html.li [ prop.text "Third" ]
-                ]
+                
+                match state with
+                | Loading -> Html.text "Loading"
+                | Loaded m ->
+                    Html.ul [
+                        for f in m.Feeds do
+                            Html.li [ prop.text f.Title ]
+                    ]
             ]
         )
     

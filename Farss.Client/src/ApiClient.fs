@@ -2,6 +2,7 @@
 
 open System
 open Fable.Core.JsInterop
+open Thoth.Json
 //open Fetch
 
 
@@ -68,10 +69,10 @@ let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []
     |> Promise.mapResult ignore
 
-//let getSubscriptions () =
-//    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.SubscriptionDto list>()
-//    Fetch.tryFetchAs ApiUrls.GetSubscriptions decoder []
-//    
+let getSubscriptions () =
+    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.SubscriptionDto list>(caseStrategy = CaseStrategy.CamelCase)
+    Fetch.tryFetchAs ApiUrls.GetSubscriptions decoder []
+    
 //let deleteSubscription (dto: Dto.DeleteSubscriptionDto) =
 //    Fetch.tryPostRecord ApiUrls.DeleteSubscription dto []
 //    |> Promise.mapResult ignore
