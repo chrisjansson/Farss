@@ -61,6 +61,28 @@
         .Menu {
             background-color: lightblue;
         }
+
+        .articles-container {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-auto-rows: 1fr auto auto;
+            gap: 5px 5px;
+        }
+        .article-header {  }
+        .feed-title { }
+        .article-date {  }
+        .feed-icon {  }
+        .article-tools {  }
+        .article-title {
+            grid-column-start: 2;
+            grid-column-end: 4;
+            background-color: chartreuse;
+        }
+        .article-content {
+            grid-column-start: 1;
+            grid-column-end: 4;
+            background-color: darkolivegreen;
+        }
     </style>
 </head>
 <body>

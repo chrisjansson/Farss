@@ -77,10 +77,10 @@ let getSubscriptions () =
 //    Fetch.tryPostRecord ApiUrls.DeleteSubscription dto []
 //    |> Promise.mapResult ignore
 //
-//let getArticles () =
-//    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.ArticleDto list>()
-//    Fetch.tryFetchAs ApiUrls.GetArticles decoder []
-//
+let getArticles () =
+    let decoder = Thoth.Json.Decode.Auto.generateDecoder<Dto.ArticleDto list>(caseStrategy = CaseStrategy.CamelCase)
+    Fetch.tryFetchAs ApiUrls.GetArticles decoder []
+
 //let setArticleReadStatus (dto: Dto.SetArticleReadStatusDto) =
 //    Fetch.tryPostRecord ApiUrls.SetArticleReadStatus dto []
 //    |> Promise.mapResult ignore

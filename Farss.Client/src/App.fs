@@ -192,6 +192,66 @@ let sideMenu =
             ]
         )
     
+type ArticlesState =
+    {
+        Articles: Dto.ArticleDto list
+    }
+    
+let articles =
+    React.functionComponent(
+        fun () ->
+            
+            let state, setState = React.useState(ViewModel<ArticlesState>.Loading)
+            
+            React.useEffectOnce(
+                fun () ->
+                    ApiClient.getArticles ()
+                    |> PromiseResult.resultEnd (fun r -> setState(Loaded { Articles = r })) (fun _ -> ())
+                    |> ignore
+            )
+            Html.div [
+                match state with
+                | Loading -> Html.text "Loading"
+                | Loaded m ->
+                    let renderArticle (article: Dto.ArticleDto) =
+                        React.fragment [
+                            Html.div [
+                                prop.className "feed-icon"
+                                prop.text "feed text"
+                            ]
+                            Html.div [
+                                prop.className "feed-title"
+                                prop.text "Feed title"
+                            ]
+                            Html.div [
+                                prop.className "article-date"
+                                prop.text (sprintf "%A" article.PublishedAt)
+                            ]
+                            Html.div [
+                                prop.className "article-tools"
+                                prop.text "tools"
+                            ]
+                            Html.div [
+                                prop.className "article-title"
+                                prop.text article.Title
+
+                            ]
+                            Html.div [
+                                prop.className "article-content"
+                                prop.text "content"
+                            ]
+                        ]
+                    
+                    Html.div [
+                        prop.classes [ "articles-container" ]
+                        prop.children [
+                            for a in m.Articles do
+                                renderArticle a
+                        ]
+                    ]
+            ]
+    )
+    
 type MenuState =
     {
         IsOpen: bool
@@ -263,7 +323,12 @@ let main =
                             sideMenu ()
                         ]
                     ]
-                    Html.div [ prop.classes [ "Main" ] ]
+                    Html.div [
+                        prop.classes [ "Main" ]
+                        prop.children [
+                            articles ()
+                        ]
+                    ]
                 ]
             ]
         )
