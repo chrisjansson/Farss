@@ -13,6 +13,7 @@ let tests =
                 Title = "title"
                 Id = "guid"
                 Content = Some "content"
+                Summary = Some "summary"
                 Timestamp = Some (DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero))
                 Link = Some "a link"
             }

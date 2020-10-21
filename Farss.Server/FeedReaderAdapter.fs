@@ -20,6 +20,7 @@ and Item =
         Title: string
         Id: string
         Content: string option
+        Summary: string option
         Timestamp: DateTimeOffset option
         Link: string option
     }
@@ -38,7 +39,7 @@ module FeedItem =
         let! timestamp = ArticleTimestamp.create item.Timestamp
         let! link = ArticleLink.create item.Link
 
-        return Article.create item.Title guid subscriptionId (Option.defaultValue "" item.Content) timestamp link
+        return Article.create item.Title guid subscriptionId (Option.defaultValue "" item.Content) item.Summary timestamp link
     }
 
 //TODO: Download with timeout
@@ -126,10 +127,18 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                         Option.ofObj item.Content
                         |> Option.orElse (Option.ofObj item.Description)
                     
+                    let summary =
+                        match item.SpecificItem with
+                        | :? AtomFeedItem as afi ->
+                            afi.Summary
+                            |> Option.ofObj
+                        | _ -> None
+                    
                     { 
                         Item.Title = item.Title
                         Id = item.Id
                         Content = content
+                        Summary = summary
                         Timestamp = extractedTimestamp |> Option.map (ensureUtcTimestamp >> toDateTimeOffset >> zeroTimeZoneOffset)
                         Link = Some item.Link
                     }

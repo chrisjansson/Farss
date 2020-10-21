@@ -18,7 +18,8 @@ module Types =
         Content: string option; 
         PublishingDate: DateTimeOffset option
         UpdatedDate: DateTimeOffset option
-        Link: string option }
+        Link: string option
+        Summary: string option }
 
 type StringWriterWithEncoding(encoding: System.Text.Encoding) =
     inherit System.IO.StringWriter()
@@ -28,7 +29,7 @@ type StringWriterWithEncoding(encoding: System.Text.Encoding) =
 let feedItem (title: string) = SyndicationItem(Title = title)
 
 let feedItem2 (title: string) = 
-    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None; Types.Item.UpdatedDate = None; Types.Item.Link = None }
+    { Types.Item.Title = title; Types.Item.Id = None; Types.Item.Content = None; Types.Item.PublishingDate = None; Types.Item.UpdatedDate = None; Types.Item.Link = None; Types.Item.Summary = None }
 
 let withId (id: string) (item: Types.Item) = 
     { item with Types.Item.Id = Some id }
@@ -38,6 +39,9 @@ let withContent (content: string) (item: Types.Item) =
 
 let withPublishingDate (publishingDate: DateTimeOffset) (item: Types.Item) =
     { item with Types.Item.PublishingDate = Some publishingDate }
+
+let withSummary (summary: string) (item: Types.Item) =
+    { item with Types.Item.Summary = Some summary }
 
 let withUpdatedDate (updatedDate: DateTimeOffset) (item: Types.Item) =
     { item with Types.Item.UpdatedDate = Some updatedDate }
@@ -120,6 +124,9 @@ let toAtom (feed: Types.Feed) =
             feedItem.LastUpdated <- item.UpdatedDate.Value
         else do
             feedItem.LastUpdated <- DateTimeOffset.Now
+        if item.Summary.IsSome then
+            feedItem.Summary <- item.Summary.Value
+            
         feedItem.AddContributor(SyndicationPerson("temp", "tempemail"))
         writer.Write(feedItem).Wait()
 

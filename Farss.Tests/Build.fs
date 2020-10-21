@@ -12,4 +12,5 @@ let article (): Article = {
     IsRead = false
     Timestamp = DateTimeOffset.MinValue
     Link = "a link"
+    Summary = Some "summary"
 }

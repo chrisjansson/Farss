@@ -30,6 +30,7 @@ type ExpectedArticle =
         Title: string
         Content: string
         Timestamp: Domain.ArticleTimestamp
+        Summary: string option
     }
 
 [<Tests>]
@@ -56,7 +57,7 @@ let fetchArticlesForSubscriptionTests =
                 Expect.equal (articles.getAll().Length) 0 "Articles"
         }
 
-    let validItem =  { Title = "Item title"; Id = "Article Guid"; Content = Some "Content"; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, 6, TimeSpan.Zero)); Link = Some "http://link.com" }
+    let validItem =  { Title = "Item title"; Id = "Article Guid"; Content = Some "Content"; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, 6, TimeSpan.Zero)); Link = Some "http://link.com"; Summary = Some "summary" }
 
     specs "Fetch articles for subscription workflow" [
         let tests = [
@@ -94,8 +95,8 @@ let fetchArticlesForSubscriptionTests =
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title"; Icon = None })
                 let feedItems = [ 
-                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = (Some DateTimeOffset.Now); Link = None } 
-                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = None; Link = None } 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = (Some DateTimeOffset.Now); Link = None; Summary = Some "summary" } 
+                    { FeedReaderAdapter.Item.Title = "Item title"; Id = "Article Guid"; Content = Some "Item content"; Timestamp = None; Link = None; Summary = None } 
                 ]
                 let feedResult = { emptyFeed with Items = feedItems }
                 adapterStub.SetResult ("feed url", Ok feedResult)
@@ -128,6 +129,7 @@ let fetchArticlesForSubscriptionTests =
                         Content = Some "Item content"
                         Timestamp = Some (DateTimeOffset(2002, 2, 3, 4, 5, 7, TimeSpan.Zero)) 
                         Link = Some "link"
+                        Summary = Some "summary"
                     } 
                 ]
                 let feedResult = { emptyFeed with Items = items }
@@ -141,16 +143,16 @@ let fetchArticlesForSubscriptionTests =
                         Title = article.Title
                         Content = article.Content
                         Timestamp = article.Timestamp
-
+                        Summary = article.Summary
                     }
 
                 Expect.equal result (Ok 1) "One fetched article"
-                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = "Item content"; Timestamp = DateTimeOffset(2002, 2, 3, 4, 5, 7, TimeSpan.Zero) } ] "Articles"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = "Item content"; Timestamp = DateTimeOffset(2002, 2, 3, 4, 5, 7, TimeSpan.Zero); Summary = Some "summary" } ] "Articles"
             }
             "Fetch one article associates with subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) _ (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title"; Icon = None })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link"; Summary = Some "summary" } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -161,15 +163,16 @@ let fetchArticlesForSubscriptionTests =
                         Title = article.Title
                         Content = article.Content
                         Timestamp = article.Timestamp
+                        Summary = article.Summary
                     }
 
-                Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Articles"
+                Expect.equal (articles.getAllBySubscription subscriptionId |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero); Summary = Some "summary" } ] "Articles"
                 Expect.equal (articles.getAllBySubscription (Guid.NewGuid())) [] "No articles exist for other subscription"
             }
             "Feed with one existing article is idempotent",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) _ (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId; Title = "title"; Icon = None })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero)); Link = Some "link"; Summary = None } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -181,17 +184,18 @@ let fetchArticlesForSubscriptionTests =
                         Title = article.Title
                         Content = article.Content
                         Timestamp = article.Timestamp
+                        Summary = None
                     }
 
                 Expect.equal result (Ok 0) "No fetched articles"
-                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Articles"
+                Expect.equal (articles.getAll() |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero); Summary = None } ] "Articles"
             }
             "Fetches are grouped by subscription",  fun (subs: SubscriptionRepository) (articles: ArticleRepository) _ (adapterStub: FeedReaderAdapterStub) -> async {
                 let subscriptionId0 = Guid.NewGuid()
                 let subscriptionId1 = Guid.NewGuid()
                 subs.save ({ Url = "feed url"; Id = subscriptionId0; Title = "title"; Icon = None })
                 subs.save ({ Url = "feed url"; Id = subscriptionId1; Title = "title"; Icon = None })
-                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))); Link = Some "link" } ] }
+                let feedResult = { emptyFeed with Items = [ { FeedReaderAdapter.Item.Title = "Item title"; Id = "a guid"; Content = None; Timestamp = (Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero))); Link = Some "link"; Summary = None } ] }
                 adapterStub.SetResult ("feed url", Ok feedResult)
 
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -205,10 +209,11 @@ let fetchArticlesForSubscriptionTests =
                         Title = article.Title
                         Content = article.Content
                         Timestamp = article.Timestamp
+                        Summary = None
                     }
                 
-                Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Article fetched for first sub"
-                Expect.equal (articles.getAllBySubscription subscriptionId1 |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero) } ] "Artile fetched for second sub"
+                Expect.equal (articles.getAllBySubscription subscriptionId0 |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero); Summary = None } ] "Article fetched for first sub"
+                Expect.equal (articles.getAllBySubscription subscriptionId1 |> List.map project) [ { Title = "Item title"; Content = ""; Timestamp = DateTimeOffset(2000, 1, 2, 3, 4, 5, TimeSpan.Zero); Summary = None } ] "Artile fetched for second sub"
                 Expect.equal (articles.getAll ()).Length 2 "One article per subscription"
             }
         ]

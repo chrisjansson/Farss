@@ -34,6 +34,7 @@ type Article =
         Title: string
         Guid: ArticleGuid
         Subscription: SubscriptionId
+        Summary: string option
         Content: string
         IsRead: bool
         Timestamp: ArticleTimestamp
@@ -74,7 +75,7 @@ module ArticleLink =
         | None -> Error "Link is required"
 
 module Article =
-    let create title guid subscription content timestamp link =
+    let create title guid subscription content summary timestamp link =
         { 
             Id = Guid.NewGuid(); 
             Title = title; 
@@ -84,6 +85,7 @@ module Article =
             Timestamp = timestamp; 
             IsRead = false 
             Link = link
+            Summary = summary
         }
 
 type DeleteSubscriptionCommand = { Id: SubscriptionId }

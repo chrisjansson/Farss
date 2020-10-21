@@ -80,6 +80,7 @@ type PersistedArticle() =
     member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
     member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
     member val Content: string = Unchecked.defaultof<_> with get, set
+    member val Summary: string = Unchecked.defaultof<_> with get, set
     member val IsRead: bool = Unchecked.defaultof<_> with get, set
     member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
     member val Link: string = Unchecked.defaultof<_> with get, set
@@ -174,6 +175,7 @@ module ArticleRepositoryImpl =
             IsRead = s.IsRead
             Timestamp = s.Timestamp
             Link = s.Link
+            Summary = Option.ofObj s.Summary
         }
     
     let private mapFromArticle (s: Article) (t: PersistedArticle) =
@@ -185,6 +187,7 @@ module ArticleRepositoryImpl =
         t.IsRead <- s.IsRead
         t.Timestamp <- s.Timestamp
         t.Link <- s.Link
+        t.Summary <- Option.toObj s.Summary
     
     let create (context: ReaderContext): ArticleRepository =
         let getAll () =

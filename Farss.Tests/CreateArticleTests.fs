@@ -50,12 +50,14 @@ let tests = testList "Create article" [
                 let timestamp = DateTimeOffset(2000, 1, 1, 1, 1, 1, TimeSpan.Zero)
                 let link = "link"
                 
+                
                 let actual = 
                     Article.create 
                         "title" 
                         "guid" 
                         subscriptionId
-                        "content" 
+                        "content"
+                        (Some "summary")
                         timestamp
                         link
 
@@ -64,6 +66,7 @@ let tests = testList "Create article" [
                 Expect.equal actual.Guid "guid" "Guid"
                 Expect.equal actual.Subscription subscriptionId "Subscription id"
                 Expect.equal actual.Content "content" "Content"
+                Expect.equal actual.Summary (Some "summary") "Summary"
                 Expect.equal actual.Timestamp timestamp "Timestamp"
                 Expect.isFalse actual.IsRead "IsRead"
         ]
