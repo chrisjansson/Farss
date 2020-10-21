@@ -1,5 +1,6 @@
 module SubscribeToFeedWorkflow
 
+open System.Net.Http
 open Persistence
 open FeedReaderAdapter
 open Dto
@@ -53,3 +54,51 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
     |> TaskResult.bind (createSubscription command)
     |> TaskResult.tee saveSubscription
     |> Task.map convertToWorkflowError2
+    
+let updateFeedIcon (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (fileRepository: FileRepository) (subscriptionId: Domain.SubscriptionId) =
+    let getFeedForSubscription (subscription: Domain.Subscription) =
+        feedReader.getFromUrl subscription.Url
+        |> Async.StartAsTask
+        |> TaskResult.map (fun f -> subscription, f)
+    
+    let updateIcon (subscription: Domain.Subscription, feed: Feed) =
+        let deleteIcon (subscription: Domain.Subscription) =
+            subscription.Icon
+            |> DtoValidation.Option.tap (fun f -> fileRepository.delete f)
+            |> ignore
+            
+            { subscription with Icon = None }
+           
+        let saveFile file = fileRepository.save file 
+
+        
+        let createFileAndSaveFile (s, icon) =
+            let inner (fn, data): Domain.File =
+                {
+                    Id = System.Guid.NewGuid()
+                    FileName = fn
+                    FileOwner = Domain.FileOwner.Feed
+                    Data = data
+                }
+            
+            let icon = 
+                icon
+                |> Option.map inner
+                |> DtoValidation.Option.tap saveFile
+
+            s, icon
+        
+        let changeIcon (subscription: Domain.Subscription, file: Domain.File option) =
+            { subscription with Icon = file |> Option.map (fun file -> file.Id) }
+         
+        subscription
+        |> deleteIcon
+        |> fun s -> s,feed.Icon
+        |> createFileAndSaveFile
+        |> changeIcon
+        
+    subscriptionId
+    |> repository.get
+    |> (fun s -> getFeedForSubscription s)
+    |> TaskResult.map updateIcon
+    |> TaskResult.tee repository.save

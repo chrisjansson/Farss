@@ -14,3 +14,9 @@ module Option =
         match v with
         | Some v -> Ok v
         | None -> Error name
+
+
+    let tap f v =
+        match v with
+        | Some x -> f x; v
+        | None -> v

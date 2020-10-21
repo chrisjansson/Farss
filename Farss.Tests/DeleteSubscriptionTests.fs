@@ -28,8 +28,8 @@ let tests =
                 Expect.expectInvalidParameter result
 
             "deletes subscription", fun r ->
-                let subscription: Subscription = { Id = Guid.NewGuid(); Url = "some url"; Title = "title" }
-                let subscription2: Subscription = { Id = Guid.NewGuid(); Url = "another some url"; Title = "title" }
+                let subscription: Subscription = { Id = Guid.NewGuid(); Url = "some url"; Title = "title"; Icon = None }
+                let subscription2: Subscription = { Id = Guid.NewGuid(); Url = "another some url"; Title = "title"; Icon = None }
                 r.save subscription
                 r.save subscription2
 

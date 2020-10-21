@@ -38,6 +38,10 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         let context = s.GetRequiredService<ReaderContext>()
         ArticleRepositoryImpl.create context) |> ignore
 
+    services.AddScoped<Persistence.FileRepository>(fun s -> 
+        let context = s.GetRequiredService<ReaderContext>()
+        FileRepositoryImpl.create context) |> ignore
+    
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
     services.AddSingleton<IHostedService, FetchArticlesHostedService.FetchArticlesHostedService>() |> ignore

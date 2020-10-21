@@ -10,7 +10,8 @@ type  FeedError =
 
 type Feed = 
     { 
-        Title: string 
+        Title: string
+        Icon: (string * byte[]) option
         Description: string
         Items: Item list
     }
@@ -61,7 +62,16 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
 
         let mapFeed (feed: CodeHollow.FeedReader.Feed) = 
-        
+            let optionOfNullOrEmpty (s: string) =
+                if String.IsNullOrEmpty(s) then
+                    None
+                else
+                    Some s
+            
+            let feedIcon =
+                feed.ImageUrl
+                |> optionOfNullOrEmpty
+            
             let mapItem (item: FeedItem) =
                 let extractedTimestamp =
                     match item.SpecificItem with
@@ -106,7 +116,8 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
 
             //TODO: parse publishingDate/LastBuildDate for RSS feeds and UpdatedDate for Atom feeds. Can probably be used to skip item checking
             { 
-                Title = feed.Title 
+                Title = feed.Title
+                Icon = None
                 Description = feed.Description
                 Items = items
             }

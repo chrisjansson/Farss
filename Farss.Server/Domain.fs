@@ -7,6 +7,7 @@ type Subscription =
         Id: SubscriptionId
         Url: string
         Title: SubscriptionTitle
+        Icon: Guid option
     }
 and SubscriptionId = Guid
 and SubscriptionTitle = string
@@ -24,6 +25,7 @@ module Subscription =
             Id = Guid.NewGuid()
             Url = url
             Title = title
+            Icon = None
         }
 
 type Article =
@@ -41,6 +43,16 @@ and ArticleId = Guid
 and ArticleGuid = string //TODO: wrap in DU?
 and ArticleTimestamp = DateTimeOffset //TODO: wrap in DU?
 and ArticleLink = string
+
+type File =
+    {
+        Id: Guid
+        FileName: string
+        FileOwner: FileOwner
+        Data: byte[]
+    }
+and FileOwner =
+    | Feed = 1
 
 module ArticleGuid =
     let create (str: string) = 

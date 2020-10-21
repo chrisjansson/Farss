@@ -1,4 +1,5 @@
 module Persistence
+open System
 open Domain
 
 type SubscriptionRepository =
@@ -15,6 +16,13 @@ type ArticleRepository =
         save: Article -> unit
         filterExistingArticles: SubscriptionId -> string list -> string list
         getAllBySubscription: SubscriptionId -> Article list
+    }
+
+type FileRepository =
+    {
+        get: Guid -> File
+        save: File -> unit
+        delete: Guid -> unit
     }
 
 //TODO: Move to test assembly
@@ -62,6 +70,7 @@ type PersistedSubscription() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
     member val Url: string = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
+    member val Icon: Nullable<Guid> = Unchecked.defaultof<_> with get, set
 
 [<AllowNullLiteral>]
 type PersistedArticle() =
@@ -74,6 +83,13 @@ type PersistedArticle() =
     member val IsRead: bool = Unchecked.defaultof<_> with get, set
     member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
     member val Link: string = Unchecked.defaultof<_> with get, set
+
+[<AllowNullLiteral>]
+type PersistedFile() =
+    member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val FileName: string = Unchecked.defaultof<_> with get, set
+    member val FileOwner: FileOwner = Unchecked.defaultof<_> with get, set
+    member val Data: byte[] = Unchecked.defaultof<_> with get, set
 
 open Microsoft.EntityFrameworkCore
 
@@ -88,6 +104,10 @@ type ReaderContext(options) =
     val mutable articles : DbSet<PersistedArticle>
     member x.Articles with get() = x.articles and set v = x.articles <- v
 
+    [<DefaultValue>]
+    val mutable files : DbSet<PersistedFile>
+    member x.Files with get() = x.files and set v = x.files <- v
+    
     override x.OnModelCreating(mb) =
         mb.Entity<PersistedArticle>()
             .HasOne(fun x -> x.Subscription)
@@ -100,12 +120,14 @@ module SubscriptionRepositoryImpl =
             Id = s.Id
             Url = s.Url
             Title = s.Title
+            Icon = Option.ofNullable s.Icon
         }
     
     let private mapFromSubscription (s: Subscription) (t: PersistedSubscription) =
         t.Id <- s.Id
         t.Title <- s.Title
         t.Url <- s.Url
+        t.Icon <- Option.toNullable s.Icon
     
     let getOrAddNew<'T when 'T : (new: unit -> 'T) and 'T : not struct and 'T : null> (id: Guid) (set: DbSet<_>) =
         set.Find id
@@ -227,4 +249,38 @@ module ArticleRepositoryImpl =
             getAllBySubscription = getAllBySubscription
             save = save
             filterExistingArticles = filterExistingArticles
+        }
+        
+module FileRepositoryImpl =
+    let create (context: ReaderContext): FileRepository =
+        let get (id: Guid): File =
+            let file = context.Files.Find(id)
+            {
+                Id = file.Id
+                FileName = file.FileName
+                FileOwner = file.FileOwner
+                Data = file.Data
+            }
+        
+        let mapFromFile (s: File) (t: PersistedFile) =
+            t.Id <- s.Id
+            t.FileName <- s.FileName
+            t.Data <- s.Data
+            t.FileOwner <- s.FileOwner
+            
+        
+        let save (file: File) =
+            SubscriptionRepositoryImpl.getOrAddNew file.Id context.Files
+            |> mapFromFile file
+            context.SaveChanges() |> ignore
+        
+        let delete (id: Guid) =
+            let file = context.Files.Find(id)
+            context.Files.Remove(file) |> ignore
+            context.SaveChanges() |> ignore
+        
+        {
+            get = get
+            save = save
+            delete = delete
         }

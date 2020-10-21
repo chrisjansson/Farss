@@ -130,7 +130,7 @@ let a_feed_with_url (url: string): AsyncTestStep<_, unit> =
 
         inScope (fun s -> 
             let r = s.GetService<SubscriptionRepository>()
-            let feed = { Domain.Url = url; Id = Guid.NewGuid(); Title = "stub title" }
+            let feed = { Domain.Url = url; Id = Guid.NewGuid(); Title = "stub title"; Icon = None }
             r.save feed
         ) f
 
