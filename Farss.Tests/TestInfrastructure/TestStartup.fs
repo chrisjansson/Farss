@@ -1,5 +1,6 @@
 module TestStartup
 
+open System
 open Microsoft.AspNetCore.Mvc.Testing
 open Microsoft.AspNetCore.TestHost
 open Microsoft.Extensions.DependencyInjection
@@ -32,6 +33,10 @@ let createInMemoryFeedReader (): InMemoryFeedReader =
         Adapter = adapter
     }
 
+type ServiceProvider(serviceProvider: IServiceProvider) =
+    member x.GetService<'T>() =
+        serviceProvider.GetRequiredService(typeof<'T>) :?> 'T
+
 type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
     inherit WebApplicationFactory<Farss.Server.Startup>()
 
@@ -57,5 +62,11 @@ type TestWebApplicationFactory(databaseFixture: DatabaseTestFixture) =
             use scope = this.Server.Host.Services.CreateScope()
             let service = scope.ServiceProvider.GetService<'T>()
             return! f service
+        }
+    
+    member this.WithScope(f) = async {
+            use scope = this.Server.Host.Services.CreateScope()
+            
+            do! f (ServiceProvider(scope.ServiceProvider)) |> Async.Ignore
         }
         

@@ -22,10 +22,10 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
             |> Async.map (Result.mapError FetchArticlesError.FeedError)
             |> Async.StartAsTask
 
-        let filterExistingItems feed =
-            let itemIds = List.map (fun (fi: Item) -> fi.Id) feed.Items
+        let filterExistingItems (items: Article list) =
+            let itemIds = List.map (fun (a: Article) -> a.Guid) items
             let newItemIds = articleRepository.filterExistingArticles subscriptionId itemIds
-            List.filter (fun item -> List.contains item.Id newItemIds) feed.Items
+            List.filter (fun item -> List.contains item.Guid newItemIds) items
 
         let createArticle = FeedItem.toArticle subscriptionId
         
@@ -43,8 +43,8 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
         subscriptionId
             |> getSubscription
             |> fetchFeedForSubscription
+            |> TaskResult.bind (fun f -> createArticles f.Items)
             |> TaskResult.map filterExistingItems
-            |> Task.map (fun r -> Result.bind createArticles r)
             |> TaskResult.tee saveArticles
             |> TaskResult.map aggregateSavedArticles
 

@@ -9,13 +9,18 @@ open FeedReaderAdapter
 open System.Threading.Tasks
 open FetchArticlesWorkflow
 
-let setup test = async {
-        let subscriptionRepository = Persistence.create () 
-        let articleRepository = Persistence.ArticleRepositoryImpl.createInMemory()
-        let adapter = FakeFeedReaderAdapter.createStub ()
-
-        do! test subscriptionRepository articleRepository adapter
-    }
+let setup test =
+    Spec.integrationTest <|
+        fun factory -> async {
+            
+            do!
+                factory.WithScope <| fun sp -> async {
+                    let sr = sp.GetService<SubscriptionRepository>()   
+                    let ar = sp.GetService<ArticleRepository>()
+                    let adapter = FakeFeedReaderAdapter.createStub ()
+                    do! test sr ar adapter
+                }
+        }
 
 let emptyFeed = { FeedReaderAdapter.Feed.Title = ""; Description = ""; Items = [] }
 
@@ -52,7 +57,7 @@ let fetchArticlesForSubscriptionTests =
 
     let validItem =  { Title = "Item title"; Id = "Article Guid"; Content = Some "Content"; Timestamp = Some (DateTimeOffset(2000, 1, 2, 3, 4, 5, 6, TimeSpan.Zero)); Link = Some "http://link.com" }
 
-    testList "Fetch articles for subscription workflow" [
+    specs "Fetch articles for subscription workflow" [
         let tests = [
             "Fails when subscription is not found", fun subs (articles: ArticleRepository) (adapterStub: FeedReaderAdapterStub) -> async {
                 let workflow = FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subs articles adapterStub.Adapter
@@ -211,7 +216,7 @@ let fetchArticlesForSubscriptionTests =
 
 [<Tests>]
 let fetchArticlesForAllSubscriptionsTests = 
-    testList "Fetch articles for all subscriptions workflow" [
+    specs "Fetch articles for all subscriptions workflow" [
         let tests = [
             "Fetches articles in isolation from eachother", fun (s: SubscriptionRepository) _ _ -> async {
                 let s0 = Guid.NewGuid()
@@ -236,12 +241,15 @@ let fetchArticlesForAllSubscriptionsTests =
                 let workflow = FetchArticlesWorkflow.fetchEntries s stubFetch
 
                 let! result = workflow () |> Async.AwaitTask
+                let result = result |> Map.ofList
                 
-                let expected = [ 
+                let expected =
+                    [ 
                         (s0, Ok 4711)
                         (s1, Error (InnerError expectedFetchError))
                         (s2, Error (OperationError expectedException))
                     ]
+                    |> Map.ofList
 
                 Expect.equal result expected "Expected fetch results"
             }

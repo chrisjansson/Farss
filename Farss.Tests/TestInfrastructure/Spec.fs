@@ -52,6 +52,15 @@ let toTest (testStep: unit -> AsyncTestStep<unit, _>) = async {
         let stuff: ATC<unit> = async.Return ((), f)
         do! testStep() stuff |> Async.Ignore
     }
+
+let integrationTest test = async {
+        let df = DatabaseTesting.createFixture2 ()
+        use f = new TestWebApplicationFactory(df)
+        f.CreateClient() |> ignore
+        f.Server.AllowSynchronousIO <- true
+
+        do! test f |> Async.Ignore
+    }
     
 let spec name t = 
     testAsync name {
