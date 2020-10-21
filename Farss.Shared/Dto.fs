@@ -31,6 +31,7 @@ type ArticleDto =
         IsRead: bool
         PublishedAt: DateTimeOffset
         Content: string
+        Summary: string option
         Link: string
     }
 
