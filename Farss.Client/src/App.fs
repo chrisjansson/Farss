@@ -238,7 +238,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-content"
-                                prop.text "content"
+                                prop.text (article.Summary |> Option.defaultValue "")
                             ]
                         ]
                     

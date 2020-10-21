@@ -127,12 +127,10 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                         Option.ofObj item.Content
                         |> Option.orElse (Option.ofObj item.Description)
                     
-                    let summary =
-                        match item.SpecificItem with
-                        | :? AtomFeedItem as afi ->
-                            afi.Summary
-                            |> Option.ofObj
-                        | _ -> None
+                    //There might exist some ambiguity between whether to use description or content
+                    //https://stackoverflow.com/questions/7220670/difference-between-description-and-contentencoded-tags-in-rss2
+                    // and https://validator.w3.org/feed/docs/atom.html#content, let's just solve it empirically
+                    let summary = item.Description |> Option.ofObj
                     
                     { 
                         Item.Title = item.Title
