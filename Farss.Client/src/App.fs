@@ -192,6 +192,12 @@ let sideMenu =
             ]
         )
     
+let getInnertext (html: string) =
+    let el = Browser.Dom.document.createElement("div")
+    el.innerHTML <- html
+    el.innerText
+    
+    
 type ArticlesState =
     {
         Articles: Dto.ArticleDto list
@@ -238,7 +244,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-content"
-                                prop.text (article.Summary |> Option.defaultValue "")
+                                prop.text (article.Summary |> Option.defaultValue "" |> getInnertext)
                             ]
                         ]
                     
