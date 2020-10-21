@@ -192,6 +192,7 @@ let sideMenu =
             ]
         )
     
+//TODO: Sanitize html before stuffing it into the dom, https://github.com/cure53/DOMPurify
 let getInnertext (html: string) =
     let el = Browser.Dom.document.createElement("div")
     el.innerHTML <- html
