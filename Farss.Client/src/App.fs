@@ -280,7 +280,11 @@ let articles =
                                 prop.text "tools"
                             ]
                             Html.div [
-                                prop.className "article-title"
+                                prop.classes [
+                                    "article-title"
+                                    if not article.IsRead then
+                                        "article-title-unread"
+                                ]
                                 prop.text article.Title
 
                             ]
