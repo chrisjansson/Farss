@@ -11,10 +11,17 @@ type AddFeedDialogProps =
     }
     
 type AddFeedDialogState =
-    {
-        PreviewUrl: string
-        PreviewResult: Result<Dto.PreviewSubscribeToFeedResponseDto, string> option
-    }
+    | PreviewStep of 
+        {|
+            PreviewUrl: string
+            PreviewFailure: string option
+        |}
+    | NameStep of
+        {|
+            Url: string
+            Title: string
+            PreviewResult: Dto.PreviewSubscribeToFeedResponseDto
+        |}
 
 let addFeedDialog =
     React.functionComponent(
@@ -31,7 +38,7 @@ let addFeedDialog =
                     ()
                 )
             
-            let state, setState = React.useState({ PreviewUrl= ""; PreviewResult = None })
+            let state, setState = React.useState(PreviewStep {| PreviewUrl= ""; PreviewFailure = None |})
             
             let close (returnValue: string) =
                 match onRef.current with
@@ -52,17 +59,33 @@ let addFeedDialog =
                 close "cancel"
                 
             let changeUrl s =
-                setState({ state with PreviewUrl = s })
+                match state with
+                | PreviewStep d ->
+                    setState(PreviewStep {| d with PreviewUrl = s |})
+                | _ -> failwith "Invalid state"
+            
+            let changeTitle s =
+                match state with
+                | NameStep d ->
+                    setState(NameStep {| d with Title = s |})
+                | _ -> failwith "Invalid state"
             
             let previewSubscribeToFeed _ =
-                ApiClient.previewSubscribeToFeed { Url = state.PreviewUrl }
-                |> PromiseResult.resultEnd (fun r -> setState { state with PreviewResult = Some (Ok r) }) (fun e -> setState { state with PreviewResult = Some (Error e) })
-                |> ignore
+                match state with
+                | PreviewStep d ->
+                    ApiClient.previewSubscribeToFeed { Url = d.PreviewUrl }
+                    |> PromiseResult.resultEnd (fun r -> setState (NameStep {| Url = d.PreviewUrl; Title = r.Title; PreviewResult = r |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
+                    |> ignore
+                | _ -> failwith "Invalid state"
                 
-            let subscribeToFeed title _ =
-                ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = title; Url = state.PreviewUrl }
-                |> Promise.mapResult (fun r -> close "ok";r)
-                |> ignore
+            let subscribeToFeed _ =
+                match state with
+                | NameStep d ->
+                    ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = d.Title; Url = d.Url }
+                    |> Promise.mapResult (fun r -> close "ok";r)
+                    |> ignore
+                | _ ->
+                    failwith "Invalid state"
             
             portal [
                 Html.dialog [
@@ -71,38 +94,35 @@ let addFeedDialog =
                     prop.custom("onCancel", onCancel)
                     prop.children [
                         Html.div [
-                            match state.PreviewResult with
-                            | None
-                            | Some (Error _) ->
+                            match state with
+                            | PreviewStep state ->
                                 Html.input [
                                     prop.value state.PreviewUrl
                                     prop.onChange changeUrl
-                                 ]
-                            | Some (Ok res) ->
-                                Html.div [
-                                    prop.text (sprintf "Found feed: %A" res.Title)
                                 ]
-                            
-                            match state.PreviewResult with
-                            | Some (Error e) ->
-                                Html.div [
-                                    prop.text (sprintf "There was an error fetching the result %A" e)
-                                ]
-                            | _ -> ()
-                            
-                            match state.PreviewResult with
-                            | None
-                            | Some (Error _) ->
+                                match state.PreviewFailure with
+                                | Some e ->
+                                    Html.div [
+                                        prop.text (sprintf "There was an error fetching the result %A" e)
+                                    ]
+                                | _ -> ()
                                 Html.button [
                                     prop.type' "button"
                                     prop.text "Preview"
                                     prop.onClick previewSubscribeToFeed
                                 ]
-                            | Some (Ok r) ->
+                            | NameStep state ->
+                                Html.div [
+                                    prop.text "Found a feed, now name it"
+                                ]
+                                Html.input [
+                                    prop.value state.Title
+                                    prop.onChange changeTitle
+                                ]
                                 Html.button [
                                     prop.type' "button"
                                     prop.text "Add"
-                                    prop.onClick (subscribeToFeed r.Title)
+                                    prop.onClick subscribeToFeed
                                 ]
                             Html.button [
                                 prop.type' "button"
