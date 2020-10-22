@@ -5,9 +5,13 @@
     <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet">
     <style type="text/css">
-
+        :root {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+        }
+        
         html, body {
             height: 100%;
             padding: 0;
@@ -98,5 +102,46 @@
 <div id="elmish-app" class="elmish-app"></div>
 <div id="modal-root"></div>
 <script src="bundle.js"></script>
+<style type="text/css">
+    dialog {
+        padding: 0;
+        box-shadow: 0 0 3px #353535;
+        border: 1px solid gray;
+        border-radius: 3px;
+        width: 500px;
+        
+        --edge-padding: 10px;
+    }
+    
+    dialog .header {
+        border-bottom: 1px solid lightgray;
+        padding: var(--edge-padding);
+        user-select: none;
+        font-size: 1.5em;
+    }
+    
+    dialog .body {
+        padding: var(--edge-padding);
+    }
+    
+    dialog .footer {
+        display: flex;
+        user-select: none;
+        padding: var(--edge-padding);
+        border-top: 1px solid lightgray;
+    }
+    
+    dialog .footer > div:nth-child(1) {
+        flex: 1;
+    }
+
+    dialog .footer > div:nth-child(2) {
+        display: grid;
+        grid-auto-rows: auto;
+        grid-gap: 5px;
+        grid-auto-flow: column;
+    }
+    
+</style>
 </body>
 </html>

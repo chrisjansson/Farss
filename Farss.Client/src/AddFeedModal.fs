@@ -87,6 +87,23 @@ let addFeedDialog =
                 | _ ->
                     failwith "Invalid state"
             
+            let input (placeholder: string) (value: string) (onChange: string -> unit) =
+                React.fragment [
+                    Html.div [
+                        Html.label [
+                            prop.htmlFor placeholder
+                            prop.text placeholder
+                        ]
+                    ]
+
+                    Html.input [
+                        prop.id placeholder
+                        prop.placeholder placeholder
+                        prop.value value
+                        prop.onChange onChange
+                    ]
+                ]
+            
             portal [
                 Html.dialog [
                     prop.ref onRef
@@ -94,42 +111,74 @@ let addFeedDialog =
                     prop.custom("onCancel", onCancel)
                     prop.children [
                         Html.div [
-                            match state with
-                            | PreviewStep state ->
-                                Html.input [
-                                    prop.value state.PreviewUrl
-                                    prop.onChange changeUrl
-                                ]
-                                match state.PreviewFailure with
-                                | Some e ->
-                                    Html.div [
-                                        prop.text (sprintf "There was an error fetching the result %A" e)
-                                    ]
-                                | _ -> ()
-                                Html.button [
-                                    prop.type' "button"
-                                    prop.text "Preview"
-                                    prop.onClick previewSubscribeToFeed
-                                ]
-                            | NameStep state ->
+                            prop.style [
+                                style.display.flex
+                                style.flexDirection.column
+                            ]
+                            prop.children [
                                 Html.div [
-                                    prop.text "Found a feed, now name it"
+                                    prop.text "Add feed"
+                                    prop.className "header"
                                 ]
-                                Html.input [
-                                    prop.value state.Title
-                                    prop.onChange changeTitle
+                                Html.div [
+                                    prop.className "body"
+                                    prop.children [
+                                        match state with
+                                        | PreviewStep state ->
+                                            input "Feed url" state.PreviewUrl changeUrl
+                                            match state.PreviewFailure with
+                                            | Some e ->
+                                                Html.div [
+                                                    prop.style [
+                                                        style.backgroundColor("#ffe5e5")
+                                                        style.marginTop(10)
+                                                        style.padding(5)
+                                                        style.border("1px", borderStyle.solid, "red")
+                                                        style.color "red"
+                                                        style.borderRadius(2)
+                                                    ]
+                                                    prop.text (sprintf "There was an error fetching the result %A" e)
+                                                ]
+                                            | _ -> ()
+                                        | NameStep state ->
+                                            Html.div [
+                                                prop.text "Found a feed, now name it"
+                                            ]
+                                            input "Title" state.Title changeTitle
+                                    ]
                                 ]
-                                Html.button [
-                                    prop.type' "button"
-                                    prop.text "Add"
-                                    prop.onClick subscribeToFeed
+                                Html.div [
+                                    prop.className "footer"
+                                    prop.text "footer"
+                                    prop.children [
+                                        Html.div [
+                                            
+                                        ]
+                                        Html.div [
+                                            match state with
+                                            | PreviewStep _ ->
+                                                Html.button [
+                                                    prop.type' "button"
+                                                    prop.text "Preview"
+                                                    prop.onClick previewSubscribeToFeed
+                                                ]
+                                            | NameStep _ ->
+                                                Html.button [
+                                                    prop.type' "button"
+                                                    prop.text "Add"
+                                                    prop.onClick subscribeToFeed
+                                                ]
+                                            Html.button [
+                                                prop.type' "button"
+                                                prop.text "Cancel"
+                                                prop.onClick cancel
+                                            ]
+                                        ]
+                                    ]
                                 ]
-                            Html.button [
-                                prop.type' "button"
-                                prop.text "Cancel"
-                                prop.onClick cancel
                             ]
                         ]
+                        
                     ]
                 ]
             ]
