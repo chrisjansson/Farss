@@ -192,10 +192,10 @@ let sideMenu =
             ]
         )
     
-//TODO: Sanitize html before stuffing it into the dom, https://github.com/cure53/DOMPurify
-let getInnertext (html: string) =
+let getInnerText (html: string) =
+    let sanitized = DOMPurify.sanitize html
     let el = Browser.Dom.document.createElement("div")
-    el.innerHTML <- html
+    el.innerHTML <- sanitized
     el.innerText
     
     
@@ -245,7 +245,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-content"
-                                prop.text (article.Summary |> Option.defaultValue "" |> getInnertext)
+                                prop.text (article.Summary |> Option.defaultValue "" |> getInnerText)
                             ]
                         ]
                     

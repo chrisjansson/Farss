@@ -5,6 +5,7 @@
   <ItemGroup>
     <Compile Include="PromiseResult.fs" />
     <Compile Include="DialogPolyfill.fs" />
+    <Compile Include="DOMPurify.fs" />
     <Compile Include="ApiClient.fs" />
     <Compile Include="ReactSettings.fs" />
     <Compile Include="Portal.fs" />

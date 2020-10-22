@@ -1248,6 +1248,11 @@ domain-browser@^1.1.1:
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
   integrity sha512-jnjyiM6eRyZl2H+W8Q/zLMA481hzi0eszAaBUzIVnmYVDBbnLxVNnfu1HgEBvCbL+71FrxMl3E6lpKH7Ge3OXA==
 
+dompurify@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.0.tgz#51d34e76faa38b5d6b4e83a0678530f27fe3965c"
+  integrity sha512-bqFOQ7XRmmozp0VsKdIEe8UwZYxj0yttz7l80GBtBqdVRY48cOpXH2J/CVO7AEkV51qY0EBVXfilec18mdmQ/w==
+
 duplexify@^3.4.2, duplexify@^3.6.0:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/duplexify/-/duplexify-3.7.1.tgz#2a4df5317f6ccfd91f86d6fd25d8d8a103b88309"
