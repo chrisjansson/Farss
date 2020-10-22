@@ -215,6 +215,7 @@ let sideMenu =
 type ArticlesState =
     {
         Articles: Dto.ArticleDto list
+        Feeds: Dto.SubscriptionDto list
     }
     
 let sanitizeArticleContent (article: ArticleDto) =
@@ -232,11 +233,26 @@ let articles =
             
             let state, setState = React.useState(ViewModel<ArticlesState>.Loading)
             
+            let fetchData () = promise {
+                let articlesP = ApiClient.getArticles ()
+                let feedsP = ApiClient.getSubscriptions ()
+                
+                let! articles = articlesP
+                let! feeds = feedsP
+                
+                return
+                    match articles, feeds with
+                    | Ok r1, Ok r2 -> Ok (r1, r2)
+                    | Error e, Ok _ -> Error [e]
+                    | Ok _, Error e -> Error [e]
+                    | Error e1, Error e2 -> Error [e1; e2]
+            }
+            
             React.useEffectOnce(
                 fun () ->
-                    ApiClient.getArticles ()
-                    |> PromiseResult.map (List.map sanitizeArticleContent)
-                    |> PromiseResult.resultEnd (fun r -> setState(Loaded { Articles = r })) (fun _ -> ())
+                    fetchData ()
+                    |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
+                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f })) (fun _ -> ())
                     |> ignore
             )
             Html.div [
@@ -244,6 +260,8 @@ let articles =
                 | Loading -> Html.text "Loading"
                 | Loaded m ->
                     let renderArticle (article: Dto.ArticleDto) =
+                        let feed = m.Feeds |>  List.find (fun x -> x.Id = article.FeedId)
+                        
                         React.fragment [
                             Html.div [
                                 prop.className "feed-icon"
@@ -251,7 +269,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "feed-title"
-                                prop.text "Feed title"
+                                prop.text feed.Title
                             ]
                             Html.div [
                                 prop.className "article-date"
@@ -275,7 +293,7 @@ let articles =
                     Html.div [
                         prop.classes [ "articles-container" ]
                         prop.children [
-                            for a in m.Articles do
+                            for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
                                 renderArticle a
                         ]
                     ]

@@ -27,6 +27,7 @@ type SubscriptionDto =
 
 type ArticleDto =
     {
+        FeedId: Guid
         Title: string
         IsRead: bool
         PublishedAt: DateTimeOffset
