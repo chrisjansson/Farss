@@ -1,5 +1,7 @@
 module App
 
+open Fable.Core
+
 Fable.Core.JsInterop.importSideEffects "dialog-polyfill/dist/dialog-polyfill.css"
 
 open Dto
@@ -218,12 +220,18 @@ type ArticlesState =
         Feeds: Dto.SubscriptionDto list
     }
     
+type DOMParser =
+    abstract member parseFromString: string -> string -> Browser.Types.Document
+
+[<Emit("new DOMParser()")>]
+let createDomParser () : DOMParser = Fable.Core.Util.jsNative
+let domParser = createDomParser ()
+
 let sanitizeArticleContent (article: ArticleDto) =
     let getTextContent (html: string) =
         let sanitized = DOMPurify.sanitize html
-        let el = Browser.Dom.document.createElement("div")
-        el.innerHTML <- sanitized
-        el.innerText
+        let document = domParser.parseFromString sanitized "text/html"
+        document.body.innerText
         
     { article with Summary = Option.map getTextContent article.Summary; Content = DOMPurify.sanitize article.Content }
     
