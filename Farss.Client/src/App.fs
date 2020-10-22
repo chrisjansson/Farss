@@ -192,17 +192,19 @@ let sideMenu =
             ]
         )
     
-let getInnerText (html: string) =
-    let sanitized = DOMPurify.sanitize html
-    let el = Browser.Dom.document.createElement("div")
-    el.innerHTML <- sanitized
-    el.innerText
-    
-    
 type ArticlesState =
     {
         Articles: Dto.ArticleDto list
     }
+    
+let sanitizeArticleContent (article: ArticleDto) =
+    let getTextContent (html: string) =
+        let sanitized = DOMPurify.sanitize html
+        let el = Browser.Dom.document.createElement("div")
+        el.innerHTML <- sanitized
+        el.innerText
+        
+    { article with Summary = Option.map getTextContent article.Summary; Content = DOMPurify.sanitize article.Content }
     
 let articles =
     React.functionComponent(
@@ -213,6 +215,7 @@ let articles =
             React.useEffectOnce(
                 fun () ->
                     ApiClient.getArticles ()
+                    |> PromiseResult.map (List.map sanitizeArticleContent)
                     |> PromiseResult.resultEnd (fun r -> setState(Loaded { Articles = r })) (fun _ -> ())
                     |> ignore
             )
@@ -245,7 +248,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-content"
-                                prop.text (article.Summary |> Option.defaultValue "" |> getInnerText)
+                                prop.text (article.Summary |> Option.defaultValue "")
                             ]
                         ]
                     
