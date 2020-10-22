@@ -180,15 +180,35 @@ let sideMenu =
             )
             
             Html.div [
-                Html.div [ prop.text "Feeds" ]
-                
-                match state with
-                | Loading -> Html.text "Loading"
-                | Loaded m ->
-                    Html.ul [
-                        for f in m.Feeds do
-                            Html.li [ prop.text f.Title ]
+                prop.style [
+                    style.display.flex
+                    style.flexDirection.column
+                    style.height(length.percent(100))
+                ]
+
+                prop.children [
+                    Html.div [
+                        prop.style [
+                            style.custom ("flex", "1")
+                        ]
+                        prop.children [
+                            Html.div [ prop.text "Feeds" ]
+                    
+                            match state with
+                            | Loading -> Html.text "Loading"
+                            | Loaded m ->
+                                Html.ul [
+                                    for f in m.Feeds do
+                                        Html.li [ prop.text f.Title ]
+                                ]
+                            ]
                     ]
+                    
+                    Html.div [
+                        Html.text "Add feed goes here"
+                    ]
+                ]
+                
             ]
         )
     
