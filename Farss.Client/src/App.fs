@@ -247,7 +247,7 @@ let articles =
                         React.fragment [
                             Html.div [
                                 prop.className "feed-icon"
-                                prop.text "feed text"
+                                prop.text "feed icon"
                             ]
                             Html.div [
                                 prop.className "feed-title"
@@ -255,7 +255,7 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-date"
-                                prop.text (sprintf "%A" article.PublishedAt)
+                                prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
                             ]
                             Html.div [
                                 prop.className "article-tools"
