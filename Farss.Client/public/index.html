@@ -70,17 +70,36 @@
             display: grid;
             grid-template-columns: auto 1fr auto;
             grid-auto-rows: 1fr auto auto;
-            gap: 5px 5px;
         }
         .article-header {  }
-        .feed-title { }
-        .article-date {  }
+        
+        .feed-title, .article-date {
+            font-size: 0.85em;
+            color: #555;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .article-date {  
+
+        }
+        
+        .feed-title {
+            padding-left: 3px;
+        }
+        
+        .article-date {
+            padding-right: 3px;
+        }
+        
         .feed-icon {  }
-        .article-tools {  }
+        .article-tools {  
+            width: 40px;
+        }
         .article-title {
             grid-column-start: 2;
             grid-column-end: 4;
-            background-color: chartreuse;
         }
         .article-title-unread {
             font-weight: bold;
@@ -88,7 +107,11 @@
         .article-content {
             grid-column-start: 2;
             grid-column-end: 4;
-            background-color: darkolivegreen;
+        }
+        
+        .article-content.summary {
+            font-size: 0.85em;
+            color: #555;
         }
 
         .article-content {

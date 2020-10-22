@@ -273,7 +273,7 @@ let articles =
                         React.fragment [
                             Html.div [
                                 prop.className "feed-icon"
-                                prop.text "feed icon"
+                                prop.text "I"
                             ]
                             Html.div [
                                 prop.className "feed-title"
@@ -285,7 +285,6 @@ let articles =
                             ]
                             Html.div [
                                 prop.className "article-tools"
-                                prop.text "tools"
                             ]
                             Html.div [
                                 prop.classes [
@@ -297,7 +296,7 @@ let articles =
 
                             ]
                             Html.div [
-                                prop.className "article-content"
+                                prop.className "article-content summary"
                                 prop.text (article.Summary |> Option.defaultValue "")
                             ]
                         ]
