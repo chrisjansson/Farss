@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
     <style type="text/css">
         :root {
             font-family: 'Open Sans', sans-serif;
@@ -96,10 +97,14 @@
         .feed-icon {  }
         .article-tools {  
             width: 40px;
+            grid-row: span 2;
         }
         .article-title {
             grid-column-start: 2;
             grid-column-end: 4;
+            padding-right: 3px;
+            padding-top: 5px;
+            padding-bottom: 3px;
         }
         .article-title-unread {
             font-weight: bold;
@@ -107,17 +112,52 @@
         .article-content {
             grid-column-start: 2;
             grid-column-end: 4;
+            
+        }
+        
+        :root {
+            --article-row-padding: 10px;
+        }
+        
+        /*to row*/
+        .feed-icon, .feed-title, .article-date {
+            padding-top: var(--article-row-padding);
+        }
+        
+        /*Bottom row */
+        .article-tools, .article-content {
+            border-bottom: 1px solid lightgray;
+            padding-bottom: var(--article-row-padding);
         }
         
         .article-content.summary {
             font-size: 0.85em;
             color: #555;
-        }
-
-        .article-content {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            
+        }
+
+        .article-content {
+        }
+        
+        .article-content img {
+            max-width: 700px;
+        }
+        
+        .article-content pre, .article-content code{
+            background-color: #eaeaea;
+            font-family: 'Source Code Pro', monospace;
+            padding: 5px;
+            border: 1px solid lightgray;
+            max-width: 700px;
+            overflow: auto;
+        }
+
+        .article-content figure {
+            margin-left: 0;
+            margin-right: 0;
         }
     </style>
 </head>

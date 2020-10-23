@@ -218,6 +218,7 @@ type ArticlesState =
     {
         Articles: Dto.ArticleDto list
         Feeds: Dto.SubscriptionDto list
+        SelectedArticle: ArticleDto option
     }
     
 type DOMParser =
@@ -260,7 +261,7 @@ let articles =
                 fun () ->
                     fetchData ()
                     |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
-                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f })) (fun _ -> ())
+                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f; SelectedArticle = None })) (fun _ -> ())
                     |> ignore
             )
             Html.div [
@@ -269,6 +270,13 @@ let articles =
                 | Loaded m ->
                     let renderArticle (article: Dto.ArticleDto) =
                         let feed = m.Feeds |>  List.find (fun x -> x.Id = article.FeedId)
+                        
+                        let selectArticle (article: ArticleDto) _ =
+                            printfn "Selected article"
+                            setState (Loaded { m with SelectedArticle = Some article })
+                        
+                        let selectArticle =
+                            prop.onClick (selectArticle article)
                         
                         React.fragment [
                             Html.div [
@@ -288,16 +296,27 @@ let articles =
                             ]
                             Html.div [
                                 prop.classes [
+                                    
                                     "article-title"
                                     if not article.IsRead then
                                         "article-title-unread"
                                 ]
+                                selectArticle
                                 prop.text article.Title
-
                             ]
                             Html.div [
-                                prop.className "article-content summary"
-                                prop.text (article.Summary |> Option.defaultValue "")
+                                let isSelected = Some article = m.SelectedArticle
+                                
+                                prop.className [
+                                    "article-content"
+                                    if not isSelected then
+                                        "summary"
+                                ]
+                                
+                                if isSelected then
+                                    prop.innerHtml article.Content
+                                else
+                                    prop.text (article.Summary |> Option.defaultValue "")
                             ]
                         ]
                     
