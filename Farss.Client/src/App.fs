@@ -230,7 +230,7 @@ let domParser = createDomParser ()
 
 let sanitizeArticleContent (article: ArticleDto) =
     let getTextContent (html: string) =
-        let sanitized = DOMPurify.sanitize html
+        let sanitized = DOMPurify.sanitizeHtml html
         let document = domParser.parseFromString sanitized "text/html"
         document.body.innerText
         
