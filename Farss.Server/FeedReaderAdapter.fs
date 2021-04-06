@@ -20,6 +20,7 @@ and Item =
         Title: string
         Id: string
         Content: string option
+        Source: string
         Summary: string option
         Timestamp: DateTimeOffset option
         Link: string option
@@ -39,7 +40,7 @@ module FeedItem =
         let! timestamp = ArticleTimestamp.create item.Timestamp
         let! link = ArticleLink.create item.Link
 
-        return Article.create item.Title guid subscriptionId (Option.defaultValue "" item.Content) item.Summary timestamp link
+        return Article.create item.Title guid subscriptionId item.Source (Option.defaultValue "" item.Content) item.Summary timestamp link
     }
 
 //TODO: Download with timeout
@@ -132,10 +133,18 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                     // and https://validator.w3.org/feed/docs/atom.html#content, let's just solve it empirically
                     let summary = item.Description |> Option.ofObj
                     
+                    let source =
+                        match item.SpecificItem with
+                        | :? Rss20FeedItem as i ->
+                            i.Element.ToString()
+                        | _ -> failwith "Unsupported feed type as of yet"
+                            
+                    
                     { 
                         Item.Title = item.Title
                         Id = item.Id
                         Content = content
+                        Source = source
                         Summary = summary
                         Timestamp = extractedTimestamp |> Option.map (ensureUtcTimestamp >> toDateTimeOffset >> zeroTimeZoneOffset)
                         Link = Some item.Link

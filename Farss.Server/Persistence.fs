@@ -49,7 +49,6 @@ open System
 
 module Query = 
 
-
     let where (predicate: Expression<Func<_, bool>>) (query: IQueryable<_>) =
         query.Where(predicate)
 
@@ -81,6 +80,7 @@ type PersistedArticle() =
     member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
     member val Content: string = Unchecked.defaultof<_> with get, set
     member val Summary: string = Unchecked.defaultof<_> with get, set
+    member val Source: string = Unchecked.defaultof<_> with get, set
     member val IsRead: bool = Unchecked.defaultof<_> with get, set
     member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
     member val Link: string = Unchecked.defaultof<_> with get, set
@@ -172,6 +172,7 @@ module ArticleRepositoryImpl =
             Guid = s.Guid
             Subscription = s.SubscriptionId
             Content = s.Content
+            Source = s.Source
             IsRead = s.IsRead
             Timestamp = s.Timestamp
             Link = s.Link
@@ -184,6 +185,7 @@ module ArticleRepositoryImpl =
         t.Guid <- s.Guid
         t.SubscriptionId <- s.Subscription
         t.Content <- s.Content
+        t.Source <- s.Source
         t.IsRead <- s.IsRead
         t.Timestamp <- s.Timestamp
         t.Link <- s.Link

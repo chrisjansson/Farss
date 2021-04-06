@@ -36,6 +36,7 @@ type Article =
         Subscription: SubscriptionId
         Summary: string option
         Content: string
+        Source: string
         IsRead: bool
         Timestamp: ArticleTimestamp
         Link: ArticleLink
@@ -75,12 +76,13 @@ module ArticleLink =
         | None -> Error "Link is required"
 
 module Article =
-    let create title guid subscription content summary timestamp link =
+    let create title guid subscription source content summary timestamp link =
         { 
             Id = Guid.NewGuid(); 
             Title = title; 
             Guid = guid; 
-            Subscription = subscription; 
+            Subscription = subscription
+            Source = source
             Content = content; 
             Timestamp = timestamp; 
             IsRead = false 
