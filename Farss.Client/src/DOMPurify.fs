@@ -22,9 +22,10 @@ let sanitize (s: string) =
 type SanitizeHtmlConfig =
     abstract member disallowedTagsMode: string with get, set
     
-let private sanitizeInstance (_: string) (_: SanitizeHtmlConfig): string = Fable.Core.JsInterop.importDefault "sanitize-html"
+// let private sanitizeInstance (_: string) (_: SanitizeHtmlConfig): string = Fable.Core.JsInterop.importDefault "sanitize-html"
 
 let sanitizeHtml s =
-    let config = createEmpty<SanitizeHtmlConfig>
-    config.disallowedTagsMode <- "recursiveEscape"
-    sanitizeInstance s config
+    // let config = createEmpty<SanitizeHtmlConfig>
+    // config.disallowedTagsMode <- "recursiveEscape"
+    // sanitizeInstance s config
+    s

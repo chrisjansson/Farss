@@ -2,7 +2,8 @@ module App
 
 open Fable.Core
 
-Fable.Core.JsInterop.importSideEffects "dialog-polyfill/dist/dialog-polyfill.css"
+open Farss.Client
+open Feliz
 
 open Dto
 //
@@ -156,8 +157,6 @@ open Dto
 //    |> Program.withConsoleTrace
 //    |> Program.run
 
-open Farss.Client
-open Feliz
 
 type ViewModel<'T> =
     | Loading

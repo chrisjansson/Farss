@@ -5,22 +5,19 @@
   <ItemGroup>
     <Compile Include="PromiseResult.fs" />
     <Compile Include="DialogPolyfill.fs" />
-    <Compile Include="DOMPurify.fs" />
     <Compile Include="ApiClient.fs" />
     <Compile Include="ReactSettings.fs" />
     <Compile Include="Portal.fs" />
     <Compile Include="AddFeedModal.fs" />
     <Compile Include="TextResources.fs" />
+    <Compile Include="DOMPurify.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fable.Core" Version="3.1.6" />
+    <PackageReference Include="Fable.Core" Version="3.7.1" />
     <PackageReference Include="Fable.Fetch" Version="2.2.0" />
-    <PackageReference Include="Feliz" Version="1.14.1" />
+    <PackageReference Include="Feliz" Version="1.68.0" />
     <PackageReference Include="Thoth.Json" Version="5.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Farss.Shared\Farss.Shared.fsproj" />
