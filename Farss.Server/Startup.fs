@@ -64,7 +64,7 @@ type Startup(configuration: IConfiguration) =
         app.UseSpa(
             fun spa ->
                 if isDevelopment then
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:8080")
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:5173")
                 else
                     ()
                 )
