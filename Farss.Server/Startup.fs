@@ -35,12 +35,6 @@ type Startup(configuration: IConfiguration) =
         let cr = createCompositionRoot connectionString
         services.Add(cr) |> ignore
         
-        services.AddSpaStaticFiles(
-            fun c ->
-                c.RootPath <- "wwwroot"
-                ()
-                                  )
-        
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->
                 opt.AllowSynchronousIO <- true
@@ -60,22 +54,3 @@ type Startup(configuration: IConfiguration) =
             .UseRouting()
             .UseHttpEndPoints(Farss.Giraffe.createWebAppFalco ())
             |> ignore
-            
-        app.UseSpa(
-            fun spa ->
-                if isDevelopment then
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:5173")
-                else
-                    ()
-                )
-            |> ignore
-            
-
-        
-//        app.UseExceptionMiddleware(defaultExceptionHandler)
-//            .UseResponseCaching()
-//            .UseResponseCompression()
-//            .UseStaticFiles()
-//            .UseRouting()
-//            .UseHttpEndPoints(endpoints)
-//            .UseNotFoundHandler(defaultNotFoundHandler)

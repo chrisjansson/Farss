@@ -18,7 +18,7 @@ module Response =
             let json = encoder obj |> Encode.toString 4
             do! ctx.Response.WriteString Encoding.UTF8 json
             return ()
-        } :> Task) 
+        }) 
         
     //let ofJson    
     //    (obj : 'a) : HttpHandler =    
