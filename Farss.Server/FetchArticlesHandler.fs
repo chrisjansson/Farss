@@ -2,6 +2,7 @@
 
 open System.Net
 open Falco.Core
+open Farss.Server.BackgroundTaskQueue
 open Persistence
 open FeedReaderAdapter
 open Microsoft.AspNetCore.Http
@@ -27,14 +28,13 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
 
 let fetchEntriesHandler: HttpHandler =
     fun (ctx: HttpContext) ->
-        let workflow = constructFetchEntriesHandler ctx.RequestServices
-
-        let successNoContent ctx =
-            ctx
-            |> Falco.Response.withStatusCode (int HttpStatusCode.NoContent)
-            |> Falco.Response.ofEmpty
-                
-        workflow ()
-        |> Task.map (fun _ -> ())
-        |> Task.bind (fun _ -> successNoContent ctx)
-   
+        let tq = ctx.RequestServices.GetService<IBackgroundTaskQueue>()
+        task {
+            do! tq.QueuePollArticles(QueueReason.Trigger)
+            let successNoContent ctx =
+                ctx
+                |> Falco.Response.withStatusCode (int HttpStatusCode.NoContent)
+                |> Falco.Response.ofEmpty
+            
+            return successNoContent ctx
+        }

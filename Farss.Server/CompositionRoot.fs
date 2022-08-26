@@ -1,5 +1,7 @@
 ﻿module CompositionRoot
 
+open Farss.Server.BackgroundTaskQueue
+open FetchArticlesHostedService
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Hosting
 open Postgres
@@ -44,6 +46,8 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
     
     services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
 
-    services.AddSingleton<IHostedService, FetchArticlesHostedService.FetchArticlesHostedService>() |> ignore
+    services.AddSingleton<IHostedService, FetchArticlesHostedService>() |> ignore
+    services.AddSingleton<IHostedService, QueueFetchArticles>() |> ignore
+    services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>() |> ignore
 
     services :> IServiceCollection

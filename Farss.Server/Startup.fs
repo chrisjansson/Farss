@@ -1,6 +1,10 @@
 namespace Farss.Server
 
 open System
+open System.Threading
+open System.Threading.Channels
+open System.Threading.Tasks
+open FetchArticlesHostedService
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Server.Kestrel.Core
@@ -11,7 +15,6 @@ open CompositionRoot
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Falco
-
 
 type Startup(configuration: IConfiguration) =
     
@@ -34,6 +37,7 @@ type Startup(configuration: IConfiguration) =
         let connectionString = Postgres.loadConnectionString configuration
         let cr = createCompositionRoot connectionString
         services.Add(cr) |> ignore
+        
         
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->
