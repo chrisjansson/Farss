@@ -1,11 +1,9 @@
 module FeedReaderAdapter
 
-open System.Net.Http
 open System.Threading.Tasks
 open CodeHollow.FeedReader
 open System
 open CodeHollow.FeedReader.Feeds
-open Dto
 
 type  FeedError =
     | FetchError of Exception
@@ -17,7 +15,11 @@ type Feed =
         Icon: (string * byte[]) option
         Description: string
         Items: Item list
+        Type: FeedType
     }
+and FeedType =
+    | Atom
+    | Rss
 and Item = 
     {
         Title: string
@@ -36,9 +38,7 @@ type GetFromUrl =
         Title: string
     }
     
-and FeedType =
-    | Atom
-    | Rss
+
 
 type FeedReaderAdapter = 
     {
@@ -177,11 +177,23 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     |> List.ofSeq
 
                 //TODO: parse publishingDate/LastBuildDate for RSS feeds and UpdatedDate for Atom feeds. Can probably be used to skip item checking
+                
+                let _type =
+                    match feed.Type with
+                    | CodeHollow.FeedReader.FeedType.Atom -> FeedType.Atom
+                    | CodeHollow.FeedReader.FeedType.Rss 
+                    | CodeHollow.FeedReader.FeedType.Rss_0_91
+                    | CodeHollow.FeedReader.FeedType.Rss_0_92
+                    | CodeHollow.FeedReader.FeedType.Rss_1_0
+                    | CodeHollow.FeedReader.FeedType.Rss_2_0 -> FeedType.Rss
+                    | _ -> failwith "Unknown feed type"
+                
                 return { 
                     Title = feed.Title
                     Icon = feedIcon
                     Description = feed.Description
                     Items = items
+                    Type = _type
                 }
             }
             
@@ -216,7 +228,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                 {
                     Url = url
                     Title = feed.Title
-                    FeedType = FeedType.Atom
+                    FeedType = feed.Type
                 }
                 
             let x = 
@@ -240,7 +252,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             let urls =
                                 [|
                                     for u in urls do
-                                        let path = System.IO.Path.Join(baseUrl, u.Url)
+                                        let path = baseUrl + u.Url
                                         let x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
                                         yield x
         

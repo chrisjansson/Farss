@@ -20,7 +20,10 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
                     yield Ok {
                         Title = feed.Title
                         Url = feed.Url
-                        Type = FeedType.Atom
+                        Type =
+                            match feed.FeedType with
+                            | FeedReaderAdapter.FeedType.Atom -> FeedType.Atom
+                            | FeedReaderAdapter.FeedType.Rss -> FeedType.Rss
                     }
                 | _ -> ()
         ]
