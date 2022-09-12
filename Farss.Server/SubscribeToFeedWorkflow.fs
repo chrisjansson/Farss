@@ -25,7 +25,7 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
                 | _ -> ()
         ]
         
-    feedReader.getFeedUrlsFromUrl query.Url
+    feedReader.discoverFeeds query.Url
     |> TaskResult.map aggregateResults
     |> Task.map (fun e -> convertToWorkflowError e)
 

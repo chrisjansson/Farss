@@ -42,7 +42,7 @@ and FeedType =
 
 type FeedReaderAdapter = 
     {
-        getFeedUrlsFromUrl: string -> Task<Result<Result<GetFromUrl, FeedError> list, FeedError>>
+        discoverFeeds: string -> Task<Result<Result<GetFromUrl, FeedError> list, FeedError>>
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
 
@@ -208,7 +208,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                 return Error e
         }
        
-    let getFeedUrlsFromUrl (url: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
+    let discoverFeeds (url: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
         task {
             let! content = tryDownloadAsync url
            
@@ -261,6 +261,6 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
     
     {
         getFromUrl = fetch
-        getFeedUrlsFromUrl = getFeedUrlsFromUrl
+        discoverFeeds = discoverFeeds
     }
     
