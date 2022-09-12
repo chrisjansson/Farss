@@ -1,8 +1,11 @@
 module FeedReaderAdapter
 
+open System.Net.Http
+open System.Threading.Tasks
 open CodeHollow.FeedReader
 open System
 open CodeHollow.FeedReader.Feeds
+open Dto
 
 type  FeedError =
     | FetchError of Exception
@@ -39,7 +42,7 @@ and FeedType =
 
 type FeedReaderAdapter = 
     {
-        getFeedUrlsFromUrl: string -> AsyncResult<GetFromUrl list, FeedError>
+        getFeedUrlsFromUrl: string -> Task<Result<Result<GetFromUrl, FeedError> list, FeedError>>
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
 
@@ -57,8 +60,9 @@ module FeedItem =
 
 //TODO: Download with timeout
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
+let downloadAsync (url: string) = Helpers.DownloadAsync(url) |> Async.AwaitTask
 
-let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
+let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> Async<string>): FeedReaderAdapter =
     let tryOrErrorAsync op errorConstructor arg = async {
         match! (Async.Catch (op arg)) with
         | Choice1Of2 r -> return Ok r
@@ -71,10 +75,12 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         with
         | e -> Error (errorConstructor e)
 
-    let fetch (url: string): AsyncResult<Feed, FeedError> = 
-        let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
-        let parseBytes (bytes: byte[]) = FeedReader.ReadFromByteArray(bytes)
-        let tryParseBytes (bytes: byte[]) = tryOrError parseBytes ParseError bytes
+    let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
+    let tryDownloadAsync (url: string) = tryOrErrorAsync getAsync FetchError url
+    
+    let parseAsync (content: string): Async<Result<Feed, FeedError>> =
+        let parseContent (content: string) = FeedReader.ReadFromString(content)
+        let tryParseContent (content: string) = tryOrError parseContent ParseError content
         
         let tryDownloadIcon (url: string option) =
             let transformDownloadResult (result: Result<_, _>) =
@@ -178,41 +184,79 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                     Items = items
                 }
             }
-
-        tryDownloadBytesAsync url 
-        |> AsyncResult.bind tryParseBytes
-        |> AsyncResult.bindAsync mapFeed
-
-    let getFeedUrlsFromUrl (url: string): Async<Result<GetFromUrl list, FeedError>> =
+            
+        let parsedBytes = 
+            content
+            |> tryParseContent
+            
+        match parsedBytes with
+        | Ok b ->
+            async {
+                let! x = mapFeed b
+                return Ok x
+            }
+        | Error e -> async.Return (Error e)
+        
+    let fetch (url: string): AsyncResult<Feed, FeedError> = 
         async {
-            let! urls =
-                FeedReader.GetFeedUrlsFromUrlAsync(url)
-                |> Async.AwaitTask
-            
-            let urls: GetFromUrl list =
-                [
-                    for url in urls do
-                        match url.FeedType with
-                        | CodeHollow.FeedReader.FeedType.Atom ->
-                            yield {
-                                Url = url.Url
-                                Title = url.Title
-                                FeedType = FeedType.Atom
-                            }
-                        | CodeHollow.FeedReader.FeedType.Rss 
-                        | CodeHollow.FeedReader.FeedType.Rss_0_91 
-                        | CodeHollow.FeedReader.FeedType.Rss_0_92 
-                        | CodeHollow.FeedReader.FeedType.Rss_1_0 
-                        | CodeHollow.FeedReader.FeedType.Rss_2_0 ->
-                            yield {
-                                Url = url.Url
-                                Title = url.Title
-                                FeedType = FeedType.Rss
-                            }
-                        | _ -> ()
-                ]
-            
-            return (Ok urls)
+            let! result = tryDownloadAsync url
+            match result with
+            | Ok result ->
+                let! result = parseAsync result
+                return result
+            | Error e ->
+                return Error e
+        }
+       
+    let getFeedUrlsFromUrl (url: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
+        task {
+            let! content = tryDownloadAsync url
+           
+            let toGetFromUrl (feed: Feed): GetFromUrl =
+                {
+                    Url = "url"
+                    Title = feed.Title
+                    FeedType = FeedType.Atom
+                }
+                
+            let x = 
+                match content with
+                | Ok content ->
+                    let urls = FeedReader.ParseFeedUrlsFromHtml(content) |> Seq.toList
+                    match urls with
+                    | [] ->
+                        task {
+                            let! feed = parseAsync content
+                            let result: Result<Result<GetFromUrl, FeedError> list, FeedError> =  
+                                match feed with
+                                | Ok f -> Ok ([ Ok  (toGetFromUrl f) ])
+                                | Error e -> Ok ([Error  e ])
+                                
+                            
+                                
+                            return result
+                        }
+                   
+                    | urls ->
+                        task {
+                            let urls =
+                                [|
+                                    for u in urls do
+                                        let path = System.IO.Path.Join(url, u.Url)
+                                        let x = fetch path |> Async.StartAsTask
+                                        yield x
+        
+                                |]
+                            let! urls = urls |> Task.WhenAll
+                            let urls = urls |> List.ofArray |> List.map (Result.map toGetFromUrl)
+                            return (Ok urls)
+                        }
+   
+                | Error feedError ->
+                    Error feedError
+                    |> Task.FromResult
+                    
+            return! x
         }
     
     {

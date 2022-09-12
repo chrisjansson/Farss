@@ -44,7 +44,7 @@ let createCompositionRoot (connectionString: PostgresConnectionString): IService
         let context = s.GetRequiredService<ReaderContext>()
         FileRepositoryImpl.create context) |> ignore
     
-    services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync) |> ignore
+    services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync FeedReaderAdapter.downloadAsync) |> ignore
 
     services.AddSingleton<IHostedService, FetchArticlesHostedService>() |> ignore
     services.AddSingleton<IHostedService, QueueFetchArticles>() |> ignore
