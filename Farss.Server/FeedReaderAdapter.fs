@@ -208,13 +208,13 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                 return Error e
         }
        
-    let discoverFeeds (url: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
+    let discoverFeeds (baseUrl: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
         task {
-            let! content = tryDownloadAsync url
+            let! content = tryDownloadAsync baseUrl
            
-            let toGetFromUrl (feed: Feed): GetFromUrl =
+            let toGetFromUrl (url: string) (feed: Feed): GetFromUrl =
                 {
-                    Url = "url"
+                    Url = url
                     Title = feed.Title
                     FeedType = FeedType.Atom
                 }
@@ -229,10 +229,8 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             let! feed = parseAsync content
                             let result: Result<Result<GetFromUrl, FeedError> list, FeedError> =  
                                 match feed with
-                                | Ok f -> Ok ([ Ok  (toGetFromUrl f) ])
-                                | Error e -> Ok ([Error  e ])
-                                
-                            
+                                | Ok f -> Ok [ Ok  (toGetFromUrl baseUrl f) ]
+                                | Error e -> Ok [Error  e ]
                                 
                             return result
                         }
@@ -242,13 +240,13 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             let urls =
                                 [|
                                     for u in urls do
-                                        let path = System.IO.Path.Join(url, u.Url)
-                                        let x = fetch path |> Async.StartAsTask
+                                        let path = System.IO.Path.Join(baseUrl, u.Url)
+                                        let x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
                                         yield x
         
                                 |]
                             let! urls = urls |> Task.WhenAll
-                            let urls = urls |> List.ofArray |> List.map (Result.map toGetFromUrl)
+                            let urls = urls |> List.ofArray |> List.map (Result.map (fun (url, feed) -> toGetFromUrl url feed))
                             return (Ok urls)
                         }
    
