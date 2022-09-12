@@ -1,6 +1,6 @@
 module SubscribeToFeedWorkflow
 
-open System.Net.Http
+open System.Threading.Tasks
 open Persistence
 open FeedReaderAdapter
 open Dto
@@ -11,26 +11,51 @@ let private convertToWorkflowError r: Result<_, WorkflowError> =
     | Error (FetchError e) -> BadRequest (e.Message, Some e) |> Error
     | Error (ParseError e) -> BadRequest (e.Message, Some e) |> Error
 
-let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto) =   
-    let toResponse (feed: Feed): PreviewSubscribeToFeedResponseDto =
-        {
-            Title = feed.Title
-        }
-    
-    feedReader.getFromUrl query.Url
+let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto): Task<Result<Result<PreviewSubscribeToFeedResponseDto, FeedError> list, WorkflowError>> =
+    let map (urls: Result<GetFromUrl list, _>): Task<(string * Result<Feed, _>) list> =
+        match urls with
+        | Ok [] ->
+            feedReader.getFromUrl query.Url
+            |> Async.StartAsTask
+            |> Task.map (fun r -> [ query.Url, r ])
+        | Ok urls ->
+            let getFromUrl (url: GetFromUrl) =
+                feedReader.getFromUrl (query.Url + url.Url)
+                |> Async.StartAsTask
+                |> Task.map (fun r -> url.Url, r)
+            urls
+            |> List.map getFromUrl
+            |> Task.traverse
+        | _ -> Task.FromResult []
+            
+    let aggregateResults (results: (string * Result<Feed, _>) list): Result<PreviewSubscribeToFeedResponseDto, FeedError> list =
+        [
+            for url, r in results do
+                match r with
+                | Ok feed ->
+                    yield Ok {
+                        Title = feed.Title
+                        Url = url
+                        Type = FeedType.Atom
+                    }
+                | _ -> ()
+        ]
+        
+    feedReader.getFeedUrlsFromUrl query.Url
     |> Async.StartAsTask
-    |> TaskResult.map toResponse
-    |> Task.map convertToWorkflowError
+    |> Task.bindR map
+    |> Task.map aggregateResults
+    |> Task.map Ok
 
 type SubscribeToFeedError =
-    | FeedError of FeedError
+    | FeedError of FeedReaderAdapter.FeedError
     | SubscriptionError of string list
 
 let private convertToWorkflowError2 r: Result<_, WorkflowError> =
     match r with
     | Ok r -> Ok r
-    | Error (FeedError (FetchError e)) -> BadRequest (e.Message, Some e) |> Error
-    | Error (FeedError (ParseError e)) -> BadRequest (e.Message, Some e) |> Error
+    | Error (FeedError (FeedReaderAdapter.FetchError e)) -> BadRequest (e.Message, Some e) |> Error
+    | Error (FeedError (FeedReaderAdapter.ParseError e)) -> BadRequest (e.Message, Some e) |> Error
     | Error (SubscriptionError errors) -> BadRequest (sprintf "%A" errors, None) |> Error
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedDto) =

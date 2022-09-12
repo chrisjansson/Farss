@@ -15,6 +15,12 @@ let bind (f: 'a -> Task) (t: Task<'a>) =
         do! f result
         return ()
     }
+    
+let bindR (f: 'a -> Task<'b>) (t: Task<'a>) =
+    task {
+        let! result = t
+        return! f result
+    }
 
 let traverse (tasks: Task<_> list) = 
     let rec inner tasks acc = task {

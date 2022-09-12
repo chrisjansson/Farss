@@ -18,9 +18,7 @@ type AddFeedDialogState =
         |}
     | NameStep of
         {|
-            Url: string
-            Title: string
-            PreviewResult: Dto.PreviewSubscribeToFeedResponseDto
+            PreviewResult: Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError> list
         |}
 
 let addFeedDialog =
@@ -65,26 +63,27 @@ let addFeedDialog =
                 | _ -> failwith "Invalid state"
             
             let changeTitle s =
-                match state with
-                | NameStep d ->
-                    setState(NameStep {| d with Title = s |})
-                | _ -> failwith "Invalid state"
+                // match state with
+                // | NameStep d ->
+                    // setState(NameStep {| d with Title = s |})
+                // | _ ->
+                    failwith "Invalid state"
             
             let previewSubscribeToFeed _ =
                 match state with
                 | PreviewStep d ->
                     ApiClient.previewSubscribeToFeed { Url = d.PreviewUrl }
-                    |> PromiseResult.resultEnd (fun r -> setState (NameStep {| Url = d.PreviewUrl; Title = r.Title; PreviewResult = r |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
+                    |> PromiseResult.resultEnd (fun r -> setState (NameStep {| PreviewResult = r |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
                     |> ignore
                 | _ -> failwith "Invalid state"
                 
             let subscribeToFeed _ =
-                match state with
-                | NameStep d ->
-                    ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = d.Title; Url = d.Url }
-                    |> Promise.mapResult (fun r -> close "ok";r)
-                    |> ignore
-                | _ ->
+                // match state with
+                // | NameStep d ->
+                    // ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = d.Title; Url = d.Url }
+                    // |> Promise.mapResult (fun r -> close "ok";r)
+                    // |> ignore
+                // | _ ->
                     failwith "Invalid state"
             
             let input (placeholder: string) (value: string) (onChange: string -> unit) =
@@ -141,10 +140,25 @@ let addFeedDialog =
                                                 ]
                                             | _ -> ()
                                         | NameStep state ->
-                                            Html.div [
-                                                prop.text "Found a feed, now name it"
-                                            ]
-                                            input "Title" state.Title changeTitle
+                                            
+                                            
+                                            match state.PreviewResult with
+                                            | [] -> 
+                                                Html.div [
+                                                    prop.text "Found no feeds, meh"
+                                                ]
+                                            | [ feed ] ->
+                                                Html.div [
+                                                    prop.text $"Found a feed {feed}"
+                                                ]
+                                            | feeds ->
+                                                Html.div [
+                                                    prop.text "Found multiple feeds"
+                                                    prop.children [
+                                                        for f in feeds do
+                                                            Html.div (string f)
+                                                    ]
+                                                ]
                                     ]
                                 ]
                                 Html.div [

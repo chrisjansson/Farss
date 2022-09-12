@@ -63,7 +63,7 @@ module Fetch =
 //        fetch url [RequestProperties.Method HttpMethod.OPTIONS] |> Promise.result
 
 let inline previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
-    Fetch.tryFetchAsWithPayload<Dto.PreviewSubscribeToFeedResponseDto, Dto.PreviewSubscribeToFeedQueryDto> ApiUrls.PreviewSubscribeToFeed dto
+    Fetch.tryFetchAsWithPayload<Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError> list, Dto.PreviewSubscribeToFeedQueryDto> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto []

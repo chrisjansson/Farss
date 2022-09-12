@@ -25,7 +25,4 @@ type SanitizeHtmlConfig =
 // let private sanitizeInstance (_: string) (_: SanitizeHtmlConfig): string = Fable.Core.JsInterop.importDefault "sanitize-html"
 
 let sanitizeHtml s =
-    // let config = createEmpty<SanitizeHtmlConfig>
-    // config.disallowedTagsMode <- "recursiveEscape"
-    // sanitizeInstance s config
-    s
+    sanitize s

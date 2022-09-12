@@ -19,7 +19,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
     fun subscriptionRepository articleRepository adapter subscriptionId ->
         let getSubscription = subscriptionRepository.get
 
-        let fetchFeedForSubscription subscription = 
+        let fetchFeedForSubscription (subscription: Subscription) = 
             adapter.getFromUrl subscription.Url
             |> Async.map (Result.mapError FetchArticlesError.FeedError)
             |> Async.StartAsTask

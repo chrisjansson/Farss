@@ -7,10 +7,20 @@ type PreviewSubscribeToFeedQueryDto =
         Url: string
     }
 
+type  FeedError =
+    | FetchError of Exception
+    | ParseError of Exception
+
 type PreviewSubscribeToFeedResponseDto =
     {
         Title: string
+        Url: string
+        Type: FeedType    
     }
+            
+and FeedType =
+    | Atom
+    | Rss
 
 type SubscribeToFeedDto = 
     {

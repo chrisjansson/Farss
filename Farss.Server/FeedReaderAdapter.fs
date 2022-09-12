@@ -26,8 +26,20 @@ and Item =
         Link: string option
     }
 
+type GetFromUrl =
+    {
+        FeedType: FeedType
+        Url: string
+        Title: string
+    }
+    
+and FeedType =
+    | Atom
+    | Rss
+
 type FeedReaderAdapter = 
     {
+        getFeedUrlsFromUrl: string -> AsyncResult<GetFromUrl list, FeedError>
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
 
@@ -137,7 +149,10 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
                         match item.SpecificItem with
                         | :? Rss20FeedItem as i ->
                             i.Element.ToString()
-                        | _ -> failwith "Unsupported feed type as of yet"
+                        | :? AtomFeedItem as i ->
+                            i.Element.ToString()
+                        | _ ->
+                            failwith "Unsupported feed type as of yet"
                             
                     
                     { 
@@ -168,6 +183,40 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>): FeedReaderAdapter =
         |> AsyncResult.bind tryParseBytes
         |> AsyncResult.bindAsync mapFeed
 
+    let getFeedUrlsFromUrl (url: string): Async<Result<GetFromUrl list, FeedError>> =
+        async {
+            let! urls =
+                FeedReader.GetFeedUrlsFromUrlAsync(url)
+                |> Async.AwaitTask
+            
+            let urls: GetFromUrl list =
+                [
+                    for url in urls do
+                        match url.FeedType with
+                        | CodeHollow.FeedReader.FeedType.Atom ->
+                            yield {
+                                Url = url.Url
+                                Title = url.Title
+                                FeedType = FeedType.Atom
+                            }
+                        | CodeHollow.FeedReader.FeedType.Rss 
+                        | CodeHollow.FeedReader.FeedType.Rss_0_91 
+                        | CodeHollow.FeedReader.FeedType.Rss_0_92 
+                        | CodeHollow.FeedReader.FeedType.Rss_1_0 
+                        | CodeHollow.FeedReader.FeedType.Rss_2_0 ->
+                            yield {
+                                Url = url.Url
+                                Title = url.Title
+                                FeedType = FeedType.Rss
+                            }
+                        | _ -> ()
+                ]
+            
+            return (Ok urls)
+        }
+    
     {
         getFromUrl = fetch
+        getFeedUrlsFromUrl = getFeedUrlsFromUrl
     }
+    
