@@ -8,11 +8,10 @@ open Dto
 let private convertToWorkflowError r: Result<_, WorkflowError> =
     match r with
     | Ok r -> Ok r
-    | Error (FeedReaderAdapter.FetchError e) -> BadRequest (e.Message, Some e) |> Error
-    | Error (FeedReaderAdapter.ParseError e) -> BadRequest (e.Message, Some e) |> Error
+    | Error (BaseDiscoveryError.FetchError e) -> BadRequest (e.Message, Some e) |> Error
 
 let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto): Task<Result<Result<PreviewSubscribeToFeedResponseDto, FeedError> list, WorkflowError>> =
-    let aggregateResults (results: (Result<GetFromUrl, _>) list): Result<PreviewSubscribeToFeedResponseDto, FeedError> list =
+    let aggregateResults (results: (Result<DiscoveredFeed, _>) list): Result<PreviewSubscribeToFeedResponseDto, FeedError> list =
         [
             for r in results do
                 match r with

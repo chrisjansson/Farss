@@ -31,21 +31,21 @@ and Item =
         Link: string option
     }
 
-type GetFromUrl =
+type DiscoveredFeed =
     {
         FeedType: FeedType
         Url: string
         Title: string
     }
     
-
+type [<RequireQualifiedAccess>] BaseDiscoveryError =
+    | FetchError of Exception
 
 type FeedReaderAdapter = 
     {
-        discoverFeeds: string -> Task<Result<Result<GetFromUrl, FeedError> list, FeedError>>
+        discoverFeeds: string -> Task<Result<Result<DiscoveredFeed, FeedError> list, BaseDiscoveryError>>
         getFromUrl: string -> AsyncResult<Feed, FeedError>
     }
-
 
 module FeedItem = 
     open Domain
@@ -76,7 +76,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
         | e -> Error (errorConstructor e)
 
     let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
-    let tryDownloadAsync (url: string) = tryOrErrorAsync getAsync FetchError url
+    let tryDownloadAsync (url: string) = tryOrErrorAsync getAsync id url
     
     let parseAsync (content: string): Async<Result<Feed, FeedError>> =
         let parseContent (content: string) = FeedReader.ReadFromString(content)
@@ -217,14 +217,14 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                 let! result = parseAsync result
                 return result
             | Error e ->
-                return Error e
+                return Error (FeedError.FetchError e)
         }
        
-    let discoverFeeds (baseUrl: string): Task<Result<Result<GetFromUrl, FeedError> list, FeedError>> =
+    let discoverFeeds (baseUrl: string): Task<Result<Result<DiscoveredFeed, FeedError> list, BaseDiscoveryError>> =
         task {
             let! content = tryDownloadAsync baseUrl
            
-            let toGetFromUrl (url: string) (feed: Feed): GetFromUrl =
+            let toDiscoveredFeed (url: string) (feed: Feed): DiscoveredFeed =
                 {
                     Url = url
                     Title = feed.Title
@@ -239,14 +239,13 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     | [] ->
                         task {
                             let! feed = parseAsync content
-                            let result: Result<Result<GetFromUrl, FeedError> list, FeedError> =  
+                            let result: Result<Result<DiscoveredFeed, FeedError> list, _> =  
                                 match feed with
-                                | Ok f -> Ok [ Ok  (toGetFromUrl baseUrl f) ]
-                                | Error e -> Ok [Error  e ]
+                                | Ok f -> Ok [ Ok  (toDiscoveredFeed baseUrl f) ]
+                                | Error e -> Ok [ Error  e ]
                                 
                             return result
                         }
-                   
                     | urls ->
                         task {
                             let urls =
@@ -258,12 +257,13 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
         
                                 |]
                             let! urls = urls |> Task.WhenAll
-                            let urls = urls |> List.ofArray |> List.map (Result.map (fun (url, feed) -> toGetFromUrl url feed))
+                            let urls = urls |> List.ofArray |> List.map (Result.map (fun (url, feed) -> toDiscoveredFeed url feed))
                             return (Ok urls)
                         }
    
-                | Error feedError ->
-                    Error feedError
+                | Error exn ->
+                    BaseDiscoveryError.FetchError exn
+                    |> Error
                     |> Task.FromResult
                     
             return! x
