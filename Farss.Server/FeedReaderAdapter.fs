@@ -251,7 +251,8 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             let urls =
                                 [|
                                     for u in urls do
-                                        let path = baseUrl + u.Url
+                                        let uri = Uri(u.Url, UriKind.RelativeOrAbsolute)
+                                        let path = if uri.IsAbsoluteUri then u.Url else baseUrl + u.Url
                                         let x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
                                         yield x
         

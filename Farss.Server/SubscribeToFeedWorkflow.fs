@@ -16,7 +16,7 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
             for r in results do
                 match r with
                 | Ok feed ->
-                    yield Ok {
+                    Ok {
                         Title = feed.Title
                         Url = feed.Url
                         Type =
@@ -24,12 +24,16 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
                             | FeedReaderAdapter.FeedType.Atom -> FeedType.Atom
                             | FeedReaderAdapter.FeedType.Rss -> FeedType.Rss
                     }
-                | _ -> ()
+                | Error feedError ->
+                    match feedError with
+                    | FeedReaderAdapter.FeedError.FetchError e -> Error (FetchError e)
+                    | FeedReaderAdapter.FeedError.ParseError e -> Error (ParseError e)
+                    
         ]
         
     feedReader.discoverFeeds query.Url
     |> TaskResult.map aggregateResults
-    |> Task.map (fun e -> convertToWorkflowError e)
+    |> Task.map convertToWorkflowError
 
 type SubscribeToFeedError =
     | FeedError of FeedReaderAdapter.FeedError

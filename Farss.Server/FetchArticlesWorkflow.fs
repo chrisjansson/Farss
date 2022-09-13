@@ -13,8 +13,6 @@ type FetchArticlesError =
 type FetchArticlesForSubscription =  SubscriptionId -> Task<Result<int, FetchArticlesError>>
 type FetchArticlesForSubscriptionImpl = SubscriptionRepository -> ArticleRepository -> FeedReaderAdapter -> FetchArticlesForSubscription
 
-
-
 let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl = 
     fun subscriptionRepository articleRepository adapter subscriptionId ->
         let getSubscription = subscriptionRepository.get
