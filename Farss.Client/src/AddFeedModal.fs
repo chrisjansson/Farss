@@ -45,9 +45,7 @@ let addFeedDialog =
                 | Some e -> e?close(returnValue)
                 | None -> ()
             
-            let onClose (e: Event) =
-                let returnValue = e.currentTarget?returnValue
-                printfn "closed with %A" returnValue
+            let onClose (_: Event) =
                 props.OnClose ()
                 
             let onCancel _ =
