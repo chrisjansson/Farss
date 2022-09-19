@@ -15,12 +15,17 @@ type PreviewSubscribeToFeedResponseDto =
     {
         Title: string
         Url: string
-        Type: FeedType    
+        Type: FeedType
+        Icon: (string * byte[]) option
+        Protocol: Protocol
     }
             
 and FeedType =
     | Atom
     | Rss
+and Protocol =
+    | Http
+    | Https
 
 type SubscribeToFeedDto = 
     {

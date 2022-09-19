@@ -23,6 +23,11 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
                             match feed.FeedType with
                             | FeedReaderAdapter.FeedType.Atom -> FeedType.Atom
                             | FeedReaderAdapter.FeedType.Rss -> FeedType.Rss
+                        Protocol =
+                            match feed.Protocol with
+                            | FeedReaderAdapter.Protocol.Http -> Http
+                            | FeedReaderAdapter.Protocol.Https -> Https
+                        Icon = feed.Icon
                     }
                 | Error feedError ->
                     match feedError with

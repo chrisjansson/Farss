@@ -36,7 +36,12 @@ type DiscoveredFeed =
         FeedType: FeedType
         Url: string
         Title: string
+        Icon: (string * byte[]) option
+        Protocol: Protocol
     }
+and Protocol =
+    | Http
+    | Https
     
 type [<RequireQualifiedAccess>] BaseDiscoveryError =
     | FetchError of Exception
@@ -229,6 +234,13 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     Url = url
                     Title = feed.Title
                     FeedType = feed.Type
+                    Icon = feed.Icon
+                    Protocol =
+                        let url = Uri(url)
+                        if url.Scheme = "http" then
+                            Protocol.Http
+                        else
+                            Protocol.Https
                 }
                 
             let x = 
