@@ -72,26 +72,7 @@ let addFeedDialog =
                     |> ignore
                 | _ -> failwith "Invalid state"
                 
-            let selectFeed (id: string) =
-                let id =
-                    if id = "" then None else Some (int id)
-                
-                let newState =
-                    match state with
-                    | SelectDiscoveredFeedsStep d ->
-                        let title =
-                            match id with
-                            | Some id ->
-                                let _, feed = d.PreviewResult.[id]
-                                match feed with
-                                | Ok feed -> feed.Title
-                                | _ -> ""
-                            | _ -> ""
-                        
-                        
-                        SelectDiscoveredFeedsStep {| d with SelectedFeed = id; Title = title |}
-                    | _ -> state
-                setState newState
+
                 
             let subscribeToFeed _ =
                 // match state with
@@ -156,7 +137,24 @@ let addFeedDialog =
                                                 ]
                                             | _ -> ()
                                         | SelectDiscoveredFeedsStep state ->
-                                            
+                                            let selectFeed (id: string) =
+                                                let id =
+                                                    if id = "" then None else Some (int id)
+                                                
+                                                let newState =
+                                                    let title =
+                                                        match id with
+                                                        | Some id ->
+                                                            let _, feed = state.PreviewResult.[id]
+                                                            match feed with
+                                                            | Ok feed -> feed.Title
+                                                            | _ -> ""
+                                                        | _ -> ""
+                                                    
+                                                    
+                                                    SelectDiscoveredFeedsStep {| state with SelectedFeed = id; Title = title |}
+                                                setState newState
+                                                                            
                                             let setTitle (title: string) =
                                                 setState (SelectDiscoveredFeedsStep {| state with Title = title |})
                                             
