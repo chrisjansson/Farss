@@ -16,9 +16,11 @@ type AddFeedDialogState =
             PreviewUrl: string
             PreviewFailure: string option
         |}
-    | NameStep of
+    | SelectDiscoveredFeedsStep of
         {|
-            PreviewResult: Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError> list
+            PreviewResult: (int * Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError>) list
+            SelectedFeed: int option
+            Title: string
         |}
 
 let addFeedDialog =
@@ -62,20 +64,34 @@ let addFeedDialog =
                     setState(PreviewStep {| d with PreviewUrl = s |})
                 | _ -> failwith "Invalid state"
             
-            let changeTitle s =
-                // match state with
-                // | NameStep d ->
-                    // setState(NameStep {| d with Title = s |})
-                // | _ ->
-                    failwith "Invalid state"
-            
             let previewSubscribeToFeed _ =
                 match state with
                 | PreviewStep d ->
                     ApiClient.previewSubscribeToFeed { Url = d.PreviewUrl }
-                    |> PromiseResult.resultEnd (fun r -> setState (NameStep {| PreviewResult = r |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
+                    |> PromiseResult.resultEnd (fun r -> setState (SelectDiscoveredFeedsStep {| PreviewResult = r |> List.indexed; SelectedFeed = None; Title = "" |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
                     |> ignore
                 | _ -> failwith "Invalid state"
+                
+            let selectFeed (id: string) =
+                let id =
+                    if id = "" then None else Some (int id)
+                
+                let newState =
+                    match state with
+                    | SelectDiscoveredFeedsStep d ->
+                        let title =
+                            match id with
+                            | Some id ->
+                                let _, feed = d.PreviewResult.[id]
+                                match feed with
+                                | Ok feed -> feed.Title
+                                | _ -> ""
+                            | _ -> ""
+                        
+                        
+                        SelectDiscoveredFeedsStep {| d with SelectedFeed = id; Title = title |}
+                    | _ -> state
+                setState newState
                 
             let subscribeToFeed _ =
                 // match state with
@@ -139,25 +155,60 @@ let addFeedDialog =
                                                     prop.text (sprintf "There was an error fetching the result %A" e)
                                                 ]
                                             | _ -> ()
-                                        | NameStep state ->
+                                        | SelectDiscoveredFeedsStep state ->
                                             
+                                            let setTitle (title: string) =
+                                                setState (SelectDiscoveredFeedsStep {| state with Title = title |})
                                             
                                             match state.PreviewResult with
                                             | [] -> 
                                                 Html.div [
                                                     prop.text "Found no feeds, meh"
                                                 ]
-                                            | [ feed ] ->
-                                                Html.div [
-                                                    prop.text $"Found a feed {feed}"
-                                                ]
                                             | feeds ->
                                                 Html.div [
-                                                    prop.text "Found multiple feeds"
-                                                    prop.children [
-                                                        for f in feeds do
-                                                            Html.div (string f)
+                                                    Html.div [
+                                                        prop.text "Found"
                                                     ]
+                                                    Html.select [
+                                                        prop.onChange selectFeed
+                                                        prop.children [
+                                                            Html.option "Select feed"
+                                                            for (index, f) in feeds do
+                                                                match f with
+                                                                | Ok f ->
+                                                                    let feedText = $"{f.Title} - {f.Type}"
+                                                                    Html.option [
+                                                                        prop.value index
+                                                                        prop.text feedText
+                                                                    ]
+                                                                | Error e ->
+                                                                    let feedText = "Some error"
+                                                                    Html.option [
+                                                                        prop.value index
+                                                                        prop.text feedText
+                                                                    ]
+                                                        ]
+                                                    ]
+                                                    
+                                                    match state.SelectedFeed with
+                                                    | Some id ->
+                                                        let _, feed = state.PreviewResult.[id]
+                                                        Html.div [
+                                                            match feed with
+                                                            | Ok r ->
+                                                                prop.children [
+                                                                    Html.input [
+                                                                        prop.value state.Title
+                                                                        prop.onChange setTitle
+                                                                    ]    
+                                                                ]
+                                                            | Error _ ->
+                                                                "Could not read or parse feed"
+                                                                |> prop.text
+                                                        ]
+                                                    | None ->
+                                                        Html.none
                                                 ]
                                     ]
                                 ]
@@ -176,7 +227,7 @@ let addFeedDialog =
                                                     prop.text "Preview"
                                                     prop.onClick previewSubscribeToFeed
                                                 ]
-                                            | NameStep _ ->
+                                            | SelectDiscoveredFeedsStep _ ->
                                                 Html.button [
                                                     prop.type' "button"
                                                     prop.text "Add"
