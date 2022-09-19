@@ -213,9 +213,6 @@ let addFeedDialog =
                                     prop.text "footer"
                                     prop.children [
                                         Html.div [
-                                            
-                                        ]
-                                        Html.div [
                                             match state with
                                             | PreviewStep _ ->
                                                 Html.button [
