@@ -1,6 +1,7 @@
 module Farss.Client.AddFeedModal
 
 open Browser.Types
+open Dto
 open Portal
 open Feliz
 open Fable.Core.JsInterop
@@ -16,13 +17,36 @@ type AddFeedDialogState =
             PreviewUrl: string
             PreviewFailure: string option
         |}
-    | SelectDiscoveredFeedsStep of
+    | SelectFeedStep of
         {|
             PreviewResult: (int * Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError>) list
             SelectedFeed: int option
             Title: string
         |}
+and PreviewStepState =
+    {
+        PreviewUrl: string
+        PreviewFailure: string option
+    }
+    
+[<ReactComponent>]    
+let private Input (placeholder: string, value: string, onChange: string -> unit) =
+    React.fragment [
+        Html.div [
+            Html.label [
+                prop.htmlFor placeholder
+                prop.text placeholder
+            ]
+        ]
 
+        Html.input [
+            prop.id placeholder
+            prop.placeholder placeholder
+            prop.value value
+            prop.onChange onChange
+        ]
+    ]
+    
 let addFeedDialog =
     React.functionComponent(
         fun (props: AddFeedDialogProps) ->
@@ -65,39 +89,31 @@ let addFeedDialog =
             let previewSubscribeToFeed _ =
                 match state with
                 | PreviewStep d ->
+                    let handleOk r = setState (SelectFeedStep {| PreviewResult = r |> List.indexed; SelectedFeed = None; Title = "" |})
+                    let handleError e = setState (PreviewStep {| d with PreviewFailure = Some e |})
+                    
                     ApiClient.previewSubscribeToFeed { Url = d.PreviewUrl }
-                    |> PromiseResult.resultEnd (fun r -> setState (SelectDiscoveredFeedsStep {| PreviewResult = r |> List.indexed; SelectedFeed = None; Title = "" |})) (fun e -> setState (PreviewStep {| d with PreviewFailure = Some e |}))
+                    |> PromiseResult.resultEnd
+                           handleOk
+                           handleError
                     |> ignore
                 | _ -> failwith "Invalid state"
                 
-
-                
             let subscribeToFeed _ =
-                // match state with
-                // | NameStep d ->
-                    // ApiClient.subscribeToFeed { Dto.SubscribeToFeedDto.Title = d.Title; Url = d.Url }
-                    // |> Promise.mapResult (fun r -> close "ok";r)
-                    // |> ignore
-                // | _ ->
+                match state with
+                | SelectFeedStep d ->
+                    let feed =
+                        let _, feedPreview = d.PreviewResult.[d.SelectedFeed.Value]
+                        match feedPreview with
+                        | Ok f -> f
+                        | _ -> failwith "Invalid state"
+                    
+                    ApiClient.subscribeToFeed { SubscribeToFeedDto.Title = d.Title; Url = feed.Url }
+                    |> Promise.mapResult (fun r -> close "ok";r)
+                    |> ignore
+                | _ ->
                     failwith "Invalid state"
-            
-            let input (placeholder: string) (value: string) (onChange: string -> unit) =
-                React.fragment [
-                    Html.div [
-                        Html.label [
-                            prop.htmlFor placeholder
-                            prop.text placeholder
-                        ]
-                    ]
-
-                    Html.input [
-                        prop.id placeholder
-                        prop.placeholder placeholder
-                        prop.value value
-                        prop.onChange onChange
-                    ]
-                ]
-            
+                    
             portal [
                 Html.dialog [
                     prop.ref onRef
@@ -119,7 +135,7 @@ let addFeedDialog =
                                     prop.children [
                                         match state with
                                         | PreviewStep state ->
-                                            input "Feed url" state.PreviewUrl changeUrl
+                                            Input ("Feed url", state.PreviewUrl, changeUrl)
                                             match state.PreviewFailure with
                                             | Some e ->
                                                 Html.div [
@@ -131,10 +147,10 @@ let addFeedDialog =
                                                         style.color "red"
                                                         style.borderRadius(2)
                                                     ]
-                                                    prop.text (sprintf "There was an error fetching the result %A" e)
+                                                    prop.text $"There was an error fetching the result %A{e}"
                                                 ]
                                             | _ -> ()
-                                        | SelectDiscoveredFeedsStep state ->
+                                        | SelectFeedStep state ->
                                             let selectFeed (id: string) =
                                                 let id =
                                                     if id = "" then None else Some (int id)
@@ -150,11 +166,11 @@ let addFeedDialog =
                                                         | _ -> ""
                                                     
                                                     
-                                                    SelectDiscoveredFeedsStep {| state with SelectedFeed = id; Title = title |}
+                                                    SelectFeedStep {| state with SelectedFeed = id; Title = title |}
                                                 setState newState
                                                                             
                                             let setTitle (title: string) =
-                                                setState (SelectDiscoveredFeedsStep {| state with Title = title |})
+                                                setState (SelectFeedStep {| state with Title = title |})
                                             
                                             match state.PreviewResult with
                                             | [] -> 
@@ -194,10 +210,32 @@ let addFeedDialog =
                                                             match feed with
                                                             | Ok r ->
                                                                 prop.children [
-                                                                    Html.input [
-                                                                        prop.value state.Title
-                                                                        prop.onChange setTitle
-                                                                    ]    
+                                                                    Html.div [
+                                                                        Input("Feed title", state.Title, setTitle)
+                                                                    ]
+                                                                    
+                                                                    Html.div [
+                                                                        Html.text "Url: "
+                                                                        Html.text r.Url
+                                                                    ]
+                                             
+                                                                    Html.div [
+                                                                        Html.b "Type: "
+                                                                        match r.Type with
+                                                                        | FeedType.Atom -> "Atom"
+                                                                        | FeedType.Rss -> "RSS"
+                                                                        |> Html.text
+                                                                    ]
+                                                                    
+                                                                    Html.div [
+                                                                        Html.b "Protocol: "
+                                                                        match r.Protocol with
+                                                                        | Protocol.Http -> "HTTP"
+                                                                        | Protocol.Https -> "HTTPS"
+                                                                        |> Html.text
+                                                                    ]
+        
+                                               
                                                                 ]
                                                             | Error _ ->
                                                                 "Could not read or parse feed"
@@ -220,7 +258,7 @@ let addFeedDialog =
                                                     prop.text "Preview"
                                                     prop.onClick previewSubscribeToFeed
                                                 ]
-                                            | SelectDiscoveredFeedsStep _ ->
+                                            | SelectFeedStep _ ->
                                                 Html.button [
                                                     prop.type' "button"
                                                     prop.text "Add"
@@ -236,7 +274,6 @@ let addFeedDialog =
                                 ]
                             ]
                         ]
-                        
                     ]
                 ]
             ]
