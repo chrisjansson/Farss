@@ -23,6 +23,8 @@ and PreviewStepState =
         PreviewUrl: string
         PreviewFailure: string option
     }
+  
+
     
 [<ReactComponent>]    
 let private Input (placeholder: string, value: string, onChange: string -> unit) =
@@ -41,6 +43,28 @@ let private Input (placeholder: string, value: string, onChange: string -> unit)
             prop.onChange onChange
         ]
     ]
+    
+let useOp operation onOk onError =
+    let isLoading, setIsLoading = React.useState(false)
+    
+    let handleOk r =
+        setIsLoading false
+        onOk r
+    let handleError e =
+        setIsLoading false
+        onError e
+    
+    let wrappedOp arg =
+        setIsLoading true
+        operation arg
+        |> PromiseResult.resultEnd
+               handleOk
+               handleError
+        |> ignore
+               
+    isLoading, wrappedOp
+               
+    
     
 [<ReactComponent>]
 let AddFeedDialog (onClose: unit -> unit) =
@@ -74,17 +98,22 @@ let AddFeedDialog (onClose: unit -> unit) =
     let cancel _ =
         close "cancel"
     
+    let isPreviewing, previewSubscribeToFeedOp =
+        let handleOk r =
+            match state with
+            | PreviewStep _ ->  setState (SelectFeedStep {| PreviewResult = r |> List.indexed; SelectedFeed = None; Title = "" |})
+            | _ -> failwith "invalid state"
+
+        let handleError (r: string) =
+            match state with
+            | PreviewStep d -> setState (PreviewStep {| d with PreviewFailure = Some r |})
+            | _ -> failwith "invalid state"
+            
+        useOp ApiClient.previewSubscribeToFeed handleOk handleError
+    
     let previewSubscribeToFeed _ =
         match state with
-        | PreviewStep d ->
-            let handleOk r = setState (SelectFeedStep {| PreviewResult = r |> List.indexed; SelectedFeed = None; Title = "" |})
-            let handleError e = setState (PreviewStep {| d with PreviewFailure = Some e |})
-            
-            ApiClient.previewSubscribeToFeed { Url = d.PreviewUrl }
-            |> PromiseResult.resultEnd
-                   handleOk
-                   handleError
-            |> ignore
+        | PreviewStep d -> previewSubscribeToFeedOp { Url = d.PreviewUrl }
         | _ -> failwith "Invalid state"
         
     let subscribeToFeed _ =
@@ -246,8 +275,12 @@ let AddFeedDialog (onClose: unit -> unit) =
                                     | PreviewStep _ ->
                                         Html.button [
                                             prop.type' "button"
-                                            prop.text "Preview"
+                                            if isPreviewing then
+                                                prop.text "Loading..."
+                                            else
+                                                prop.text "Preview"
                                             prop.onClick previewSubscribeToFeed
+                                            prop.disabled isPreviewing
                                         ]
                                     | SelectFeedStep _ ->
                                         Html.button [

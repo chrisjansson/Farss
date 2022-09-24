@@ -213,7 +213,7 @@ let menu =
                     ]
                     
                     if state.IsOpen then
-                        AddFeedModal.addFeedDialog { OnClose = fun () -> setState { state with IsOpen = false } }
+                        AddFeedModal.AddFeedDialog (fun () -> setState { state with IsOpen = false })
                 ]
                 
             ]
