@@ -73,12 +73,6 @@ let AddFeedDialog (onClose: unit -> unit) =
     
     let cancel _ =
         close "cancel"
-        
-    let changeUrl s =
-        match state with
-        | PreviewStep d ->
-            setState(PreviewStep {| d with PreviewUrl = s |})
-        | _ -> failwith "Invalid state"
     
     let previewSubscribeToFeed _ =
         match state with
@@ -129,6 +123,9 @@ let AddFeedDialog (onClose: unit -> unit) =
                             prop.children [
                                 match state with
                                 | PreviewStep state ->
+                                    let changeUrl s =
+                                        setState(PreviewStep {| state with PreviewUrl = s |})
+                                    
                                     Input ("Feed url", state.PreviewUrl, changeUrl)
                                     match state.PreviewFailure with
                                     | Some e ->
