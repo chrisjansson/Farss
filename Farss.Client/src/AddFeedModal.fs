@@ -270,30 +270,28 @@ let AddFeedDialog (onClose: unit -> unit) =
                             prop.className "footer"
                             prop.text "footer"
                             prop.children [
-                                Html.div [
-                                    match state with
-                                    | PreviewStep _ ->
-                                        Html.button [
-                                            prop.type' "button"
-                                            if isPreviewing then
-                                                prop.text "Loading..."
-                                            else
-                                                prop.text "Preview"
-                                            prop.onClick previewSubscribeToFeed
-                                            prop.disabled isPreviewing
-                                        ]
-                                    | SelectFeedStep _ ->
-                                        Html.button [
-                                            prop.type' "button"
-                                            prop.text "Add"
-                                            prop.onClick subscribeToFeed
-                                        ]
+                                Html.button [
+                                    prop.type' "button"
+                                    prop.text "Cancel"
+                                    prop.onClick cancel
+                                ]
+                                match state with
+                                | PreviewStep _ ->
                                     Html.button [
                                         prop.type' "button"
-                                        prop.text "Cancel"
-                                        prop.onClick cancel
+                                        if isPreviewing then
+                                            prop.text "Loading..."
+                                        else
+                                            prop.text "Preview"
+                                        prop.onClick previewSubscribeToFeed
+                                        prop.disabled isPreviewing
                                     ]
-                                ]
+                                | SelectFeedStep _ ->
+                                    Html.button [
+                                        prop.type' "button"
+                                        prop.text "Add"
+                                        prop.onClick subscribeToFeed
+                                    ]
                             ]
                         ]
                     ]
