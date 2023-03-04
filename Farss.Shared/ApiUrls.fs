@@ -1,5 +1,7 @@
 ﻿module ApiUrls
 
+open System
+
 [<Literal>]
 let SubscribeToFeed = "/api/feeds"
 
@@ -20,3 +22,7 @@ let GetArticles = "/api/articles"
 
 [<Literal>]
 let SetArticleReadStatus = "/api/article/setreadstatus"
+
+let GetFileRoute = "/api/file/{id}"
+
+let GetFile (id: Guid) = printfn "/api/file/%A" id

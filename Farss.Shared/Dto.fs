@@ -27,6 +27,18 @@ and Protocol =
     | Http
     | Https
 
+
+type GetFileDto =
+    {
+        Id: Guid
+    }
+and FileDto =
+    {
+        Id: Guid
+        FileName: string
+        Data: byte[]
+    }
+    
 type SubscribeToFeedDto = 
     {
         Url: string

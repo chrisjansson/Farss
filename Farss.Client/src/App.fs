@@ -47,9 +47,13 @@ let sideMenu =
                             match state with
                             | Loading -> Html.text "Loading"
                             | Loaded m ->
-                                Html.ul [
+                                React.fragment [
                                     for f in m.Feeds do
-                                        Html.li [ prop.text f.Title ]
+                                        Html.div [
+                                            Html.div [
+                                                prop.text f.Title
+                                            ]
+                                        ]
                                 ]
                             ]
                     ]

@@ -12,4 +12,5 @@ let createWebAppFalco (): HttpEndpoint list =
         post ApiUrls.PollSubscriptions FetchArticlesHandler.fetchEntriesHandler
         get ApiUrls.GetArticles GetArticlesHandler.getArticlesHandler
         post ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
+        get ApiUrls.GetFileRoute GetFileHandler.getFileHandler
     ]
