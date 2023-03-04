@@ -2,6 +2,7 @@
 module GetFileWorkflow
 
 open System
+open Dto
 open Persistence
 
 type GetFileWorkflow = Dto.GetFileDto -> Result<FileDto, WorkflowError>
@@ -13,5 +14,7 @@ let impl: Factory =
             fr.get fileId
 
         command
-            |> getFile c.Id
+            |> (fun c -> getFile c.Id)
+            |> (fun f -> { FileDto.Id = f.Id; Data = f.Data; FileName = f.FileName })
+            |> Ok
             

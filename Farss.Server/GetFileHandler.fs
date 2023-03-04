@@ -27,6 +27,6 @@ let getFileHandler: HttpHandler =
             
         let workflow = GetFileWorkflow.impl ar
         
-        System.Threading.Tasks.Task.CompletedTask cmd
-        |> TaskResult.bind (fun cmd -> workflow cmd)
+        System.Threading.Tasks.Task.FromResult cmd
+        |> TaskResult.bind workflow
         |> Task.bind (fun x -> convertToJsonResultHandler x ctx)
