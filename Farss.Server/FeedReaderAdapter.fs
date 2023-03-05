@@ -118,6 +118,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                         Some s
                 
                 let! feedIcon =
+                    //TODO: Fallback to looking at the latest feed item
                     feed.ImageUrl
                     |> optionOfNullOrEmpty
                     |> tryDownloadIcon
