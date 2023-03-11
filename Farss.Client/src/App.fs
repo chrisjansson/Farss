@@ -25,7 +25,7 @@ let sideMenu =
             React.useEffectOnce(
                 fun () ->
                     ApiClient.getSubscriptions ()
-                    |> PromiseResult.resultEnd (fun r -> setState(Loaded { Feeds = r })) (fun _ -> ())
+                    |> PromiseResult.resultEnd (fun r -> setState(Loaded { Feeds = r |> List.sortBy (fun f -> f.Title) })) (fun _ -> ())
                     |> ignore
             )
             
@@ -126,7 +126,7 @@ let articles =
                 fun () ->
                     fetchData ()
                     |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
-                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f; SelectedArticle = None })) (fun _ -> ())
+                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f |> List.sortBy (fun x -> x.Title); SelectedArticle = None })) (fun _ -> ())
                     |> ignore
             )
             Html.div [
