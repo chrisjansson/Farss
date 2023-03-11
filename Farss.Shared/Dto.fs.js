@@ -1,5 +1,5 @@
 import { Union, Record } from "../Farss.Client/src/fable_modules/fable-library.3.7.18/Types.js";
-import { bool_type, option_type, tuple_type, array_type, uint8_type, union_type, class_type, record_type, string_type } from "../Farss.Client/src/fable_modules/fable-library.3.7.18/Reflection.js";
+import { bool_type, int32_type, option_type, tuple_type, array_type, uint8_type, union_type, class_type, record_type, string_type } from "../Farss.Client/src/fable_modules/fable-library.3.7.18/Reflection.js";
 
 export class PreviewSubscribeToFeedQueryDto extends Record {
     constructor(Url) {
@@ -109,16 +109,17 @@ export function SubscribeToFeedDto$reflection() {
 }
 
 export class SubscriptionDto extends Record {
-    constructor(Id, Title, Url) {
+    constructor(Id, Title, Url, Unread) {
         super();
         this.Id = Id;
         this.Title = Title;
         this.Url = Url;
+        this.Unread = (Unread | 0);
     }
 }
 
 export function SubscriptionDto$reflection() {
-    return record_type("Dto.SubscriptionDto", [], SubscriptionDto, () => [["Id", class_type("System.Guid")], ["Title", string_type], ["Url", string_type]]);
+    return record_type("Dto.SubscriptionDto", [], SubscriptionDto, () => [["Id", class_type("System.Guid")], ["Title", string_type], ["Url", string_type], ["Unread", int32_type]]);
 }
 
 export class ArticleDto extends Record {

@@ -2,7 +2,13 @@
 
 module SubscriptionDto = 
 
-    let toDto (subscription: Domain.Subscription): SubscriptionDto = { Id = subscription.Id; Url = subscription.Url; Title = subscription.Title }
+    let toDto (subscription: Domain.Subscription) (unread: int) : SubscriptionDto =
+        {
+            Id = subscription.Id
+            Url = subscription.Url
+            Title = subscription.Title
+            Unread = unread
+        }
 
 
 module DeleteSubscriptionDto =

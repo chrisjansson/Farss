@@ -1,5 +1,6 @@
 module Persistence
 open System
+open System.Collections.Generic
 open Domain
 
 type SubscriptionRepository =
@@ -70,9 +71,9 @@ type PersistedSubscription() =
     member val Url: string = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
     member val Icon: Nullable<Guid> = Unchecked.defaultof<_> with get, set
-
-[<AllowNullLiteral>]
-type PersistedArticle() =
+    member val Articles: ResizeArray<PersistedArticle> = ResizeArray<_>() with get, set
+    
+and [<AllowNullLiteral>]PersistedArticle() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
     member val Guid: string = Unchecked.defaultof<_> with get, set
@@ -110,9 +111,10 @@ type ReaderContext(options) =
     member x.Files with get() = x.files and set v = x.files <- v
     
     override x.OnModelCreating(mb) =
+        
         mb.Entity<PersistedArticle>()
             .HasOne(fun x -> x.Subscription)
-            .WithMany()
+            .WithMany(fun x -> x.Articles :> IEnumerable<_>)
             |> ignore
 
 module SubscriptionRepositoryImpl =

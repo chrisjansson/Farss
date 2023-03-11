@@ -55,7 +55,16 @@ let sideMenu =
                                         Html.div [
                                             Html.div [
                                                 prop.className "side-menu-item"
-                                                prop.text f.Title
+                                                prop.children [
+                                                    Html.div [
+                                                        prop.className "side-menu-item-title"
+                                                        prop.text f.Title
+                                                    ]
+                                                    Html.div [
+                                                        prop.className "side-menu-item-unread"
+                                                        prop.text f.Unread
+                                                    ]
+                                                ]
                                             ]
                                         ]
                                 ]

@@ -50,6 +50,7 @@ type SubscriptionDto =
         Id: Guid
         Title: string
         Url: string
+        Unread: int
     }
 
 type ArticleDto =
