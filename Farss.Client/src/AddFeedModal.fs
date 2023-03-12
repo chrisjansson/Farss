@@ -2,6 +2,7 @@ module Farss.Client.AddFeedModal
 
 open Browser.Types
 open Dto
+open Fable.Core
 open Portal
 open Feliz
 open Fable.Core.JsInterop
@@ -64,7 +65,10 @@ let useOp operation onOk onError =
                
     isLoading, wrappedOp
                
-    
+[<Emit("btoa($0)")>]
+let toBase64String (bytes:byte[]) : string = failwith "JS"
+
+
     
 [<ReactComponent>]
 let AddFeedDialog (onClose: unit -> unit) =
@@ -254,7 +258,19 @@ let AddFeedDialog (onClose: unit -> unit) =
                                                                 | Protocol.Https -> "HTTPS"
                                                                 |> Html.text
                                                             ]
+                                                            
+                                                            Html.div [
+                                                                Html.b "Icon: "
+                                                                match r.Icon with
+                                                                | Some i ->
+                                                                    let b64 = System.Convert.ToBase64String(snd i)
 
+                                                                    Html.img [
+                                                                        prop.className "preview-image"
+                                                                        prop.src $"data:image/png;base64, {b64}"
+                                                                    ]
+                                                                | _ -> ()
+                                                            ]
                                        
                                                         ]
                                                     | Error _ ->
