@@ -100,7 +100,53 @@ let sanitizeArticleContent (article: ArticleDto) =
         document.body.innerText
         
     { article with Summary = Option.map getTextContent article.Summary; Content = DOMPurify.sanitize article.Content }
-    
+
+[<ReactComponent>]
+let Article (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
+    Html.div [
+        prop.className "article"
+        prop.children [
+            Html.div [
+                prop.className "feed-icon"
+            ]
+            Html.div [
+                prop.className "feed-title"
+                prop.text feed.Title
+            ]
+            Html.div [
+                prop.className "article-date"
+                prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
+            ]
+            Html.div [
+                prop.className "article-tools"
+            ]
+            Html.div [
+                prop.classes [
+                    
+                    "article-title"
+                    if not article.IsRead then
+                        "article-title-unread"
+                ]
+                prop.onClick (fun _ -> selectArticle article)
+                prop.text article.Title
+            ]
+            Html.div [
+                // let isSelected = Some article = m.SelectedArticle
+                
+                prop.className [
+                    "article-content"
+                    // if not isSelected then
+                    "summary"
+                ]
+                
+                // if isSelected then
+                    // prop.innerHtml article.Content
+                // else
+                prop.text (article.Summary |> Option.defaultValue "")
+            ]
+        ]
+    ]
+
 let articles =
     React.functionComponent(
         fun () ->
@@ -130,70 +176,43 @@ let articles =
                     |> ignore
             )
             Html.div [
-                match state with
-                | Loading -> Html.text "Loading"
-                | Loaded m ->
-                    let renderArticle (article: Dto.ArticleDto) =
-                        let feed = m.Feeds |>  List.find (fun x -> x.Id = article.FeedId)
-                        
-                        let selectArticle (article: ArticleDto) _ =
-                            printfn "Selected article"
-                            setState (Loaded { m with SelectedArticle = Some article })
-                        
-                        let selectArticle =
-                            prop.onClick (selectArticle article)
+                prop.className "main"
+                prop.children [
+                    match state with
+                    | Loading -> Html.text "Loading"
+                    | Loaded m ->
+                        let renderArticle (article: Dto.ArticleDto) =
+                            let feed = m.Feeds |> List.find (fun x -> x.Id = article.FeedId)
+                            
+                            let selectArticle (article: ArticleDto) =
+                                setState (Loaded { m with SelectedArticle = Some article })
+                            
+                            React.keyedFragment (article.Title, [
+                                Article(feed, article, selectArticle)
+                            ])
                         
                         Html.div [
-                            prop.className "article"
+                            prop.classes [ "articles-container" ]
                             prop.children [
-                                Html.div [
-                                    prop.className "feed-icon"
-                                ]
-                                Html.div [
-                                    prop.className "feed-title"
-                                    prop.text feed.Title
-                                ]
-                                Html.div [
-                                    prop.className "article-date"
-                                    prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
-                                ]
-                                Html.div [
-                                    prop.className "article-tools"
-                                ]
-                                Html.div [
-                                    prop.classes [
-                                        
-                                        "article-title"
-                                        if not article.IsRead then
-                                            "article-title-unread"
-                                    ]
-                                    selectArticle
-                                    prop.text article.Title
-                                ]
-                                Html.div [
-                                    let isSelected = Some article = m.SelectedArticle
-                                    
-                                    prop.className [
-                                        "article-content"
-                                        if not isSelected then
-                                            "summary"
-                                    ]
-                                    
-                                    if isSelected then
-                                        prop.innerHtml article.Content
-                                    else
-                                        prop.text (article.Summary |> Option.defaultValue "")
-                                ]
+                                for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
+                                    renderArticle a
                             ]
                         ]
-                    
-                    Html.div [
-                        prop.classes [ "articles-container" ]
-                        prop.children [
-                            for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
-                                renderArticle a
+                        Html.div [
+                            prop.className "reading-separator"                        
                         ]
-                    ]
+                        Html.div[
+                            prop.className "article-reading-pane"
+                            
+                            prop.children [
+                                match m.SelectedArticle with
+                                | Some a -> Html.div [
+                                        prop.innerHtml a.Content
+                                    ]
+                                | _ -> ()
+                            ]
+                        ]
+                ]
             ]
     )
     
