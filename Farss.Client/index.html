@@ -109,6 +109,7 @@
             display: grid;
             grid-template-columns: auto 1fr auto;
             grid-auto-rows: 1fr auto auto;
+            max-width: 400px;
         }
         .article-header {  }
         
@@ -132,10 +133,22 @@
             padding-right: 3px;
         }
         
-        .feed-icon {  }
+        .feed-icon {  
+            background-color: aqua;
+        }
+        
+        .article {
+            display: contents;
+        }
+        
+        .article:hover > * {
+            background-color: brown;
+        }
+        
         .article-tools {  
             width: 40px;
             grid-row: span 2;
+            background-color: green;
         }
         .article-title {
             grid-column-start: 2;

@@ -143,45 +143,47 @@ let articles =
                         let selectArticle =
                             prop.onClick (selectArticle article)
                         
-                        React.fragment [
-                            Html.div [
-                                prop.className "feed-icon"
-                                prop.text "I"
-                            ]
-                            Html.div [
-                                prop.className "feed-title"
-                                prop.text feed.Title
-                            ]
-                            Html.div [
-                                prop.className "article-date"
-                                prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
-                            ]
-                            Html.div [
-                                prop.className "article-tools"
-                            ]
-                            Html.div [
-                                prop.classes [
+                        Html.div [
+                            prop.className "article"
+                            prop.children [
+                                Html.div [
+                                    prop.className "feed-icon"
+                                ]
+                                Html.div [
+                                    prop.className "feed-title"
+                                    prop.text feed.Title
+                                ]
+                                Html.div [
+                                    prop.className "article-date"
+                                    prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
+                                ]
+                                Html.div [
+                                    prop.className "article-tools"
+                                ]
+                                Html.div [
+                                    prop.classes [
+                                        
+                                        "article-title"
+                                        if not article.IsRead then
+                                            "article-title-unread"
+                                    ]
+                                    selectArticle
+                                    prop.text article.Title
+                                ]
+                                Html.div [
+                                    let isSelected = Some article = m.SelectedArticle
                                     
-                                    "article-title"
-                                    if not article.IsRead then
-                                        "article-title-unread"
+                                    prop.className [
+                                        "article-content"
+                                        if not isSelected then
+                                            "summary"
+                                    ]
+                                    
+                                    if isSelected then
+                                        prop.innerHtml article.Content
+                                    else
+                                        prop.text (article.Summary |> Option.defaultValue "")
                                 ]
-                                selectArticle
-                                prop.text article.Title
-                            ]
-                            Html.div [
-                                let isSelected = Some article = m.SelectedArticle
-                                
-                                prop.className [
-                                    "article-content"
-                                    if not isSelected then
-                                        "summary"
-                                ]
-                                
-                                if isSelected then
-                                    prop.innerHtml article.Content
-                                else
-                                    prop.text (article.Summary |> Option.defaultValue "")
                             ]
                         ]
                     
