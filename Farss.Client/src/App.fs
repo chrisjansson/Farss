@@ -161,162 +161,155 @@ let Article (article: Dto.ArticleDto) =
         ]
     ]
 
-let articles =
-    React.functionComponent(
+[<ReactComponent>]
+let articles () =
+    let state, setState = React.useState(ViewModel<ArticlesState>.Loading)
+    
+    let fetchData () = promise {
+        let articlesP = ApiClient.getArticles ()
+        let feedsP = ApiClient.getSubscriptions ()
+        
+        let! articles = articlesP
+        let! feeds = feedsP
+        
+        return
+            match articles, feeds with
+            | Ok r1, Ok r2 -> Ok (r1, r2)
+            | Error e, Ok _ -> Error [e]
+            | Ok _, Error e -> Error [e]
+            | Error e1, Error e2 -> Error [e1; e2]
+    }
+    
+    React.useEffectOnce(
         fun () ->
-            
-            let state, setState = React.useState(ViewModel<ArticlesState>.Loading)
-            
-            let fetchData () = promise {
-                let articlesP = ApiClient.getArticles ()
-                let feedsP = ApiClient.getSubscriptions ()
-                
-                let! articles = articlesP
-                let! feeds = feedsP
-                
-                return
-                    match articles, feeds with
-                    | Ok r1, Ok r2 -> Ok (r1, r2)
-                    | Error e, Ok _ -> Error [e]
-                    | Ok _, Error e -> Error [e]
-                    | Error e1, Error e2 -> Error [e1; e2]
-            }
-            
-            React.useEffectOnce(
-                fun () ->
-                    fetchData ()
-                    |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
-                    |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f |> List.sortBy (fun x -> x.Title); SelectedArticle = None })) (fun _ -> ())
-                    |> ignore
-            )
-            Html.div [
-                prop.className "main"
-                prop.children [
-                    match state with
-                    | Loading -> Html.text "Loading"
-                    | Loaded m ->
-                        let renderArticle (article: Dto.ArticleDto) =
-                            let feed = m.Feeds |> List.find (fun x -> x.Id = article.FeedId)
-                            
-                            let selectArticle (article: ArticleDto) =
-                                setState (Loaded { m with SelectedArticle = Some article })
-                            
-                            React.keyedFragment (article.Title, [
-                                ArticleRow(feed, article, selectArticle)
-                            ])
-                        
-                        Html.div [
-                            prop.classes [ "articles-container" ]
-                            prop.children [
-                                for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
-                                    renderArticle a
-                            ]
-                        ]
-                        Html.div [
-                            prop.className "reading-separator"                        
-                        ]
-                        Html.div[
-                            prop.className "article-reading-pane"
-                            
-                            prop.children [
-                                match m.SelectedArticle with
-                                | Some a -> Article a
-                                | _ -> ()
-                            ]
-                        ]
-                ]
-            ]
+            fetchData ()
+            |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
+            |> PromiseResult.resultEnd (fun (r, f) -> setState(Loaded { Articles = r; Feeds = f |> List.sortBy (fun x -> x.Title); SelectedArticle = None })) (fun _ -> ())
+            |> ignore
     )
+    Html.div [
+        prop.className "main"
+        prop.children [
+            match state with
+            | Loading -> Html.text "Loading"
+            | Loaded m ->
+                let renderArticle (article: Dto.ArticleDto) =
+                    let feed = m.Feeds |> List.find (fun x -> x.Id = article.FeedId)
+                    
+                    let selectArticle (article: ArticleDto) =
+                        setState (Loaded { m with SelectedArticle = Some article })
+                    
+                    React.keyedFragment (article.Title, [
+                        ArticleRow(feed, article, selectArticle)
+                    ])
+                
+                Html.div [
+                    prop.classes [ "articles-container" ]
+                    prop.children [
+                        for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
+                            renderArticle a
+                    ]
+                ]
+                Html.div [
+                    prop.className "reading-separator"                        
+                ]
+                Html.div[
+                    prop.className "article-reading-pane"
+                    
+                    prop.children [
+                        match m.SelectedArticle with
+                        | Some a -> Article a
+                        | _ -> ()
+                    ]
+                ]
+        ]
+    ]
     
 type MenuState =
     {
         IsOpen: bool
     }
     
-let menu =
-    React.functionComponent(
-        fun () ->
-            let state, setState = React.useState({ IsOpen = false })
-            
-            let poll = React.useCallback(fun () -> ApiClient.poll ())
-            
-            Html.div [
-                prop.style [
-                    style.display.flex
-                    style.flexDirection.row
-                    style.justifyContent.flexEnd
-                    style.alignItems.center
-                    style.height(length.percent(100))
-                    style.margin(0, 10)
-                ]
-                prop.children [
-                    Html.button [
-                        prop.type' "button"
-                        prop.text "Add"
-                        prop.onClick (fun _ -> setState { state with IsOpen = true })
-                    ]
-                    
-                    Html.button [
-                        prop.type' "button"
-                        prop.text "Poll"
-                        prop.onClick (fun _ -> poll () |> ignore)
-                    ]
-                    
-                    if state.IsOpen then
-                        AddFeedModal.AddFeedDialog (fun () -> setState { state with IsOpen = false })
-                ]
-                
+[<ReactComponent>]
+let menu () =
+    let state, setState = React.useState({ IsOpen = false })
+    
+    let poll = React.useCallback(fun () -> ApiClient.poll ())
+    
+    Html.div [
+        prop.style [
+            style.display.flex
+            style.flexDirection.row
+            style.justifyContent.flexEnd
+            style.alignItems.center
+            style.height(length.percent(100))
+            style.margin(0, 10)
+        ]
+        prop.children [
+            Html.button [
+                prop.type' "button"
+                prop.text "Add"
+                prop.onClick (fun _ -> setState { state with IsOpen = true })
             ]
-        )
+            
+            Html.button [
+                prop.type' "button"
+                prop.text "Poll"
+                prop.onClick (fun _ -> poll () |> ignore)
+            ]
+            
+            if state.IsOpen then
+                AddFeedModal.AddFeedDialog (fun () -> setState { state with IsOpen = false })
+        ]
+        
+    ]
 
+[<ReactComponent>]
 let main =
-    React.functionComponent(
-        fun () ->
+    Html.div [
+        prop.classes [
+            "grid-container"
+        ]
+        prop.children [
             Html.div [
-                prop.classes [
-                    "grid-container"
-                ]
+                prop.classes [ "Logo" ]
                 prop.children [
                     Html.div [
-                        prop.classes [ "Logo" ]
+                        prop.style [
+                            style.display.flex
+                            style.flexDirection.column
+                            style.justifyContent.center
+                            style.height(length.percent(100))
+                            style.margin(0, 10)
+                        ]
                         prop.children [
-                            Html.div [
-                                prop.style [
-                                    style.display.flex
-                                    style.flexDirection.column
-                                    style.justifyContent.center
-                                    style.height(length.percent(100))
-                                    style.margin(0, 10)
-                                ]
-                                prop.children [
-                                    Html.span [
-                                        prop.text "Farss"
-                                    ]
-                                ]
+                            Html.span [
+                                prop.text "Farss"
                             ]
                         ]
                     ]
-                    Html.div [
-                        prop.classes [ "Menu" ]
-                        prop.children [
-                            menu ()
-                        ]
-                    ]
-                    Html.div [
-                        prop.classes [ "Side-menu" ]
-                        prop.children [
-                            sideMenu ()
-                        ]
-                    ]
-                    Html.div [
-                        prop.classes [ "Main" ]
-                        prop.children [
-                            articles ()
-                        ]
-                    ]
                 ]
             ]
-        )
+            Html.div [
+                prop.classes [ "Menu" ]
+                prop.children [
+                    menu ()
+                ]
+            ]
+            Html.div [
+                prop.classes [ "Side-menu" ]
+                prop.children [
+                    sideMenu ()
+                ]
+            ]
+            Html.div [
+                prop.classes [ "Main" ]
+                prop.children [
+                    articles ()
+                ]
+            ]
+        ]
+    ]
 
 let documentRoot = Browser.Dom.document.getElementById ReactSettings.appRootId
 
