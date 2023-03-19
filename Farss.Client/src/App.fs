@@ -102,9 +102,13 @@ let sanitizeArticleContent (article: ArticleDto) =
     { article with Summary = Option.map getTextContent article.Summary; Content = DOMPurify.sanitize article.Content }
 
 [<ReactComponent>]
-let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
+let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
     Html.div [
-        prop.className "article"
+        prop.className [
+            "article"
+            if isSelected then
+                "article-selected"
+        ]
         prop.children [
             Html.div [
                 prop.className "feed-icon"
@@ -122,7 +126,6 @@ let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
             ]
             Html.div [
                 prop.classes [
-                    
                     "article-title"
                     if not article.IsRead then
                         "article-title-unread"
@@ -130,18 +133,12 @@ let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
                 prop.onClick (fun _ -> selectArticle article)
                 prop.text article.Title
             ]
-            Html.div [
-                // let isSelected = Some article = m.SelectedArticle
-                
+            Html.div [                
                 prop.className [
                     "article-content"
-                    // if not isSelected then
                     "summary"
                 ]
-                
-                // if isSelected then
-                    // prop.innerHtml article.Content
-                // else
+
                 prop.text (article.Summary |> Option.defaultValue "")
             ]
         ]
@@ -200,7 +197,7 @@ let articles () =
                         setState (Loaded { m with SelectedArticle = Some article })
                     
                     React.keyedFragment (article.Title, [
-                        ArticleRow(feed, article, selectArticle)
+                        ArticleRow(feed, article, selectArticle, m.SelectedArticle = Some article)
                     ])
                 
                 Html.div [
