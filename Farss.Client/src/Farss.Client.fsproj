@@ -12,6 +12,7 @@
     <Compile Include="AddFeedModal.fs" />
     <Compile Include="TextResources.fs" />
     <Compile Include="DOMPurify.fs" />
+    <Compile Include="ArticleList.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
