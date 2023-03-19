@@ -4,6 +4,18 @@ open Dto
 open Fable.Core
 open Feliz
 
+open Fss
+open Fss.Types
+open Fss.Fable
+
+module Style =
+    let ArticlesContainer = fss [
+            Display.grid
+            Custom "grid-template-columns" "auto 1fr auto"
+            Custom "grid-auto-rows" "1fr auto auto"
+            MaxWidth.value (px 400)
+            OverflowY.auto
+        ]
 
 [<ReactComponent>]
 let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
@@ -119,7 +131,7 @@ let rec Articles () =
                     ])
                 
                 Html.div [
-                    prop.classes [ "articles-container" ]
+                    prop.classes [ Style.ArticlesContainer ]
                     prop.children [
                         for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
                             renderArticle a
