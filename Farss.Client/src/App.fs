@@ -102,7 +102,7 @@ let sanitizeArticleContent (article: ArticleDto) =
     { article with Summary = Option.map getTextContent article.Summary; Content = DOMPurify.sanitize article.Content }
 
 [<ReactComponent>]
-let Article (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
+let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
     Html.div [
         prop.className "article"
         prop.children [
@@ -147,6 +147,20 @@ let Article (feed: SubscriptionDto, article: ArticleDto, selectArticle) =
         ]
     ]
 
+[<ReactComponent>]
+let Article (article: Dto.ArticleDto) =
+    
+    Html.div [
+        Html.div [
+            prop.className "selected-article-title"
+            prop.text article.Title
+        ]
+        Html.div [
+            prop.className "article-content"
+            prop.innerHtml article.Content
+        ]
+    ]
+
 let articles =
     React.functionComponent(
         fun () ->
@@ -188,7 +202,7 @@ let articles =
                                 setState (Loaded { m with SelectedArticle = Some article })
                             
                             React.keyedFragment (article.Title, [
-                                Article(feed, article, selectArticle)
+                                ArticleRow(feed, article, selectArticle)
                             ])
                         
                         Html.div [
@@ -206,9 +220,7 @@ let articles =
                             
                             prop.children [
                                 match m.SelectedArticle with
-                                | Some a -> Html.div [
-                                        prop.innerHtml a.Content
-                                    ]
+                                | Some a -> Article a
                                 | _ -> ()
                             ]
                         ]
