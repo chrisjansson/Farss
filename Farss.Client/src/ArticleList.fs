@@ -22,6 +22,7 @@ module Style =
             Display.grid
             GridColumn.value "1 / 4"
             GridTemplateColumns.subgrid
+            Cursor.pointer
             if isSelected then
                 BackgroundColor.hex "#EEF4FC"
         ]
@@ -30,6 +31,7 @@ module Style =
 let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
     Html.div [
         prop.className [ Style.Article isSelected ]
+        prop.onClick (fun _ -> selectArticle article)
         prop.children [
             Html.div [
                 prop.className "feed-icon"
@@ -51,7 +53,6 @@ let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSel
                     if not article.IsRead then
                         "article-title-unread"
                 ]
-                prop.onClick (fun _ -> selectArticle article)
                 prop.text article.Title
             ]
             Html.div [                
