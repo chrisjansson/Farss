@@ -7,6 +7,7 @@ open Feliz
 open Fss
 open Fss.Types
 open Fss.Fable
+open Fss.Types.Color
 
 module Style =
     let ArticlesContainer = fss [
@@ -16,15 +17,19 @@ module Style =
             MaxWidth.value (px 400)
             OverflowY.auto
         ]
+    
+    let Article isSelected = fss [
+            Display.grid
+            GridColumn.value "1 / 4"
+            GridTemplateColumns.subgrid
+            if isSelected then
+                BackgroundColor.hex "#EEF4FC"
+        ]
 
 [<ReactComponent>]
 let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
     Html.div [
-        prop.className [
-            "article"
-            if isSelected then
-                "article-selected"
-        ]
+        prop.className [ Style.Article isSelected ]
         prop.children [
             Html.div [
                 prop.className "feed-icon"
