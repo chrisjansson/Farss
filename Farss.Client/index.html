@@ -152,41 +152,43 @@
         }
         
         .article {
-            display: contents;
+            display: grid;
+            grid-column: 1 / 4;
+            grid-template-columns: subgrid;
         }
-
-        .article-selected > * {
+        
+        .article-selected {
             background-color: #EEF4FC;
         }
         
         .article-selected .feed-icon, .article-selected .article-tools {
-            border-left: 1px solid blue;
+            /*border-left: 1px solid blue;*/
         }
 
         .article-selected .feed-icon {
-            border-top: 1px solid blue;
+            /*border-top: 1px solid blue;*/
         }
 
         .article-selected .article-tools {
-            border-bottom: 1px solid blue;
+            /*border-bottom: 1px solid blue;*/
         }
 
         .article-selected .feed-title {
-            border-top: 1px solid blue;
+            /*border-top: 1px solid blue;*/
         }
 
         .article-selected .article-date {
-            border-top: 1px solid blue;
-            border-right: 1px solid blue;
+            /*border-top: 1px solid blue;*/
+            /*border-right: 1px solid blue;*/
         }
 
         .article-selected .article-title {
-            border-right: 1px solid blue;
+            /*border-right: 1px solid blue;*/
         }
 
         .article-selected .summary {
-            border-bottom: 1px solid blue;
-            border-right: 1px solid blue;
+            /*border-bottom: 1px solid blue;*/
+            /*border-right: 1px solid blue;*/
         }
         
         .article:hover > * {

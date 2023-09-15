@@ -93,7 +93,7 @@ let rec Articles () =
     let state, setState = React.useState(ViewModel<ArticlesState>.Loading)
     
     let fetchData () = promise {
-        let articlesP = ApiClient.getArticles ()
+        let articlesP = ApiClient.getArticles 50
         let feedsP = ApiClient.getSubscriptions ()
         
         let! articles = articlesP
