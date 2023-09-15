@@ -1,10 +1,9 @@
 namespace Farss.Server
 
 open System
-open System.Threading
-open System.Threading.Channels
-open System.Threading.Tasks
-open FetchArticlesHostedService
+open Giraffe.HttpStatusCodeHandlers
+open Giraffe
+open Giraffe.EndpointRouting
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Server.Kestrel.Core
@@ -14,25 +13,13 @@ open Microsoft.Extensions.Configuration
 open CompositionRoot
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
-open Falco
 
-type Startup(configuration: IConfiguration) =
-    
-    /// The default exception handler, attempts to logs exception (if exists) and returns HTTP 500
-    let defaultExceptionHandler 
-        (ex : Exception)
-        (log : ILogger) : HttpHandler =
-        let logMessage = sprintf "Server error: %s\n\n%s" ex.Message ex.StackTrace
-        log.Log(LogLevel.Error, logMessage)        
-        
-        Response.withStatusCode 500
-        >> Response.ofEmpty
+type Startup(configuration: IConfiguration) =    
+    let errorHandler (ex : Exception) (logger : ILogger) =
+        logger.LogError(EventId(), ex, "An unhandled exception has occurred while executing the request.")
+        clearResponse
+        >=> ServerErrors.INTERNAL_ERROR ex.Message
             
-    /// Returns HTTP 404
-    let defaultNotFoundHandler : HttpHandler =    
-        Response.withStatusCode 404
-        >> Response.ofEmpty
-    
     member this.ConfigureServices(services: IServiceCollection) =
         let connectionString = Postgres.loadConnectionString configuration
         let cr = createCompositionRoot connectionString
@@ -50,11 +37,11 @@ type Startup(configuration: IConfiguration) =
         if  isDevelopment then 
             app.UseDeveloperExceptionPage() |> ignore
         else
-            app.UseExceptionMiddleware(defaultExceptionHandler) |> ignore
+            app.UseGiraffeErrorHandler(errorHandler) |> ignore
         app
             .UseResponseCaching()
             .UseResponseCompression()
             .UseStaticFiles()
             .UseRouting()
-            .UseHttpEndPoints(Farss.Giraffe.createWebAppFalco ())
+            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints))
             |> ignore

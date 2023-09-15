@@ -1,24 +1,30 @@
 ﻿module GetFileHandler
 
-open Microsoft.AspNetCore.Http
 open Persistence
 open Dto
-open Falco
+open Giraffe
 open GiraffeUtils
+open Microsoft.AspNetCore.Routing
+
+let tryGet (id: string) (values: RouteValueDictionary) =
+    match values.TryGetValue(id) with
+    | true, x -> Some x
+    | _ -> None
 
 let getFileHandler: HttpHandler =
-    fun (ctx: HttpContext) ->
+    fun next ctx ->
         let ar = ctx.GetService<FileRepository>()
 
-        let parseId (id: string) =
-            match System.Guid.TryParse id with
+        let parseId (id: obj) =
+            match System.Guid.TryParse (id :?> string) with
             | true, v -> Some v
             | _ -> None
         
         let cmd =
             let routeValue =
-                Request.getRouteValues ctx
-                |> Map.tryFind "id"
+                ctx.GetRouteData ()
+                |> (fun x -> x.Values)
+                |> tryGet "id"
                 |> Option.bind parseId
                 |> Option.map (fun id -> { GetFileDto.Id = id })
             match routeValue with
@@ -27,6 +33,7 @@ let getFileHandler: HttpHandler =
             
         let workflow = GetFileWorkflow.impl ar
         
-        System.Threading.Tasks.Task.FromResult cmd
-        |> TaskResult.bind workflow
-        |> Task.bind (fun x -> convertToJsonResultHandler x ctx)
+        cmd
+        |> Result.bind workflow
+        |> (fun x -> convertToJsonResultHandler x next ctx)
+    

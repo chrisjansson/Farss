@@ -5,7 +5,6 @@ open Microsoft.Extensions.Hosting
 open System.Threading.Tasks
 open System
 open Microsoft.Extensions.DependencyInjection
-open FSharp.Control.Tasks
 open Microsoft.Extensions.Logging
 
 let interval = TimeSpan.FromMinutes(10)

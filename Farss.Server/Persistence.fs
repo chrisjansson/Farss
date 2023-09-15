@@ -14,6 +14,7 @@ type SubscriptionRepository =
 type ArticleRepository =
     {
         getAll: unit -> Article list
+        getTop: int -> Article list
         save: Article -> unit
         filterExistingArticles: SubscriptionId -> string list -> string list
         getAllBySubscription: SubscriptionId -> Article list
@@ -53,6 +54,9 @@ module Query =
     let where (predicate: Expression<Func<_, bool>>) (query: IQueryable<_>) =
         query.Where(predicate)
 
+    let orderByDescending (selector: Expression<Func<_, _>>) (query: IQueryable<_>) =
+        query.OrderByDescending(selector)
+    
     let single (query: IQueryable<_>) =
         query.Single()
 
@@ -64,6 +68,10 @@ module Query =
 
     type Expr = 
         static member Quote(e:Expression<System.Func<_, _>>) = e
+
+type Q =
+    static member orderByDescending (selector: Expression<Func<_, _>>) (query: IQueryable<_>) =
+        query.OrderByDescending(selector)
 
 [<AllowNullLiteral>]
 type PersistedSubscription() =
@@ -200,6 +208,13 @@ module ArticleRepositoryImpl =
             |> Seq.map mapToArticle
             |> List.ofSeq
             
+        let getTop (count: int) =
+            context.Articles.OrderByDescending(fun x -> x.Timestamp).Take(count)
+            
+            |> Query.toList
+            |> Seq.map mapToArticle
+            |> List.ofSeq
+            
         let getAllBySubscription (subscriptionId: SubscriptionId) =
             context.Articles
                 .Where(fun x -> x.SubscriptionId = subscriptionId)
@@ -233,6 +248,7 @@ module ArticleRepositoryImpl =
                 
         {
             getAll = getAll
+            getTop = getTop 
             getAllBySubscription = getAllBySubscription
             save = save
             filterExistingArticles = filterExistingArticles
@@ -253,6 +269,7 @@ module ArticleRepositoryImpl =
             List.except existingGuids guids
         {
             getAll = getAll
+            getTop = fun _ -> getAll()
             getAllBySubscription = getAllBySubscription
             save = save
             filterExistingArticles = filterExistingArticles

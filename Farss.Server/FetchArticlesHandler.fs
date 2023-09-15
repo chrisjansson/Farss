@@ -1,12 +1,10 @@
 ﻿module FetchArticlesHandler
 
-open System.Net
-open Falco.Core
+open Giraffe
 open Farss.Server.BackgroundTaskQueue
 open Persistence
 open FeedReaderAdapter
 open Microsoft.AspNetCore.Http
-open FSharp.Control.Tasks
 open Microsoft.Extensions.DependencyInjection
 open System
 
@@ -27,14 +25,10 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
     FetchArticlesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
 
 let fetchEntriesHandler: HttpHandler =
-    fun (ctx: HttpContext) ->
+    fun next (ctx: HttpContext) ->
         let tq = ctx.RequestServices.GetService<IBackgroundTaskQueue>()
         task {
             do! tq.QueuePollArticles(QueueReason.Trigger)
-            let successNoContent ctx =
-                ctx
-                |> Falco.Response.withStatusCode (int HttpStatusCode.NoContent)
-                |> Falco.Response.ofEmpty
-            
-            return successNoContent ctx
+
+            return! Successful.NO_CONTENT next ctx
         }

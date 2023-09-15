@@ -1,16 +1,21 @@
 module Farss.Giraffe
 
-open Falco
+open Giraffe
+open Giraffe.EndpointRouting
 
-let createWebAppFalco (): HttpEndpoint list =
+let endpoints  =
     [
-        get "/ping" (Response.ofPlainText "pong")
-        post ApiUrls.SubscribeToFeed SubscribeToFeedHandler.subscribeToFeedHandler
-        post ApiUrls.PreviewSubscribeToFeed SubscribeToFeedHandler.previewSubscribeToFeedHandler
-        post ApiUrls.DeleteSubscription DeleteSubscriptionHandler.deleteSubscriptionHandler
-        get ApiUrls.GetSubscriptions GetSubscriptionsHandler.getSubscriptionsHandler
-        post ApiUrls.PollSubscriptions FetchArticlesHandler.fetchEntriesHandler
-        get ApiUrls.GetArticles GetArticlesHandler.getArticlesHandler
-        post ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
-        get ApiUrls.GetFileRoute GetFileHandler.getFileHandler
+        GET [
+            route "/ping" (text "pong")
+            route ApiUrls.GetSubscriptions GetSubscriptionsHandler.getSubscriptionsHandler
+            route ApiUrls.GetFileRoute GetFileHandler.getFileHandler
+        ]
+        POST [
+            route ApiUrls.SubscribeToFeed SubscribeToFeedHandler.subscribeToFeedHandler
+            route ApiUrls.PreviewSubscribeToFeed SubscribeToFeedHandler.previewSubscribeToFeedHandler
+            route ApiUrls.DeleteSubscription DeleteSubscriptionHandler.deleteSubscriptionHandler
+            route ApiUrls.PollSubscriptions FetchArticlesHandler.fetchEntriesHandler
+            route ApiUrls.GetArticles GetArticlesHandler.getArticlesHandler
+            route ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
+        ]
     ]

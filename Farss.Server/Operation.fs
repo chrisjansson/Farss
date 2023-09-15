@@ -1,7 +1,5 @@
 ﻿module Operation
 
-open FSharp.Control.Tasks
-
 let execAsync (op: 'a -> TaskResult<'b, 'c>)  (arg: 'a) = task {
     try 
         let! result = op arg

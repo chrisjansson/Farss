@@ -3,16 +3,16 @@
 open Microsoft.AspNetCore.Http
 open Persistence
 open Dto
-open Falco
+open Giraffe
 open GiraffeUtils
 
 let setArticleReadStatusHandler: HttpHandler =
-    fun (ctx: HttpContext) ->
+    fun next (ctx: HttpContext) ->
         let ar = ctx.GetService<ArticleRepository>()
-        let cmd = FalcoUtils.Request.tryBindJsonOptions<SetArticleReadStatusDto> ctx
+        let cmd = ctx.BindJsonAsync<SetArticleReadStatusDto>()
 
         let workflow = SetArticleReadStatusWorkflow.setArticleReadStatusWorkflowImpl ar
         
         cmd
-        |> TaskResult.bind (fun cmd -> workflow cmd)
-        |> Task.bind (fun x -> convertToJsonResultHandler x ctx)
+        |> Task.map workflow
+        |> Task.bindR (fun x -> convertToJsonResultHandler x next ctx)

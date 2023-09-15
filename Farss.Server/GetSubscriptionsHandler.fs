@@ -1,15 +1,14 @@
 ﻿module GetSubscriptionsHandler
 
-open Falco.Core
-open FalcoUtils
 open Persistence
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open System.Linq
 open Dto
+open Giraffe
 
 let getSubscriptionsHandler: HttpHandler =
-    fun (ctx: HttpContext) ->
+    fun (next: HttpFunc) (ctx: HttpContext) ->
         let context = ctx.RequestServices.GetService<ReaderContext>()
 
         let subscriptions =
@@ -27,4 +26,4 @@ let getSubscriptionsHandler: HttpHandler =
             |> Seq.map (fun x -> { Dto.SubscriptionDto.Id = x.CId; Title = x.ATitle; Unread = x.BUnread; Url = x.DUrl })
             |> Array.ofSeq
 
-        Response.ofJson dtos ctx
+        Successful.ok (json dtos) next ctx

@@ -1,7 +1,6 @@
 ﻿module TaskResult
 
 open System.Threading.Tasks
-open FSharp.Control.Tasks
 
 let map f =        
     f |> Result.map |> Task.map
