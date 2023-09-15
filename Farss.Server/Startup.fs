@@ -13,6 +13,8 @@ open Microsoft.Extensions.Configuration
 open CompositionRoot
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
+open Thoth.Json.Giraffe
+open Thoth.Json.Net
 
 type Startup(configuration: IConfiguration) =    
     let errorHandler (ex : Exception) (logger : ILogger) =
@@ -25,6 +27,8 @@ type Startup(configuration: IConfiguration) =
         let cr = createCompositionRoot connectionString
         services.Add(cr) |> ignore
         
+        services.AddGiraffe() |> ignore
+        services.AddTransient<Json.ISerializer>(fun _ -> ThothSerializer(caseStrategy = CaseStrategy.CamelCase)) |> ignore
         
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->

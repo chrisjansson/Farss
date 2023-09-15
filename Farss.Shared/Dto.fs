@@ -63,6 +63,11 @@ type ArticleDto =
         Summary: string option
         Link: string
     }
+    
+type GetArticlesQuery =
+    {
+        Count: int
+    }
 
 type DeleteSubscriptionDto = { Id: Guid option }
 
