@@ -60,7 +60,7 @@ let sideMenu =
 type MenuState = { IsOpen: bool }
 
 [<ReactComponent>]
-let menu () =
+let Menu () =
     let state, setState = React.useState ({ IsOpen = false })
 
     let poll = React.useCallback (fun () -> ApiClient.poll ())
@@ -104,9 +104,11 @@ module Style =
               GridTemplateAreas.value [ [ "Logo"; "Menu" ]; [ "Side-menu"; "Main" ] ]
               Height.value (pct 100) ]
 
-    let Logo = fss [ GridArea.value "Logo"; BackgroundColor.lightBlue ]
+    let headerColor = BackgroundColor.lightBlue
+    
+    let Logo = fss [ GridArea.value "Logo"; headerColor ]
 
-    let Menu = fss [ GridArea.value "Menu"; BackgroundColor.lightBlue ]
+    let Menu = fss [ GridArea.value "Menu"; headerColor ]
 
     let SideMenu =
         fss
@@ -119,7 +121,7 @@ module Style =
     let Main = fss [ GridArea.value "Main"; OverflowY.auto ]
 
 [<ReactComponent>]
-let main =
+let Main () =
     Html.div
         [ prop.className [ Style.GridContainer ]
           prop.children
@@ -134,10 +136,11 @@ let main =
                                         style.height (length.percent (100))
                                         style.margin (0, 10) ]
                                   prop.children [ Html.span [ prop.text "Farss" ] ] ] ] ]
-                Html.div [ prop.classes [ Style.Menu ]; prop.children [ menu () ] ]
+                Html.div [ prop.classes [ Style.Menu ]; prop.children [ Menu () ] ]
                 Html.div [ prop.classes [ Style.SideMenu ]; prop.children [ sideMenu () ] ]
                 Html.div [ prop.classes [ Style.Main ]; prop.children [ ArticleList.Articles() ] ] ] ]
 
 let documentRoot = Browser.Dom.document.getElementById ReactSettings.appRootId
 
-ReactDOM.render (main, documentRoot)
+let root = ReactDOM.createRoot(documentRoot)
+root.render(Main())
