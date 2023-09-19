@@ -18,12 +18,13 @@ let getSubscriptionsHandler: HttpHandler =
                     {| ATitle = x.Title
                        BUnread = x.Articles.Where(fun a -> not a.IsRead).Count()
                        CId = x.Id
-                       DUrl = x.Url |})
+                       DUrl = x.Url
+                       EIcon = x.Icon |})
                 .ToList()
                 
         let dtos =
             subscriptions
-            |> Seq.map (fun x -> { Dto.SubscriptionDto.Id = x.CId; Title = x.ATitle; Unread = x.BUnread; Url = x.DUrl })
+            |> Seq.map (fun x -> { Dto.SubscriptionDto.Id = x.CId; Title = x.ATitle; Unread = x.BUnread; Url = x.DUrl; Icon = Option.ofNullable x.EIcon })
             |> Array.ofSeq
 
         Successful.ok (json dtos) next ctx

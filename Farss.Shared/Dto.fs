@@ -51,6 +51,7 @@ type SubscriptionDto =
         Title: string
         Url: string
         Unread: int
+        Icon: Guid option
     }
 
 type ArticleDto =

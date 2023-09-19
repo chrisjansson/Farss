@@ -8,6 +8,7 @@ module SubscriptionDto =
             Url = subscription.Url
             Title = subscription.Title
             Unread = unread
+            Icon = subscription.Icon 
         }
 
 
