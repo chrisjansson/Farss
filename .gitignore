@@ -7,4 +7,5 @@ Farss.Tests/bin
 .vs
 Farss.Shared/obj
 Farss.Shared/bin
+Farss.Shared/**/*fs.js
 /Farss.Client/public/main.css
