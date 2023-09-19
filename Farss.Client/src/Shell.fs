@@ -5,16 +5,16 @@ open Feliz
 open Dto
 open Fss.Types
 
-type ViewModel<'T> =
+type private ViewModel<'T> =
     | Loading
     | Loaded of 'T
 
-type SideMenuState = { Feeds: SubscriptionDto list }
+type private SideMenuState = { Feeds: SubscriptionDto list }
 
 
 open Fss
 
-module Style =
+module private Style =
     let GridContainer =
         fss
             [ Display.grid
@@ -53,14 +53,9 @@ let Main () =
                                       [ style.display.flex
                                         style.flexDirection.column
                                         style.justifyContent.center
-                                        style.height (length.percent (100))
+                                        style.height (length.percent 100)
                                         style.margin (0, 10) ]
                                   prop.children [ Html.span [ prop.text "Farss" ] ] ] ] ]
                 Html.div [ prop.classes [ Style.Menu ]; prop.children [ Toolbar.Menu () ] ]
                 Html.div [ prop.classes [ Style.SideMenu ]; prop.children [ SideMenu.SideMenu () ] ]
                 Html.div [ prop.classes [ Style.Main ]; prop.children [ ArticleList.Articles() ] ] ] ]
-
-let documentRoot = Browser.Dom.document.getElementById ReactSettings.appRootId
-
-let root = ReactDOM.createRoot(documentRoot)
-root.render(Main())
