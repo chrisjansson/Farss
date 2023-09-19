@@ -1,12 +1,17 @@
 module SideMenu
 
+open System
+open Browser.Types
 open Dto
 open Elmish.HMR
 open Feliz
 open Fss
 open Fss.Feliz
 
-type private SideMenuState = { Feeds: SubscriptionDto list }
+type private SideMenuState = {
+    Feeds: SubscriptionDto list
+    SelectedFeed: Guid option
+}
 
 type private ViewModel<'T> =
     | Loading
@@ -16,14 +21,17 @@ module Style =
 
     let feedRowHeight = 32
 
-    let SideMenuItem =
+    let SideMenuItem (isSelected: bool) =
         fss [
             Margin.value (px 0, px 12)
             Padding.value (px 0, px 8)
             Display.flex
             AlignItems.center
             UserSelect.none
-            Hover [ BackgroundColor.rgba 31 30 36 0.08; BorderRadius.value (px 3) ]
+            BorderRadius.value (px 3)
+            Hover [ BackgroundColor.rgba 31 30 36 0.08;  ]            
+            if isSelected then
+                BackgroundColor.rgba 31 30 36 0.15
         ]
 
     let SideMenuTitle =
@@ -46,6 +54,7 @@ module Style =
             GridColumn.value "1/4"
             Height.value (px feedRowHeight)
             Grid.GridColumnGap.value (px 10)
+            Cursor.pointer
         ]
 
     let iconSize = feedRowHeight
@@ -64,6 +73,7 @@ let SideMenu () =
                 setState (
                     Loaded {
                         Feeds = r |> List.sortBy (fun f -> f.Title)
+                        SelectedFeed = None 
                     }
                 ))
             (fun _ -> ())
@@ -80,16 +90,22 @@ let SideMenu () =
             Html.div [
                 prop.style [ style.custom ("flex", "1") ]
                 prop.children [
-                    Html.div [ prop.classes [ Style.SideMenuItem; Style.SideMenuHeader ]; prop.text "Feeds" ]
+                    Html.div [ prop.classes [ Style.SideMenuItem false; Style.SideMenuHeader ]; prop.text "Feeds" ]
 
                     match state with
                     | Loading -> Html.text "Loading"
                     | Loaded m ->
+                        
+                        let selectFeed (feedId) (event: MouseEvent) =
+                            event.preventDefault()
+                            setState(Loaded { m with SelectedFeed = feedId })
+                        
                         Html.div [
                             prop.classes [ Style.FeedListGrid ]
                             prop.children [
                                 Html.div [
-                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem ]
+                                    prop.onClick (selectFeed None)
+                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem (m.SelectedFeed = None) ]
                                     prop.children [
                                         Html.div [ prop.className Style.FeedIcon ]
                                         Html.div "All"
@@ -99,7 +115,8 @@ let SideMenu () =
 
                                 for f in m.Feeds do
                                     Html.div [
-                                        prop.classes [ Style.FeedItemContainer; Style.SideMenuItem ]
+                                        prop.onClick (selectFeed (Some f.Id))
+                                        prop.classes [ Style.FeedItemContainer; Style.SideMenuItem (m.SelectedFeed = Some f.Id) ]
                                         prop.children [
                                             Html.div [ prop.className Style.FeedIcon ]
                                             Html.div [ prop.className Style.SideMenuTitle; prop.text f.Title ]
