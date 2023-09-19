@@ -5,9 +5,10 @@
     "start": "dotnet fable watch src --run vite"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^4.0.4",
     "dialog-polyfill": "^0.5.3",
     "dompurify": "2.4.0",
-    "react": "18.2.0",
+    "react": "^18.2.0",
     "react-dom": "18.2.0",
     "sanitize-html": "2.7.1",
     "vite": "^4.4.9"
