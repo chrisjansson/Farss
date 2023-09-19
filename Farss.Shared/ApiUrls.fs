@@ -25,4 +25,4 @@ let SetArticleReadStatus = "/api/article/setreadstatus"
 
 let GetFileRoute = "/api/file/{id}"
 
-let GetFile (id: Guid) = printfn "/api/file/%A" id
+let GetFile (id: Guid) = sprintf "/api/file/%A" id

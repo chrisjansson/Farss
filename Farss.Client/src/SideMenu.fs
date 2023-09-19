@@ -29,7 +29,7 @@ module Style =
             AlignItems.center
             UserSelect.none
             BorderRadius.value (px 3)
-            Hover [ BackgroundColor.rgba 31 30 36 0.08;  ]            
+            Hover [ BackgroundColor.rgba 31 30 36 0.08 ]
             if isSelected then
                 BackgroundColor.rgba 31 30 36 0.15
         ]
@@ -39,10 +39,7 @@ module Style =
 
     let SideMenuItemUnread = fss []
 
-    let SideMenuHeader = fss [
-        FontWeight.bold
-        Height.value (px feedRowHeight)
-    ]
+    let SideMenuHeader = fss [ FontWeight.bold; Height.value (px feedRowHeight) ]
 
     let FeedListGrid =
         fss [ Display.grid; Custom "grid-template-columns" "auto 1fr auto" ]
@@ -59,8 +56,16 @@ module Style =
 
     let iconSize = feedRowHeight
 
-    let FeedIcon =
-        fss [ Width.value (px iconSize); Height.value (pct 100); BackgroundColor.green ]
+    let FeedIconContainer =
+        fss [
+            Width.value (px iconSize)
+            Height.value (pct 100)
+            BackgroundColor.green
+            Display.flex
+            JustifyContent.center
+            AlignItems.center
+            !(Selector.Tag Types.Html.Img) [ BorderRadius.value (pct 15) ]
+        ]
 
 [<ReactComponent>]
 let SideMenu () =
@@ -73,7 +78,7 @@ let SideMenu () =
                 setState (
                     Loaded {
                         Feeds = r |> List.sortBy (fun f -> f.Title)
-                        SelectedFeed = None 
+                        SelectedFeed = None
                     }
                 ))
             (fun _ -> ())
@@ -90,24 +95,27 @@ let SideMenu () =
             Html.div [
                 prop.style [ style.custom ("flex", "1") ]
                 prop.children [
-                    Html.div [ prop.classes [ Style.SideMenuItem false; Style.SideMenuHeader ]; prop.text "Feeds" ]
+                    Html.div [
+                        prop.classes [ Style.SideMenuItem false; Style.SideMenuHeader ]
+                        prop.text "Feeds"
+                    ]
 
                     match state with
                     | Loading -> Html.text "Loading"
                     | Loaded m ->
-                        
+
                         let selectFeed (feedId) (event: MouseEvent) =
-                            event.preventDefault()
-                            setState(Loaded { m with SelectedFeed = feedId })
-                        
+                            event.preventDefault ()
+                            setState (Loaded { m with SelectedFeed = feedId })
+
                         Html.div [
                             prop.classes [ Style.FeedListGrid ]
                             prop.children [
                                 Html.div [
                                     prop.onClick (selectFeed None)
-                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem (m.SelectedFeed = None) ]
+                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem(m.SelectedFeed = None) ]
                                     prop.children [
-                                        Html.div [ prop.className Style.FeedIcon ]
+                                        Html.div [ prop.className Style.FeedIconContainer ]
                                         Html.div "All"
                                         Html.div "All"
                                     ]
@@ -116,9 +124,25 @@ let SideMenu () =
                                 for f in m.Feeds do
                                     Html.div [
                                         prop.onClick (selectFeed (Some f.Id))
-                                        prop.classes [ Style.FeedItemContainer; Style.SideMenuItem (m.SelectedFeed = Some f.Id) ]
+                                        prop.classes [
+                                            Style.FeedItemContainer
+                                            Style.SideMenuItem(m.SelectedFeed = Some f.Id)
+                                        ]
                                         prop.children [
-                                            Html.div [ prop.className Style.FeedIcon ]
+                                            Html.div [
+                                                prop.className Style.FeedIconContainer
+                                                prop.children [
+                                                    match f.Icon with
+                                                    | Some id ->
+                                                        Html.img [
+                                                            prop.src (ApiUrls.GetFile id)
+                                                            prop.width (Style.iconSize - 4)
+                                                            prop.height (Style.iconSize - 4)
+                                                        ]
+
+                                                    | None -> ()
+                                                ]
+                                            ]
                                             Html.div [ prop.className Style.SideMenuTitle; prop.text f.Title ]
                                             Html.div [ prop.className Style.SideMenuItemUnread; prop.text f.Unread ]
                                         ]
