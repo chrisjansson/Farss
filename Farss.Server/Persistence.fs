@@ -100,6 +100,7 @@ type PersistedFile() =
     member val FileName: string = Unchecked.defaultof<_> with get, set
     member val FileOwner: FileOwner = Unchecked.defaultof<_> with get, set
     member val Data: byte[] = Unchecked.defaultof<_> with get, set
+    member val Hash: byte[] = Unchecked.defaultof<_> with get, set
 
 open Microsoft.EntityFrameworkCore
 
@@ -283,6 +284,7 @@ module FileRepositoryImpl =
                 Id = file.Id
                 FileName = file.FileName
                 FileOwner = file.FileOwner
+                Hash = file.Hash
                 Data = file.Data
             }
         
@@ -291,6 +293,7 @@ module FileRepositoryImpl =
             t.FileName <- s.FileName
             t.Data <- s.Data
             t.FileOwner <- s.FileOwner
+            t.Hash <- s.Hash
             
         
         let save (file: File) =

@@ -51,6 +51,7 @@ type File =
         Id: Guid
         FileName: string
         FileOwner: FileOwner
+        Hash: byte[]
         Data: byte[]
     }
 and FileOwner =

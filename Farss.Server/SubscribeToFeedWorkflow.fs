@@ -1,17 +1,24 @@
 module SubscribeToFeedWorkflow
 
+open System
+open System.Security.Cryptography
 open System.Threading.Tasks
 open Persistence
 open FeedReaderAdapter
 open Dto
 
-let private convertToWorkflowError r: Result<_, WorkflowError> =
+let private convertToWorkflowError r : Result<_, WorkflowError> =
     match r with
     | Ok r -> Ok r
-    | Error (BaseDiscoveryError.FetchError e) -> BadRequest (e.Message, Some e) |> Error
+    | Error(BaseDiscoveryError.FetchError e) -> BadRequest(e.Message, Some e) |> Error
 
-let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscribeToFeedQueryDto): Task<Result<Result<PreviewSubscribeToFeedResponseDto, FeedError> list, WorkflowError>> =
-    let aggregateResults (results: (Result<DiscoveredFeed, _>) list): Result<PreviewSubscribeToFeedResponseDto, FeedError> list =
+let previewSubscribeToFeed
+    (feedReader: FeedReaderAdapter)
+    (query: PreviewSubscribeToFeedQueryDto)
+    : Task<Result<Result<PreviewSubscribeToFeedResponseDto, FeedError> list, WorkflowError>> =
+    let aggregateResults
+        (results: Result<DiscoveredFeed, _> list)
+        : Result<PreviewSubscribeToFeedResponseDto, FeedError> list =
         [
             for r in results do
                 match r with
@@ -31,11 +38,11 @@ let previewSubscribeToFeed (feedReader: FeedReaderAdapter) (query: PreviewSubscr
                     }
                 | Error feedError ->
                     match feedError with
-                    | FeedReaderAdapter.FeedError.FetchError e -> Error (FetchError e)
-                    | FeedReaderAdapter.FeedError.ParseError e -> Error (ParseError e)
-                    
+                    | FeedReaderAdapter.FeedError.FetchError e -> Error(FetchError e)
+                    | FeedReaderAdapter.FeedError.ParseError e -> Error(ParseError e)
+
         ]
-        
+
     feedReader.discoverFeeds query.Url
     |> TaskResult.map aggregateResults
     |> Task.map convertToWorkflowError
@@ -44,12 +51,12 @@ type SubscribeToFeedError =
     | FeedError of FeedReaderAdapter.FeedError
     | SubscriptionError of string list
 
-let private convertToWorkflowError2 r: Result<_, WorkflowError> =
+let private convertToWorkflowError2 r : Result<_, WorkflowError> =
     match r with
     | Ok r -> Ok r
-    | Error (FeedError (FeedReaderAdapter.FetchError e)) -> BadRequest (e.Message, Some e) |> Error
-    | Error (FeedError (FeedReaderAdapter.ParseError e)) -> BadRequest (e.Message, Some e) |> Error
-    | Error (SubscriptionError errors) -> BadRequest (sprintf "%A" errors, None) |> Error
+    | Error(FeedError(FeedReaderAdapter.FetchError e)) -> BadRequest(e.Message, Some e) |> Error
+    | Error(FeedError(FeedReaderAdapter.ParseError e)) -> BadRequest(e.Message, Some e) |> Error
+    | Error(SubscriptionError errors) -> BadRequest(sprintf "%A" errors, None) |> Error
 
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedDto) =
     let getFromUrl url =
@@ -57,66 +64,83 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
         |> Async.map (Result.mapError SubscribeToFeedError.FeedError)
         |> Async.StartAsTask
 
-    let createSubscription (command: SubscribeToFeedDto) _ = result {
-        let! title = 
-            Domain.SubscriptionTitle.create command.Title 
-            |> Result.mapError (fun e -> SubscriptionError [e])
+    let createSubscription (command: SubscribeToFeedDto) _ =
+        result {
+            let! title =
+                Domain.SubscriptionTitle.create command.Title
+                |> Result.mapError (fun e -> SubscriptionError [ e ])
 
-        return Domain.Subscription.create command.Url title
-    }
+            return Domain.Subscription.create command.Url title
+        }
 
     let saveSubscription = repository.save
-    
+
     command.Url
     |> getFromUrl
     |> TaskResult.bind (createSubscription command)
     |> TaskResult.tee saveSubscription
     |> Task.map convertToWorkflowError2
-    
-let updateFeedIcon (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (fileRepository: FileRepository) (subscriptionId: Domain.SubscriptionId) =
+
+let updateFeedIcon
+    (feedReader: FeedReaderAdapter)
+    (repository: SubscriptionRepository)
+    (fileRepository: FileRepository)
+    (subscriptionId: Domain.SubscriptionId)
+    =
     let getFeedForSubscription (subscription: Domain.Subscription) =
         feedReader.getFromUrl subscription.Url
         |> Async.StartAsTask
         |> TaskResult.map (fun f -> subscription, f)
-    
+
     let updateIcon (subscription: Domain.Subscription, feed: Feed) =
-        let deleteIcon (subscription: Domain.Subscription) =
-            subscription.Icon
-            |> DtoValidation.Option.tap (fun f -> fileRepository.delete f)
-            |> ignore
-            
-            { subscription with Icon = None }
-           
-        let saveFile file = fileRepository.save file 
+        let hashData (iconData: byte[]) = SHA256.HashData(iconData)
 
-        
-        let createFileAndSaveFile (s, icon) =
-            let inner (fn, data): Domain.File =
-                {
-                    Id = System.Guid.NewGuid()
-                    FileName = fn
-                    FileOwner = Domain.FileOwner.Feed
-                    Data = data
-                }
-            
-            let icon = 
-                icon
-                |> Option.map inner
-                |> DtoValidation.Option.tap saveFile
+        let createFileAndSaveFile (s, icon, iconHash) =
+            let inner (fn, data, dataHash) : Domain.File = {
+                Id = Guid.NewGuid()
+                FileName = fn
+                FileOwner = Domain.FileOwner.Feed
+                Hash = dataHash
+                Data = data
+            }
 
-            s, icon
-        
-        let changeIcon (subscription: Domain.Subscription, file: Domain.File option) =
-            { subscription with Icon = file |> Option.map (fun file -> file.Id) }
-         
+            let icon = inner (s, icon, iconHash)
+            fileRepository.save icon
+            icon
+
+        let changeIcon (subscription: Domain.Subscription, file: Domain.File option) = {
+            subscription with
+                Icon = file |> Option.map (fun file -> file.Id)
+        }
+
+        let feedIcon =
+            feed.Icon |> Option.map (fun (name, data) -> (name, data, hashData data))
+
+        let getOrSaveIcon (existingIcon: Guid option, newIcon: (string * byte[] * byte[]) option) =
+            let shouldReplaceIcon =
+                match (existingIcon, newIcon) with
+                | None, None -> false
+                | Some iconId, Some(_, _, newIconHash) ->
+                    let icon = fileRepository.get iconId
+                    icon.Hash <> newIconHash
+                | _ -> true
+
+            if shouldReplaceIcon && existingIcon.IsSome then
+                fileRepository.delete existingIcon.Value
+
+            match newIcon with
+            | Some icon ->
+                let savedIcon = createFileAndSaveFile icon
+                Some savedIcon
+            | _ -> None
+
         subscription
-        |> deleteIcon
-        |> fun s -> s,feed.Icon
-        |> createFileAndSaveFile
+        |> (fun s -> s, getOrSaveIcon (s.Icon, feedIcon))
         |> changeIcon
-        
+
+
     subscriptionId
     |> repository.get
-    |> (fun s -> getFeedForSubscription s)
+    |> getFeedForSubscription
     |> TaskResult.map updateIcon
     |> TaskResult.tee repository.save
