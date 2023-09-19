@@ -32,7 +32,9 @@ let SideMenu () =
               [ Html.div
                     [ prop.style [ style.custom ("flex", "1") ]
                       prop.children
-                          [ Html.div [ prop.className "side-menu-item side-menu-header"; prop.text "Feeds" ]
+                          [
+                            Html.div [ prop.className "side-menu-item side-menu-header"; prop.text "Feeds" ]
+                            Html.div [ prop.className "side-menu-item side-menu-header"; prop.text "All" ]
 
                             match state with
                             | Loading -> Html.text "Loading"
@@ -53,4 +55,3 @@ let SideMenu () =
                 Html.div [ Html.text "Add feed goes here" ] ]
 
           ]
-
