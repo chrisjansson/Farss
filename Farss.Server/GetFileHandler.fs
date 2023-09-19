@@ -35,5 +35,6 @@ let getFileHandler: HttpHandler =
         
         cmd
         |> Result.bind workflow
-        |> (fun x -> convertToJsonResultHandler x next ctx)
+        |> Result.map (fun x -> (x.FileName, x.Data))
+        |> (fun x -> convertToFileResultHandler x next ctx)
     
