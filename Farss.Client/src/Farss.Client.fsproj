@@ -13,6 +13,9 @@
     <Compile Include="TextResources.fs" />
     <Compile Include="DOMPurify.fs" />
     <Compile Include="ArticleList.fs" />
+    <Compile Include="Toolbar.fs" />
+    <Compile Include="SideMenu.fs" />
+    <Compile Include="Shell.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
