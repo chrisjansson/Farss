@@ -36,7 +36,7 @@ type FetchArticlesHostedService(
                 let! queueReason = taskQueue.DequeuePollArticles(ct)
                 
                 let now = DateTimeOffset.UtcNow
-                let minimumInterval = TimeSpan.FromSeconds 30
+                let minimumInterval = TimeSpan.FromSeconds 1
                 
                 let shouldPoll =
                     match queueReason with
@@ -50,13 +50,26 @@ type FetchArticlesHostedService(
                 lastPoll <- Some now
                 
                 if shouldPoll then
-                    do! using(serviceProvider.CreateScope()) (fun scope -> task {
+                    do! task {
+                        use scope = serviceProvider.CreateScope()
                         let scopedServiceProvider = scope.ServiceProvider
-                        let fetchEntries = FetchArticlesHandler.constructFetchEntriesHandler scopedServiceProvider
+                        
+                        try 
+                            let fetchEntries = FetchArticlesHandler.constructFetchEntriesHandler scopedServiceProvider
+                            let! x = fetchEntries ()
+                            x |> ignore
+                        with
+                        | exn -> logger.LogError(exn, "Error updating feed articles")
 
-                        let! x = fetchEntries ()
-                        x |> ignore
-                    })
+                        
+                        try
+                            logger.LogInformation "Updating subscription icons"
+                            let updateIcons = FetchArticlesHandler.constructUpdateIconsHandler scopedServiceProvider
+                            do! updateIcons ()
+                            logger.LogInformation "Updated dubscription icons"
+                        with
+                        | exn -> logger.LogError(exn, "Error updating feed icon")
+                    }
                 else
                     ()
 
