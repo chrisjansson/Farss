@@ -10,7 +10,6 @@ open Fss.Feliz
 
 type private SideMenuState = {
     Feeds: SubscriptionDto list
-    SelectedFeed: Guid option
 }
 
 type private ViewModel<'T> =
@@ -68,7 +67,7 @@ module Style =
         ]
 
 [<ReactComponent>]
-let SideMenu () =
+let SideMenu (selectedFeed: Guid option) =
     let state, setState = React.useState (ViewModel<SideMenuState>.Loading)
 
     React.useEffectOnce (fun () ->
@@ -78,7 +77,6 @@ let SideMenu () =
                 setState (
                     Loaded {
                         Feeds = r |> List.sortBy (fun f -> f.Title)
-                        SelectedFeed = None
                     }
                 ))
             (fun _ -> ())
@@ -104,16 +102,20 @@ let SideMenu () =
                     | Loading -> Html.text "Loading"
                     | Loaded m ->
 
-                        let selectFeed (feedId) (event: MouseEvent) =
+                        let selectFeed (feedId: Guid option) (event: MouseEvent) =
                             event.preventDefault ()
-                            setState (Loaded { m with SelectedFeed = feedId })
+                            match feedId with
+                            | Some id -> 
+                                Feliz.Router.Router.navigate("feeds", id.ToString())
+                            | _ ->
+                                Feliz.Router.Router.navigate("feeds")
 
                         Html.div [
                             prop.classes [ Style.FeedListGrid ]
                             prop.children [
                                 Html.div [
                                     prop.onClick (selectFeed None)
-                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem(m.SelectedFeed = None) ]
+                                    prop.classes [ Style.FeedItemContainer; Style.SideMenuItem(selectedFeed = None) ]
                                     prop.children [
                                         Html.div [ prop.className Style.FeedIconContainer ]
                                         Html.div "All"
@@ -126,7 +128,7 @@ let SideMenu () =
                                         prop.onClick (selectFeed (Some f.Id))
                                         prop.classes [
                                             Style.FeedItemContainer
-                                            Style.SideMenuItem(m.SelectedFeed = Some f.Id)
+                                            Style.SideMenuItem(selectedFeed = Some f.Id)
                                         ]
                                         prop.children [
                                             Html.div [
