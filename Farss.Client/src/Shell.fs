@@ -44,29 +44,15 @@ module private Style =
 
 open Feliz.Router
 
-[<ReactComponent>]
-let Router2 () =
-    let (currentUrl, updateUrl) = React.useState (Router.currentUrl ())
-
-    React.router [
-        router.onUrlChanged updateUrl
-        router.children [
-            match currentUrl with
-            | [] -> Html.h1 "Index"
-            | [ "users" ] -> Html.h1 "Users page"
-            | [ "users"; Route.Int userId ] -> Html.h1 (sprintf "User ID %d" userId)
-            | _ -> Html.h1 "Not found"
-        ]
-    ]
-
 let private MemoArticles = React.memo ArticleList.Articles
 let private MemoMenu = React.memo Toolbar.Menu
 
 [<ReactComponent>]
 let Main () =
-    let (currentUrl, updateUrl) = React.useState (Router.currentUrl ())
+    let (currentUrl, updateUrl) = React.useState (Router.currentPath ())
 
     React.router [
+        router.pathMode
         router.onUrlChanged updateUrl
         router.children [
 

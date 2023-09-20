@@ -106,9 +106,9 @@ let SideMenu (selectedFeed: Guid option) =
                             event.preventDefault ()
                             match feedId with
                             | Some id -> 
-                                Feliz.Router.Router.navigate("feeds", id.ToString())
+                                Feliz.Router.Router.navigatePath("feeds", id.ToString())
                             | _ ->
-                                Feliz.Router.Router.navigate("feeds")
+                                Feliz.Router.Router.navigatePath("feeds")
 
                         Html.div [
                             prop.classes [ Style.FeedListGrid ]
