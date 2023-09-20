@@ -24,6 +24,36 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
 
     FetchArticlesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
 
+let private runUpdateIconForSubscription (serviceProvider: IServiceProvider) = 
+    fun id -> task {
+        //todo: uow
+        use scope = serviceProvider.CreateScope()
+        let services = scope.ServiceProvider
+        let adapter = services.GetService<FeedReaderAdapter>()
+        let subscriptionRepository = services.GetService<SubscriptionRepository>()
+        let fileRepository = services.GetService<FileRepository>()
+        return! SubscribeToFeedWorkflow.updateFeedIcon adapter subscriptionRepository fileRepository id
+    }
+
+let constructUpdateIconsHandler (serviceProvider: IServiceProvider) =
+
+    let run () =
+        task {
+            let services = serviceProvider
+            let subscriptionRepository = services.GetService<SubscriptionRepository>()
+            let subs =
+                subscriptionRepository.getAll()
+                |> List.map (fun x -> x.Id)
+            
+            for s in subs do
+                let! _ = runUpdateIconForSubscription serviceProvider s
+                ()
+            return ()
+        }
+        
+    run
+
+
 let fetchEntriesHandler: HttpHandler =
     fun next (ctx: HttpContext) ->
         let tq = ctx.RequestServices.GetService<IBackgroundTaskQueue>()
