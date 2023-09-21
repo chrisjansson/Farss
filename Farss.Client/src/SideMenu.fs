@@ -59,7 +59,6 @@ module Style =
         fss [
             Width.value (px iconSize)
             Height.value (pct 100)
-            BackgroundColor.green
             Display.flex
             JustifyContent.center
             AlignItems.center

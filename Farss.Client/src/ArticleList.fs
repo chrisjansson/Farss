@@ -2,7 +2,6 @@ module ArticleList
 
 open System
 open Dto
-open Fable.Core
 open Feliz
 
 open Fss
@@ -81,32 +80,16 @@ type ArticlesState = {
     SelectedArticle: ArticleDto option
 }
 
-
-type DOMParser =
-    abstract member parseFromString: string -> string -> Browser.Types.Document
-
-[<Emit("new DOMParser()")>]
-let createDomParser () : DOMParser = Util.jsNative
-
-let domParser = createDomParser ()
-
-let sanitizeArticleContent (article: ArticleDto) =
-    let getTextContent (html: string) =
-        //https://web.dev/trusted-types/
-        let sanitized = DOMPurify.sanitizeHtml html
-        let document = domParser.parseFromString sanitized "text/html"
-        document.body.innerText
-
+let private sanitizeArticleContent (article: ArticleDto) =
     {
         article with
-            Summary = Option.map getTextContent article.Summary
-            Content = DOMPurify.sanitize article.Content
+            Summary = Option.map SanitizeHtml.sanitizeHtml article.Summary
+            Content = SanitizeHtml.sanitizeHtml article.Content
     }
-
 
 [<ReactComponent>]
 let rec Articles (props: {| SelectedFeed: Guid option |}) =
-    let state, setState = React.useState (ViewModel<ArticlesState>.Loading)
+    let state, setState = React.useState ViewModel<ArticlesState>.Loading
 
     let fetchData () =
         promise {
