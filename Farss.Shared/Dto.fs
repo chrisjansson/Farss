@@ -8,8 +8,8 @@ type PreviewSubscribeToFeedQueryDto =
     }
 
 type  FeedError =
-    | FetchError of Exception
-    | ParseError of Exception
+    | FetchError of string
+    | ParseError of string
 
 type PreviewSubscribeToFeedResponseDto =
     {

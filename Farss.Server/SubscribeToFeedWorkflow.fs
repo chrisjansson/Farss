@@ -38,8 +38,8 @@ let previewSubscribeToFeed
                     }
                 | Error feedError ->
                     match feedError with
-                    | FeedReaderAdapter.FeedError.FetchError e -> Error(FetchError e)
-                    | FeedReaderAdapter.FeedError.ParseError e -> Error(ParseError e)
+                    | FeedReaderAdapter.FeedError.FetchError e -> Error(FetchError (string e))
+                    | FeedReaderAdapter.FeedError.ParseError e -> Error(ParseError (string e))
 
         ]
 
