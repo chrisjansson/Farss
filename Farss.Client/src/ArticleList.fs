@@ -15,6 +15,7 @@ module private Style =
             Custom "grid-auto-rows" "1fr auto auto"
             MaxWidth.value (px 400)
             OverflowY.auto
+
         ]
 
     let Article isSelected =
@@ -25,6 +26,9 @@ module private Style =
             Cursor.pointer
             if isSelected then
                 BackgroundColor.hex "#EEF4FC"
+            BorderBottomColor.hex "ececec"
+            BorderBottomWidth.value (px 1)
+            BorderBottomStyle.solid
         ]
 
     let iconSize = 28
@@ -83,7 +87,7 @@ type ArticlesState = {
 let private sanitizeArticleContent (article: ArticleDto) =
     {
         article with
-            Summary = Option.map SanitizeHtml.sanitizeHtml article.Summary
+            Summary = Option.map SanitizeHtml.getSanitizedInnerText article.Summary
             Content = SanitizeHtml.sanitizeHtml article.Content
     }
 

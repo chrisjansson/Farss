@@ -13,6 +13,9 @@ let private domParser = createDomParser ()
 
 let sanitizeHtml (html: string) =
     //https://web.dev/trusted-types/
+    DOMPurify.sanitizeHtml html
+
+let getSanitizedInnerText (html: string) =
     let sanitized = DOMPurify.sanitizeHtml html
     let document = domParser.parseFromString sanitized "text/html"
     document.body.innerText
