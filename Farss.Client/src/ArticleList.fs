@@ -24,7 +24,6 @@ module private Style =
             GridColumn.value "1 / 4"
             GridTemplateColumns.subgrid
             Cursor.pointer
-
             BorderBottomColor.hex "#ececec"
             BorderBottomWidth.value (px 1)
             BorderBottomStyle.solid
@@ -34,6 +33,8 @@ module private Style =
                 BorderColor.blue
                 BorderWidth.value (px 1)
                 BorderStyle.solid
+            PaddingRight.value (px 4)
+            PaddingBottom.value (px 4)
         ]
 
     let iconSize = 28
