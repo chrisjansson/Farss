@@ -45,6 +45,7 @@ module private Style =
 open Feliz.Router
 
 let private MemoArticles = React.memo ArticleList.Articles
+
 let private MemoMenu = React.memo Toolbar.Menu
 
 [<ReactComponent>]
@@ -87,7 +88,10 @@ let Main () =
                         prop.classes [ Style.SideMenu ]
                         prop.children [ SideMenu.SideMenu selectedFeed ]
                     ]
-                    Html.div [ prop.classes [ Style.Main ]; prop.children [ MemoArticles() ] ]
+                    Html.div [
+                        prop.classes [ Style.Main ]
+                        prop.children [ MemoArticles {| SelectedFeed = selectedFeed |} ]
+                    ]
                 ]
             ]
         ]

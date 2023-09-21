@@ -1,13 +1,12 @@
 module ArticleList
 
+open System
 open Dto
 open Fable.Core
 open Feliz
 
 open Fss
 open Fss.Types
-open Fss.Fable
-open Fss.Types.Color
 
 module private Style =
     let ArticlesContainer =
@@ -106,7 +105,7 @@ let sanitizeArticleContent (article: ArticleDto) =
 
 
 [<ReactComponent>]
-let rec Articles () =
+let rec Articles (props: {| SelectedFeed: Guid option |}) =
     let state, setState = React.useState (ViewModel<ArticlesState>.Loading)
 
     let fetchData () =
@@ -146,7 +145,7 @@ let rec Articles () =
             match state with
             | Loading -> Html.text "Loading"
             | Loaded m ->
-                let renderArticle (article: Dto.ArticleDto) =
+                let renderArticle (article: ArticleDto) =
                     let feed = m.Feeds |> List.find (fun x -> x.Id = article.FeedId)
 
                     let selectArticle (article: ArticleDto) =
@@ -165,7 +164,10 @@ let rec Articles () =
                 Html.div [
                     prop.classes [ Style.ArticlesContainer ]
                     prop.children [
-                        for a in m.Articles |> List.sortByDescending (fun x -> x.PublishedAt) do
+                        for a in
+                            m.Articles
+                            |> List.filter (fun a -> (Some a.FeedId) = props.SelectedFeed)
+                            |> List.sortByDescending (fun x -> x.PublishedAt) do
                             renderArticle a
                     ]
                 ]
