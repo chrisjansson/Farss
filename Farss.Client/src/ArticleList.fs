@@ -175,14 +175,9 @@ let rec Articles () =
 
                          prop.children [
                              match m.SelectedArticle with
-                             | Some a -> Article a
+                             | Some a -> Article.Article a
                              | _ -> ()
                          ]]
         ]
     ]
 
-and [<ReactComponent>] Article (article: ArticleDto) : Fable.React.ReactElement =
-    Html.div [
-        Html.div [ prop.className "selected-article-title"; prop.text article.Title ]
-        Html.div [ prop.className "article-content"; prop.innerHtml article.Content ]
-    ]

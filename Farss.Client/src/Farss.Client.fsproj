@@ -13,6 +13,7 @@
     <Compile Include="TextResources.fs" />
     <Compile Include="DOMPurify.fs" />
     <Compile Include="FeedIcon.fs" />
+    <Compile Include="Article.fs" />
     <Compile Include="ArticleList.fs" />
     <Compile Include="Toolbar.fs" />
     <Compile Include="SideMenu.fs" />
