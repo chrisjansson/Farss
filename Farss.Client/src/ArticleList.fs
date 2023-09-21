@@ -24,11 +24,16 @@ module private Style =
             GridColumn.value "1 / 4"
             GridTemplateColumns.subgrid
             Cursor.pointer
-            if isSelected then
-                BackgroundColor.hex "#EEF4FC"
-            BorderBottomColor.hex "ececec"
+
+            BorderBottomColor.hex "#ececec"
             BorderBottomWidth.value (px 1)
             BorderBottomStyle.solid
+            Hover [ BackgroundColor.hex "#ececec" ]
+            if isSelected then
+                BackgroundColor.hex "#EEF4FC"
+                BorderColor.blue
+                BorderWidth.value (px 1)
+                BorderStyle.solid
         ]
 
     let iconSize = 28
