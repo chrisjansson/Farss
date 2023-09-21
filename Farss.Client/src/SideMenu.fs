@@ -63,7 +63,6 @@ module Style =
             Display.flex
             JustifyContent.center
             AlignItems.center
-            !(Selector.Tag Types.Html.Img) [ BorderRadius.value (pct 15) ]
         ]
 
 [<ReactComponent>]
@@ -134,15 +133,7 @@ let SideMenu (selectedFeed: Guid option) =
                                             Html.div [
                                                 prop.className Style.FeedIconContainer
                                                 prop.children [
-                                                    match f.Icon with
-                                                    | Some id ->
-                                                        Html.img [
-                                                            prop.src (ApiUrls.GetFile id)
-                                                            prop.width (Style.iconSize - 4)
-                                                            prop.height (Style.iconSize - 4)
-                                                        ]
-
-                                                    | None -> ()
+                                                    FeedIcon.FeedIcon (f.Icon, Style.iconSize - 4)
                                                 ]
                                             ]
                                             Html.div [ prop.className Style.SideMenuTitle; prop.text f.Title ]
