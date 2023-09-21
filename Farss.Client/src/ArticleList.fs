@@ -30,7 +30,7 @@ module private Style =
         ]
 
     let iconSize = 28
-    
+
     let ArticleIcon =
         fss [
             Display.flex
@@ -87,12 +87,13 @@ type DOMParser =
     abstract member parseFromString: string -> string -> Browser.Types.Document
 
 [<Emit("new DOMParser()")>]
-let createDomParser () : DOMParser = Fable.Core.Util.jsNative
+let createDomParser () : DOMParser = Util.jsNative
 
 let domParser = createDomParser ()
 
 let sanitizeArticleContent (article: ArticleDto) =
     let getTextContent (html: string) =
+        //https://web.dev/trusted-types/
         let sanitized = DOMPurify.sanitizeHtml html
         let document = domParser.parseFromString sanitized "text/html"
         document.body.innerText
@@ -180,4 +181,3 @@ let rec Articles () =
                          ]]
         ]
     ]
-
