@@ -5,6 +5,7 @@
     "start": "dotnet fable watch src --run vite"
   },
   "dependencies": {
+    "@tabler/icons-react": "^2.34.0",
     "@vitejs/plugin-react": "^4.0.4",
     "dialog-polyfill": "^0.5.3",
     "dompurify": "2.4.0",

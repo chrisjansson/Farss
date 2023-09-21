@@ -33,6 +33,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["@tabler/icons-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0"],\
             ["@vitejs/plugin-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:4.0.4"],\
             ["dialog-polyfill", "npm:0.5.6"],\
             ["dompurify", "npm:2.4.0"],\
@@ -651,6 +652,39 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@tabler/icons", [\
+        ["npm:2.34.0", {\
+          "packageLocation": "./.yarn/cache/@tabler-icons-npm-2.34.0-ca1c350aac-0778e25c8a.zip/node_modules/@tabler/icons/",\
+          "packageDependencies": [\
+            ["@tabler/icons", "npm:2.34.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@tabler/icons-react", [\
+        ["npm:2.34.0", {\
+          "packageLocation": "./.yarn/cache/@tabler-icons-react-npm-2.34.0-6d74ef2d05-b9b9cb0631.zip/node_modules/@tabler/icons-react/",\
+          "packageDependencies": [\
+            ["@tabler/icons-react", "npm:2.34.0"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0", {\
+          "packageLocation": "./.yarn/__virtual__/@tabler-icons-react-virtual-03e6bd8208/0/cache/@tabler-icons-react-npm-2.34.0-6d74ef2d05-b9b9cb0631.zip/node_modules/@tabler/icons-react/",\
+          "packageDependencies": [\
+            ["@tabler/icons-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0"],\
+            ["@tabler/icons", "npm:2.34.0"],\
+            ["@types/react", null],\
+            ["prop-types", "npm:15.8.1"],\
+            ["react", "npm:18.2.0"]\
+          ],\
+          "packagePeers": [\
+            "@types/react",\
+            "react"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@tootallnate/once", [\
         ["npm:2.0.0", {\
           "packageLocation": "./.yarn/cache/@tootallnate-once-npm-2.0.0-e36cf4f140-ad87447820.zip/node_modules/@tootallnate/once/",\
@@ -691,6 +725,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["Farss.Client", "workspace:."],\
+            ["@tabler/icons-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0"],\
             ["@vitejs/plugin-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:4.0.4"],\
             ["dialog-polyfill", "npm:0.5.6"],\
             ["dompurify", "npm:2.4.0"],\
@@ -1722,6 +1757,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["object-assign", [\
+        ["npm:4.1.1", {\
+          "packageLocation": "./.yarn/cache/object-assign-npm-4.1.1-1004ad6dec-fcc6e4ea8c.zip/node_modules/object-assign/",\
+          "packageDependencies": [\
+            ["object-assign", "npm:4.1.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["once", [\
         ["npm:1.4.0", {\
           "packageLocation": "./.yarn/cache/once-npm-1.4.0-ccf03ef07a-cd0a885013.zip/node_modules/once/",\
@@ -1824,6 +1868,18 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["prop-types", [\
+        ["npm:15.8.1", {\
+          "packageLocation": "./.yarn/cache/prop-types-npm-15.8.1-17c71ee7ee-c056d3f1c0.zip/node_modules/prop-types/",\
+          "packageDependencies": [\
+            ["prop-types", "npm:15.8.1"],\
+            ["loose-envify", "npm:1.4.0"],\
+            ["object-assign", "npm:4.1.1"],\
+            ["react-is", "npm:16.13.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["react", [\
         ["npm:18.2.0", {\
           "packageLocation": "./.yarn/cache/react-npm-18.2.0-1eae08fee2-88e38092da.zip/node_modules/react/",\
@@ -1854,6 +1910,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packagePeers": [\
             "@types/react",\
             "react"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["react-is", [\
+        ["npm:16.13.1", {\
+          "packageLocation": "./.yarn/cache/react-is-npm-16.13.1-a9b9382b4f-f7a19ac349.zip/node_modules/react-is/",\
+          "packageDependencies": [\
+            ["react-is", "npm:16.13.1"]\
           ],\
           "linkType": "HARD"\
         }]\

@@ -492,6 +492,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tabler/icons-react@npm:^2.34.0":
+  version: 2.34.0
+  resolution: "@tabler/icons-react@npm:2.34.0"
+  dependencies:
+    "@tabler/icons": 2.34.0
+    prop-types: ^15.7.2
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0
+  checksum: b9b9cb0631d2db01f6aec20a4f6d5e025698d3525c6756175efdf2f2398b83a68f0c48d7d6264b3dca31fcaa6008376a7e70f168d1610898b19ae4e951f336b2
+  languageName: node
+  linkType: hard
+
+"@tabler/icons@npm:2.34.0":
+  version: 2.34.0
+  resolution: "@tabler/icons@npm:2.34.0"
+  checksum: 0778e25c8aeb86f5b152cd0bd22ada6e474b51a1a5cdbf98d811397e0f6ba96cbe0bc72a983e159fcc9da6a5472b93738d1c6809ce70eb8e15844edea633e224
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:2":
   version: 2.0.0
   resolution: "@tootallnate/once@npm:2.0.0"
@@ -517,6 +536,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "Farss.Client@workspace:."
   dependencies:
+    "@tabler/icons-react": ^2.34.0
     "@vitejs/plugin-react": ^4.0.4
     dialog-polyfill: ^0.5.3
     dompurify: 2.4.0
@@ -1237,7 +1257,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.1.0":
+"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -1483,6 +1503,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"object-assign@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "object-assign@npm:4.1.1"
+  checksum: fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
+  languageName: node
+  linkType: hard
+
 "once@npm:^1.3.0":
   version: 1.4.0
   resolution: "once@npm:1.4.0"
@@ -1561,6 +1588,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prop-types@npm:^15.7.2":
+  version: 15.8.1
+  resolution: "prop-types@npm:15.8.1"
+  dependencies:
+    loose-envify: ^1.4.0
+    object-assign: ^4.1.1
+    react-is: ^16.13.1
+  checksum: c056d3f1c057cb7ff8344c645450e14f088a915d078dcda795041765047fa080d38e5d626560ccaac94a4e16e3aa15f3557c1a9a8d1174530955e992c675e459
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
@@ -1570,6 +1608,13 @@ __metadata:
   peerDependencies:
     react: ^18.2.0
   checksum: 7d323310bea3a91be2965f9468d552f201b1c27891e45ddc2d6b8f717680c95a75ae0bc1e3f5cf41472446a2589a75aed4483aee8169287909fcd59ad149e8cc
+  languageName: node
+  linkType: hard
+
+"react-is@npm:^16.13.1":
+  version: 16.13.1
+  resolution: "react-is@npm:16.13.1"
+  checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
   languageName: node
   linkType: hard
 
