@@ -1,6 +1,7 @@
 module FeedReaderAdapter
 
 open System.Threading.Tasks
+open AngleSharp
 open CodeHollow.FeedReader
 open System
 open CodeHollow.FeedReader.Feeds
@@ -117,10 +118,53 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     else
                         Some s
                 
-                let! feedIcon =
-                    //TODO: Fallback to looking at the latest feed item
+                let document =
+                    feed.Link
+                    |> optionOfNullOrEmpty
+                    |> Option.map getAsync
+                    
+                let! document =
+                    match document with
+                    | Some t -> t |> Async.map Some
+                    | None -> async.Return None
+                
+                let! faviconUrl =     
+                    match document with
+                    | Some content ->
+                        async {
+                            try 
+                                let bc = BrowsingContext.New(Configuration.Default)
+                                let! document = bc.OpenAsync(System.Action<Io.VirtualResponse>(fun r -> r.Content(content) |> ignore)) |> Async.AwaitTask
+                                return document.QuerySelectorAll("link[rel~='icon']")
+                                |> List.ofSeq
+                                |> List.tryHead
+                                |> Option.map (fun e -> e.GetAttribute("href")) //Check for existance
+                                |> Option.bind optionOfNullOrEmpty
+                            with
+                            | _ -> return None
+                        }
+                    | None ->
+                        None
+                        |> async.Return
+                
+                let feedIcon =
                     feed.ImageUrl
                     |> optionOfNullOrEmpty
+               
+                let defaultFavicon =
+                    try 
+                        feed.Link
+                            |> optionOfNullOrEmpty
+                            |> Option.map (fun x -> Uri(x, UriKind.RelativeOrAbsolute))
+                            |> Option.map (fun uri -> Uri(uri.GetLeftPart(UriPartial.Authority)))
+                            |> Option.map (fun basePath -> Uri(basePath, "/favicon.ico"))
+                            |> Option.map (fun path -> path.ToString())
+                    with
+                    | _ -> None
+                
+                let! feedIcon =
+                    [ faviconUrl; feedIcon; defaultFavicon ]
+                    |> List.tryPick id
                     |> tryDownloadIcon
                     
                 let mapItem (item: FeedItem) =
@@ -177,6 +221,8 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                         Link = Some item.Link
                     }
 
+                
+                
                 let items = 
                     feed.Items 
                     |> Seq.map mapItem
