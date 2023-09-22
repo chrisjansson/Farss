@@ -90,12 +90,11 @@ type ArticlesState = {
     SelectedArticle: ArticleDto option
 }
 
-let private sanitizeArticleContent (article: ArticleDto) =
-    {
-        article with
-            Summary = Option.map SanitizeHtml.getSanitizedInnerText article.Summary
-            Content = SanitizeHtml.sanitizeHtml article.Content
-    }
+let private sanitizeArticleContent (article: ArticleDto) = {
+    article with
+        Summary = Option.map SanitizeHtml.getSanitizedInnerText article.Summary
+        Content = SanitizeHtml.sanitizeHtml article.Content
+}
 
 [<ReactComponent>]
 let rec Articles (props: {| SelectedFeed: Guid option |}) =
@@ -159,7 +158,11 @@ let rec Articles (props: {| SelectedFeed: Guid option |}) =
                     prop.children [
                         for a in
                             m.Articles
-                            |> List.filter (fun a -> (Some a.FeedId) = props.SelectedFeed)
+                            |> List.filter (fun a ->
+                                if props.SelectedFeed.IsNone then
+                                    true
+                                else
+                                    (Some a.FeedId) = props.SelectedFeed)
                             |> List.sortByDescending (fun x -> x.PublishedAt) do
                             renderArticle a
                     ]
