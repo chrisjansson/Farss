@@ -13,9 +13,7 @@ module private Style =
             Display.grid
             Custom "grid-template-columns" "auto 1fr auto"
             Custom "grid-auto-rows" "1fr auto auto"
-            MaxWidth.value (px 400)
             OverflowY.auto
-
         ]
 
     let Article isSelected =
