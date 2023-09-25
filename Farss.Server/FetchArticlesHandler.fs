@@ -8,8 +8,7 @@ open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open System
 
-let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
-    let runFetchArticlesForSubscription: FetchArticlesWorkflow.FetchArticlesForSubscription = 
+let runFetchArticlesForSubscription (serviceProvider: IServiceProvider): FetchArticlesWorkflow.FetchArticlesForSubscription = 
         fun id -> task {
             //todo: uow
             use scope = serviceProvider.CreateScope()
@@ -19,10 +18,11 @@ let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
             let articleRepository = services.GetService<ArticleRepository>()
             return! FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl subscriptionRepository articleRepository adapter id
         }
-            
+
+let constructFetchEntriesHandler (serviceProvider: IServiceProvider) =
     let subscriptionRepository = serviceProvider.GetService<SubscriptionRepository>()
 
-    FetchArticlesWorkflow.fetchEntries subscriptionRepository runFetchArticlesForSubscription
+    FetchArticlesWorkflow.fetchEntries subscriptionRepository (runFetchArticlesForSubscription serviceProvider)
 
 let private runUpdateIconForSubscription (serviceProvider: IServiceProvider) = 
     fun id -> task {
