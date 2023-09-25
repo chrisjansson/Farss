@@ -41,6 +41,7 @@
     <Compile Include="JobExecutorHostedService.fs" />
     <Compile Include="CompositionRoot.fs" />
     <Compile Include="Startup.fs" />
+    <Compile Include="Resolve.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

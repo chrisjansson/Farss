@@ -27,6 +27,7 @@
     <Compile Include="Specs\GetArticlesSpecs.fs" />
     <Compile Include="Specs\FetchEntriesSpecs.fs" />
     <Compile Include="SpecTests.fs" />
+    <Compile Include="ResolveTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Expecto" Version="9.0.0" />
