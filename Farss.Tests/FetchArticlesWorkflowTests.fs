@@ -244,7 +244,7 @@ let fetchArticlesForAllSubscriptionsTests =
                             | _ -> raise expectedException
                         Task.FromResult(r)
 
-                let workflow = FetchArticlesWorkflow.fetchEntries s stubFetch
+                let workflow = FetchArticlesWorkflow.queueFetchEntriesForAllSubscriptions s stubFetch
 
                 let! result = workflow () |> Async.AwaitTask
                 let result = result |> Map.ofList

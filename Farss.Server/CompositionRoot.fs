@@ -2,6 +2,7 @@
 
 open Farss.Server.BackgroundTaskQueue
 open FetchArticlesHostedService
+open JobExecutorHostedService
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Hosting
 open Postgres
