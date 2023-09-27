@@ -8,11 +8,13 @@ open Fss
 open Fss.Types
 
 module private Style =
+    let ArticlesContainerWrapper = fss [ Display.flex; FlexDirection.column ]
+
     let ArticlesContainer =
         fss [
             Display.grid
             Custom "grid-template-columns" "auto 1fr auto"
-            Custom "grid-auto-rows" "1fr auto auto"
+            Custom "grid-auto-rows" "1fr"
             OverflowY.auto
         ]
 
@@ -26,13 +28,15 @@ module private Style =
             BorderBottomWidth.value (px 1)
             BorderBottomStyle.solid
             Hover [ BackgroundColor.hex "#ececec" ]
+            BorderWidth.value (px 1)
+            BorderStyle.solid
+            BorderColor.transparent
             if isSelected then
                 BackgroundColor.hex "#EEF4FC"
                 BorderColor.blue
-                BorderWidth.value (px 1)
-                BorderStyle.solid
             PaddingRight.value (px 4)
             PaddingBottom.value (px 4)
+            GridRowEnd.span 3
         ]
 
     let iconSize = 28
@@ -73,8 +77,16 @@ let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSel
             Html.div [
                 prop.className [ "article-content"; "summary" ]
 
-                prop.text (article.Summary |> Option.defaultValue "")
+                prop.children [
+                    Html.div [
+                        prop.className [ "article-content"; "summary" ]
+
+                        prop.text (article.Summary |> Option.defaultValue "Summary")
+                    ]
+                ]
+
             ]
+
         ]
     ]
 
@@ -90,7 +102,12 @@ type ArticlesState = {
 
 let private sanitizeArticleContent (article: ArticleDto) = {
     article with
-        Summary = Option.map SanitizeHtml.getSanitizedInnerText article.Summary
+        Summary =
+            [
+                Option.map SanitizeHtml.getSanitizedInnerText article.Summary
+                Some(SanitizeHtml.getSanitizedInnerText article.Content)
+            ]
+            |> List.tryPick id
         Content = SanitizeHtml.sanitizeHtml article.Content
 }
 
@@ -152,17 +169,23 @@ let rec Articles (props: {| SelectedFeed: Guid option |}) =
                     )
 
                 Html.div [
-                    prop.classes [ Style.ArticlesContainer ]
+
+                    prop.classes [ Style.ArticlesContainerWrapper ]
                     prop.children [
-                        for a in
-                            m.Articles
-                            |> List.filter (fun a ->
-                                if props.SelectedFeed.IsNone then
-                                    true
-                                else
-                                    (Some a.FeedId) = props.SelectedFeed)
-                            |> List.sortByDescending (fun x -> x.PublishedAt) do
-                            renderArticle a
+                        Html.div [
+                            prop.classes [ Style.ArticlesContainer ]
+                            prop.children [
+                                for a in
+                                    m.Articles
+                                    |> List.filter (fun a ->
+                                        if props.SelectedFeed.IsNone then
+                                            true
+                                        else
+                                            (Some a.FeedId) = props.SelectedFeed)
+                                    |> List.sortByDescending (fun x -> x.PublishedAt) do
+                                    renderArticle a
+                            ]
+                        ]
                     ]
                 ]
 

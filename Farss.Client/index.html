@@ -59,6 +59,10 @@
             justify-content: center;
         }
         
+        .feed-title {
+
+        }
+        
         .article-date {  
 
         }
@@ -90,7 +94,6 @@
         .article-content {
             grid-column-start: 2;
             grid-column-end: 4;
-            
         }
         
         .selected-article-title {
@@ -105,10 +108,11 @@
         .article-content.summary {
             font-size: 0.85em;
             color: #555;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
 
         .article-content {
