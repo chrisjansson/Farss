@@ -23,8 +23,9 @@ type JobExecutorHostedService
                     task {
                         //TODO: UoW
                         use scope = serviceScopeFactory.CreateAsyncScope()
-                        let job = FetchArticlesHandler.runFetchArticlesForSubscription scope.ServiceProvider
-                        let! _ = job subscriptionId
+                        let scopeFactory = scope.ServiceProvider.GetRequiredService<IServiceScopeFactory>()
+                        let job = FetchArticlesHandler.runFetchArticlesForSubscription scopeFactory
+                        let! _ = job subscriptionId                        
                         return ()
                     }
 

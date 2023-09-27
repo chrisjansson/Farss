@@ -51,7 +51,7 @@ type FetchArticlesHostedService
                     do!
                         task {
                             use scope = serviceProvider.CreateScope()
-                            let scopedServiceProvider = scope.ServiceProvider
+                            let scopedServiceProvider = scope.ServiceProvider.GetRequiredService<IServiceScopeFactory>()
 
                             try
                                 use cts = new CancellationTokenSource()

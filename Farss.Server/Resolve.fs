@@ -1,16 +1,16 @@
-module Farss.Server.Resolve
+module Resolve
 
 open System
 open Microsoft.FSharp.Reflection
 
 
-let resolve (serviceProvider: IServiceProvider) (func: 'a -> 'b): 'b = 
+let services (func: 'a -> 'b) (serviceProvider: IServiceProvider): 'b = 
     let argType = typeof<'a>
     
     let diArguments =
         if FSharpType.IsTuple argType then
             FSharpType.GetTupleElements argType
-            |> Array.map (fun t -> serviceProvider.GetService(t))
+            |> Array.map serviceProvider.GetService
             |> (fun args -> FSharpValue.MakeTuple(args, argType))
         else
             serviceProvider.GetService(argType)

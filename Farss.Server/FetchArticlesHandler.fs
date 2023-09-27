@@ -9,29 +9,13 @@ open Microsoft.Extensions.DependencyInjection
 open System
 
 let runFetchArticlesForSubscription
-    (serviceProvider: IServiceProvider)
+    (serviceProvider: IServiceScopeFactory)
     : FetchArticlesWorkflow.FetchArticlesForSubscription =
-    fun id ->
-        task {
-            //todo: uow
-            use scope = serviceProvider.CreateScope()
-            let services = scope.ServiceProvider
-            let adapter = services.GetService<FeedReaderAdapter>()
-            let subscriptionRepository = services.GetService<SubscriptionRepository>()
-            let articleRepository = services.GetService<ArticleRepository>()
+    fun id -> Pipeline.runInScopeWithAsync FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl id serviceProvider
 
-            return!
-                FetchArticlesWorkflow.fetchArticlesForSubscriptionImpl
-                    subscriptionRepository
-                    articleRepository
-                    adapter
-                    id
-        }
 
-let constructFetchEntriesHandler (serviceProvider: IServiceProvider) ct =
-    let subscriptionRepository = serviceProvider.GetService<SubscriptionRepository>()
-    let queue = serviceProvider.GetService<IBackgroundTaskQueue>()
-    FetchArticlesWorkflow.queueFetchEntriesForAllSubscriptions subscriptionRepository queue ct
+let constructFetchEntriesHandler (serviceProvider: IServiceScopeFactory) ct =
+    Pipeline.runInScopeWithAsync FetchArticlesWorkflow.queueFetchEntriesForAllSubscriptions ct serviceProvider
 
 let private runUpdateIconForSubscription (serviceProvider: IServiceProvider) =
     fun id ->
@@ -45,16 +29,17 @@ let private runUpdateIconForSubscription (serviceProvider: IServiceProvider) =
             return! SubscribeToFeedWorkflow.updateFeedIcon adapter subscriptionRepository fileRepository id
         }
 
-let constructUpdateIconsHandler (serviceProvider: IServiceProvider) =
+let constructUpdateIconsHandler (serviceProvider: IServiceScopeFactory) =
 
     let run () =
         task {
-            let services = serviceProvider
+            use scope = serviceProvider.CreateScope()
+            let services = scope.ServiceProvider
             let subscriptionRepository = services.GetService<SubscriptionRepository>()
             let subs = subscriptionRepository.getAll () |> List.map (fun x -> x.Id)
 
             for s in subs do
-                let! _ = runUpdateIconForSubscription serviceProvider s
+                let! _ = runUpdateIconForSubscription services s
                 ()
 
             return ()

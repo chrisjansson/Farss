@@ -14,10 +14,10 @@ type FetchArticlesError =
 type FetchArticlesForSubscription = SubscriptionId -> Task<Result<int, FetchArticlesError>>
 
 type FetchArticlesForSubscriptionImpl =
-    SubscriptionRepository -> ArticleRepository -> FeedReaderAdapter -> FetchArticlesForSubscription
+    SubscriptionRepository * ArticleRepository * FeedReaderAdapter -> FetchArticlesForSubscription
 
 let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
-    fun subscriptionRepository articleRepository adapter subscriptionId ->
+    fun (subscriptionRepository, articleRepository, adapter) subscriptionId ->
         let getSubscription = subscriptionRepository.get
 
         let fetchFeedForSubscription (subscription: Subscription) =
@@ -49,8 +49,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
         |> TaskResult.map aggregateSavedArticles
 
 let queueFetchEntriesForAllSubscriptions
-    (subscriptionRepository: SubscriptionRepository)
-    (queue: IBackgroundTaskQueue)
+    (subscriptionRepository: SubscriptionRepository, queue: IBackgroundTaskQueue)
     (ct: CancellationToken)
     =
     task {

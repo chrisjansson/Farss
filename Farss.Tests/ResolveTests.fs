@@ -1,7 +1,6 @@
 module Farss.Tests.ResolveTests
 
 open Expecto
-open Farss.Server
 open Microsoft.Extensions.DependencyInjection
 
 [<Tests>]
@@ -15,7 +14,7 @@ let ResolveTests =
 
             let testFunc (a: string) () = a
 
-            let actual = Resolve.resolve sp testFunc
+            let actual = Resolve.services testFunc sp
 
             let result = actual ()
             Expect.equal result "Hello" "Resolved service"
@@ -29,7 +28,7 @@ let ResolveTests =
 
             let testFunc (a: string, b: unit) () = (a, b)
 
-            let actual = Resolve.resolve sp testFunc
+            let actual = Resolve.services testFunc sp
 
             let result = actual ()
             Expect.equal result ("Hello", ()) "Resolved service"
