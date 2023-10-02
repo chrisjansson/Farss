@@ -96,6 +96,17 @@ module private Style =
         Custom "-webkit-box-orient" "vertical"
     ]
     
+    let ReadingPane = fss [
+        OverflowY.auto
+        Padding.value (px 10)
+    ]
+    
+    let ReadingSeparator = fss [
+        Width.value (px 1)
+        FlexShrink.value 0
+        BackgroundColor.hex "ececec"
+    ]
+    
 
 [<ReactComponent>]
 let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
@@ -231,9 +242,9 @@ let rec Articles (props: {| SelectedFeed: Guid option |}) =
                     ]
                 ]
 
-                Html.div [ prop.className "reading-separator" ]
+                Html.div [ prop.className Style.ReadingSeparator ]
 
-                Html.div[prop.className "article-reading-pane"
+                Html.div[prop.className Style.ReadingPane
 
                          prop.children [
                              match m.SelectedArticle with
