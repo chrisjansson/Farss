@@ -49,6 +49,53 @@ module private Style =
             PaddingTop.value (px 4)
             PaddingBottom.value (px 4)
         ]
+        
+    let HeaderCommon = [
+        FontSize.value (em 0.85)
+        Color.hex "555"
+        Display.flex
+        FlexDirection.column
+        JustifyContent.center
+    ]
+    
+    let FeedTitle = fss [
+        yield! HeaderCommon
+    ]
+    
+    let ArticleDate = fss [
+        yield! HeaderCommon
+    ]
+    
+    let ArticleTools = fss [
+        Width.value (px 40)
+        GridRow.value "span 2"
+    ]
+    
+    let ArticleTitle isRead = fss [
+        GridColumnStart.value 2
+        GridColumnEnd.value 4
+        PaddingTop.value (px 5)
+        PaddingBottom.value (px 3)
+        
+        if not isRead then
+            FontWeight.bold
+    ]
+    
+    let ArticleSummaryContainer = fss [
+        GridColumnStart.value 2
+        GridColumnEnd.value 4
+    ]
+    
+    let ArticleSummary = fss [
+        FontFamily.value "'Merriweather', serif;"
+        FontSize.value (em 0.7)
+        Color.hex "555"
+        Overflow.hidden
+        Custom "display" "-webkit-box"
+        Custom "-webkit-line-clamp" "3"
+        Custom "-webkit-box-orient" "vertical"
+    ]
+    
 
 [<ReactComponent>]
 let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSelected: bool) =
@@ -60,31 +107,26 @@ let ArticleRow (feed: SubscriptionDto, article: ArticleDto, selectArticle, isSel
                 prop.className Style.ArticleIcon
                 prop.children [ FeedIcon.FeedIcon(feed.Icon, Style.iconSize) ]
             ]
-            Html.div [ prop.className "feed-title"; prop.text feed.Title ]
+            Html.div [ prop.className Style.FeedTitle; prop.text feed.Title ]
             Html.div [
-                prop.className "article-date"
+                prop.className Style.ArticleDate
                 prop.text (article.PublishedAt.ToString("yyyy-MM-dd hh:mm"))
             ]
-            Html.div [ prop.className "article-tools" ]
+            Html.div [ prop.className Style.ArticleTools ]
             Html.div [
                 prop.classes [
-                    "article-title"
-                    if not article.IsRead then
-                        "article-title-unread"
+                    Style.ArticleTitle article.IsRead
                 ]
                 prop.text article.Title
             ]
             Html.div [
-                prop.className [ "article-content"; "summary" ]
-
+                prop.className [ Style.ArticleSummaryContainer ]
                 prop.children [
                     Html.div [
-                        prop.className [ "article-content"; "summary" ]
-
-                        prop.text (article.Summary |> Option.defaultValue "Summary")
+                        prop.className [ Style.ArticleSummary ]
+                        prop.text (article.Summary |> Option.defaultValue "")
                     ]
                 ]
-
             ]
 
         ]
