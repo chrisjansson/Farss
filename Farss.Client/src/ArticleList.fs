@@ -8,14 +8,17 @@ open Fss
 open Fss.Types
 
 module private Style =
-    let ArticlesContainerWrapper = fss [ Display.flex; FlexDirection.column ]
+    let ArticlesContainerWrapper = fss [
+        Display.flex
+        FlexDirection.column
+        OverflowY.auto
+    ]
 
     let ArticlesContainer =
         fss
             [ Display.grid
               Custom "grid-template-columns" "auto 1fr auto"
-              Custom "grid-auto-rows" "1fr"
-              OverflowY.auto ]
+              Custom "grid-auto-rows" "1fr" ]
 
     let Article isSelected =
         fss
