@@ -56,6 +56,7 @@ type SubscriptionDto =
 
 type ArticleDto =
     {
+        Id: Guid
         FeedId: Guid
         Title: string
         IsRead: bool

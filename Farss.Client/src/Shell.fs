@@ -58,12 +58,15 @@ let Main () =
         router.children [
 
 
-            let selectedFeed =
+            let selectedFeed, selectedArticle =
                 match currentUrl with
-                | [] -> None
-                | [ "feeds" ] -> None
-                | [ "feeds"; Route.Guid feedId ] -> Some feedId
-                | _ -> None
+                | [] -> None, None
+                | [ "feeds" ] -> None, None
+                | [ "feeds"; Route.Guid feedId ] -> Some feedId, None
+                | [ "feeds"; "all"; "articles"; Route.Guid articleId ] -> None, Some articleId
+                | [ "feeds"; Route.Guid feedId; "articles"; Route.Guid articleId ] -> Some feedId, Some articleId
+                | [ "feeds"; "articles"; Route.Guid articleId ] -> None, Some articleId
+                | _ -> None, None
 
             Html.div [
                 prop.className [ Style.GridContainer ]
@@ -90,7 +93,7 @@ let Main () =
                     ]
                     Html.div [
                         prop.classes [ Style.Main ]
-                        prop.children [ MemoArticles {| SelectedFeed = selectedFeed |} ]
+                        prop.children [ MemoArticles {| SelectedFeed = selectedFeed; SelectedArticle = selectedArticle  |} ]
                     ]
                 ]
             ]
