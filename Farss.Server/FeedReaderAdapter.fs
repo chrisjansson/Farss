@@ -207,9 +207,10 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             i.Element.ToString()
                         | :? AtomFeedItem as i ->
                             i.Element.ToString()
+                        | :? MediaRssFeedItem  as i ->
+                            i.Element.ToString()
                         | _ ->
-                            failwith "Unsupported feed type as of yet"
-                            
+                            failwithf "Unsupported feed type as of yet %A" (item.SpecificItem.GetType())
                     
                     { 
                         Item.Title = item.Title
@@ -237,6 +238,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     | CodeHollow.FeedReader.FeedType.Rss_0_91
                     | CodeHollow.FeedReader.FeedType.Rss_0_92
                     | CodeHollow.FeedReader.FeedType.Rss_1_0
+                    | CodeHollow.FeedReader.FeedType.MediaRss
                     | CodeHollow.FeedReader.FeedType.Rss_2_0 -> FeedType.Rss
                     | _ -> failwith "Unknown feed type"
                 
