@@ -1,5 +1,6 @@
 module Article
 
+open Browser.Types
 open Dto
 open Feliz
 
@@ -30,23 +31,33 @@ module private Style =
                 MaxWidth.value (px 700)
                 Overflow.auto
             ]
-            ! (Selector.Tag Types.Html.Figure) [
-                MarginLeft.value (px 0)
-                MarginRight.value (px 0)
-            ]
+            ! (Selector.Tag Types.Html.Figure) [ MarginLeft.value (px 0); MarginRight.value (px 0) ]
         ]
 
-    let ArticleTitle = fss [
-        FontSize.value (px 27)
-        FontWeight.bold
-    ]
+    let ArticleTitle = fss [ FontSize.value (px 27); FontWeight.bold ]
+
+    let ReadingPane = fss [ OverflowY.auto; Padding.value (px 10) ]
+
 
 [<ReactComponent>]
 let Article (article: ArticleDto) : Fable.React.ReactElement =
+    let readingPane = React.useRef None
+
+    React.useEffect (
+        (fun () ->
+
+            match readingPane.current with
+            | Some (element: HTMLElement) ->
+                element.scrollTo(0, 0)
+            | None -> ()),
+        [| article.Id :> obj |]
+    )
+
     Html.div [
-        Html.div [ prop.className Style.ArticleTitle; prop.text article.Title ]
-        Html.div [
-            prop.classes [ Style.ArticleContent ]
-            prop.innerHtml article.Content
+        prop.ref readingPane
+        prop.className Style.ReadingPane
+        prop.children [
+            Html.div [ prop.className Style.ArticleTitle; prop.text article.Title ]
+            Html.div [ prop.classes [ Style.ArticleContent ]; prop.innerHtml article.Content ]
         ]
     ]

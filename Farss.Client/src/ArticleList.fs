@@ -88,8 +88,6 @@ module private Style =
             Custom "-webkit-box-orient" "vertical"
         ]
 
-    let ReadingPane = fss [ OverflowY.auto; Padding.value (px 10) ]
-
     let ReadingSeparator =
         fss [ Width.value (px 1); FlexShrink.value 0; BackgroundColor.hex "ececec" ]
 
@@ -213,7 +211,6 @@ let rec Articles
                     )
 
                 Html.div [
-
                     prop.classes [ Style.ArticlesContainerWrapper ]
                     prop.children [
                         Html.div [
@@ -235,18 +232,12 @@ let rec Articles
 
                 Html.div [ prop.className Style.ReadingSeparator ]
 
-                Html.div[prop.className Style.ReadingPane
-
-                         prop.children [
-                             match props.SelectedArticle with
-                             | Some aId ->
-
-                                 let a = m.Articles |> List.tryFind (fun a -> a.Id = aId)
-
-                                 match a with
-                                 | Some a -> Article.Article a
-                                 | _ -> ()
-                             | _ -> ()
-                         ]]
+                match props.SelectedArticle with
+                | Some aId ->
+                    let a = m.Articles |> List.tryFind (fun a -> a.Id = aId)
+                    match a with
+                    | Some a -> Article.Article a
+                    | _ -> ()
+                | _ -> ()
         ]
     ]
