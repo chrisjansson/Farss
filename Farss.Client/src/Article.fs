@@ -10,7 +10,7 @@ module private Style =
     let ArticleContent =
         fss [
             FontFamily.value "'Merriweather', serif"
-            ! (Selector.Tag Types.Html.Img) [ MaxWidth.value (px 700) ]
+            ! (Selector.Tag Types.Html.Img) [ MaxWidth.value (px 700); ObjectFit.contain ]
             ! (Selector.Tag Types.Html.A) [ Color.hex "#2261b7"; Visited [ Color.hex "#597aa8" ] ]
             ! (Selector.Tag Types.Html.Pre) [
                 BackgroundColor.hex "#eaeaea"
@@ -47,8 +47,7 @@ let Article (article: ArticleDto) : Fable.React.ReactElement =
         (fun () ->
 
             match readingPane.current with
-            | Some (element: HTMLElement) ->
-                element.scrollTo(0, 0)
+            | Some(element: HTMLElement) -> element.scrollTo (0, 0)
             | None -> ()),
         [| article.Id :> obj |]
     )
