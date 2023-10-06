@@ -14,7 +14,7 @@ type SubscriptionRepository =
 type ArticleRepository =
     {
         getAll: unit -> Article list
-        getTop: int -> Article list
+        getTop: (Guid option * int) -> Article list
         save: Article -> unit
         filterExistingArticles: SubscriptionId -> string list -> string list
         getAllBySubscription: SubscriptionId -> Article list
@@ -57,6 +57,9 @@ module Query =
     let orderByDescending (selector: Expression<Func<_, _>>) (query: IQueryable<_>) =
         query.OrderByDescending(selector)
     
+    let take (count: int) (query: IQueryable<_>) =
+        query.Take(count)
+        
     let single (query: IQueryable<_>) =
         query.Single()
 
@@ -70,7 +73,7 @@ module Query =
         static member Quote(e:Expression<System.Func<_, _>>) = e
 
 type Q =
-    static member orderByDescending (selector: Expression<Func<_, _>>) (query: IQueryable<_>) =
+    static member orderByDescending (selector: Expression<Func<_, _>>, query: IQueryable<_>) =
         query.OrderByDescending(selector)
 
 [<AllowNullLiteral>]
@@ -103,6 +106,8 @@ type PersistedFile() =
     member val Hash: byte[] = Unchecked.defaultof<_> with get, set
 
 open Microsoft.EntityFrameworkCore
+
+let (~+) (expr: Expression<Func<_, _>>) = Query.Expr.Quote expr
 
 type ReaderContext(options) =
     inherit DbContext(options)
@@ -209,9 +214,11 @@ module ArticleRepositoryImpl =
             |> Seq.map mapToArticle
             |> List.ofSeq
             
-        let getTop (count: int) =
-            context.Articles.OrderByDescending(fun x -> x.Timestamp).Take(count)
-            
+        let getTop (feedId: Guid option, count: int) =
+            context.Articles
+            |> Query.orderByDescending (Query.Expr.Quote(fun (x: PersistedArticle) -> x.Timestamp))
+            |> (fun q -> if feedId.IsSome then Query.where (Query.Expr.Quote(fun (x: PersistedArticle) -> x.SubscriptionId = feedId.Value)) q else q)
+            |> Query.take count                
             |> Query.toList
             |> Seq.map mapToArticle
             |> List.ofSeq

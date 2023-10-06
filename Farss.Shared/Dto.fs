@@ -68,6 +68,7 @@ type ArticleDto =
     
 type GetArticlesQuery =
     {
+        Feed: Guid option
         Count: int
     }
 

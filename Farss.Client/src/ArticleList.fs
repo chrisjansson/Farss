@@ -154,7 +154,7 @@ let rec Articles
 
     let fetchData () =
         promise {
-            let articlesP = ApiClient.getArticles 50
+            let articlesP = ApiClient.getArticles props.SelectedFeed 50
             let feedsP = ApiClient.getSubscriptions ()
 
             let! articles = articlesP
@@ -168,7 +168,7 @@ let rec Articles
                 | Error e1, Error e2 -> Error [ e1; e2 ]
         }
 
-    React.useEffectOnce (fun () ->
+    React.useEffect ((fun () ->
         fetchData ()
         |> PromiseResult.map (fun (a, f) -> (List.map sanitizeArticleContent a, f))
         |> PromiseResult.resultEnd
@@ -180,7 +180,7 @@ let rec Articles
                     }
                 ))
             (fun _ -> ())
-        |> ignore)
+        |> ignore), [| props.SelectedFeed :> obj |])
 
     Html.div [
         prop.className "main"

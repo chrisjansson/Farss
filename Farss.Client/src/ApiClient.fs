@@ -35,10 +35,11 @@ module Fetch =
         (properties: RequestProperties list)
         httpMethod
         : Fable.Core.JS.Promise<Response> =
-        let defaultProps =
-            [ RequestProperties.Method httpMethod
-              requestHeaders [ ContentType "application/json" ]
-              RequestProperties.Body !^(Encode.Auto.toString (0, record, caseStrategy = CaseStrategy.CamelCase)) ]
+        let defaultProps = [
+            RequestProperties.Method httpMethod
+            requestHeaders [ ContentType "application/json" ]
+            RequestProperties.Body !^(Encode.Auto.toString (0, record, caseStrategy = CaseStrategy.CamelCase))
+        ]
         // Append properties after defaultProps to make sure user-defined values
         // override the default ones if necessary
         List.append defaultProps properties |> fetch url
@@ -95,8 +96,11 @@ let getSubscriptions () =
 //    |> Promise.mapResult ignore
 //
 
-let getArticles (count: int): Fable.Core.JS.Promise<Result<Dto.ArticleDto list, _>> =
-    Fetch.tryFetchAsWithPayload ApiUrls.GetArticles ({ Dto.GetArticlesQuery.Count = count })
+let getArticles (feed: Guid option) (count: int) : Fable.Core.JS.Promise<Result<Dto.ArticleDto list, _>> =
+    Fetch.tryFetchAsWithPayload ApiUrls.GetArticles {
+        Dto.GetArticlesQuery.Count = count
+        Dto.Feed = feed
+    }
 
 //let setArticleReadStatus (dto: Dto.SetArticleReadStatusDto) =
 //    Fetch.tryPostRecord ApiUrls.SetArticleReadStatus dto []
