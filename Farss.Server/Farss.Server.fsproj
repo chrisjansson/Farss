@@ -22,6 +22,7 @@
     <Compile Include="Persistence.fs" />
     <Compile Include="DtoValidation.fs" />
     <Compile Include="Serialization.fs" />
+    <Compile Include="CachedHttpClient.fs" />
     <Compile Include="FeedReaderAdapter.fs" />
     <Compile Include="GiraffeUtils.fs" />
     <Compile Include="SubscribeToFeedWorkflow.fs" />

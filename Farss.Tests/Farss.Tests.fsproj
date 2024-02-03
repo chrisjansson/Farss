@@ -1,53 +1,56 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <OutputType>Library</OutputType>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="TestInfrastructure\DatabaseTesting.fs" />
-    <Compile Include="TestInfrastructure\TestStartup.fs" />
-    <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs" />
-    <Compile Include="TestInfrastructure\Spec.fs" />
-    <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Build.fs" />
-    <Compile Include="ResultTests.fs" />
-    <Compile Include="ExpectoExtensions.fs" />
-    <Compile Include="FeedBuilder.fs" />
-    <Compile Include="CreateArticleTests.fs" />
-    <Compile Include="CreateArticleFromFeedItemTests.fs" />
-    <Compile Include="FeedReader.fs" />
-    <Compile Include="FeedReaderAdapterTests.fs" />
-    <Compile Include="SubscribeToFeedTests.fs" />
-    <Compile Include="DeleteSubscriptionTests.fs" />
-    <Compile Include="FetchArticlesWorkflowTests.fs" />
-    <Compile Include="SetArticleReadStatusWorkflowTests.fs" />
-    <Compile Include="Specs/SubscribeToFeedSpecs.fs" />
-    <Compile Include="Specs\GetArticlesSpecs.fs" />
-    <Compile Include="Specs\FetchEntriesSpecs.fs" />
-    <Compile Include="SpecTests.fs" />
-    <Compile Include="ResolveTests.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Expecto" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.9" />
-    <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.0" />
-    <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />
-    <PackageReference Include="Thoth.Json.Net" Version="5.0.0" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.13.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Farss.Server\Farss.Server.fsproj" />
-    <ProjectReference Include="..\Farss.Shared\Farss.Shared.fsproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="appsettings.appveyor.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <OutputType>exe</OutputType>
+        <GenerateProgramFile>>false</GenerateProgramFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="TestInfrastructure\DatabaseTesting.fs"/>
+        <Compile Include="TestInfrastructure\TestStartup.fs"/>
+        <Compile Include="TestInfrastructure\FakeFeedReaderAdapter.fs"/>
+        <Compile Include="TestInfrastructure\Spec.fs"/>
+        <None Include="ExampleRssFeed.xml" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Build.fs"/>
+        <Compile Include="ResultTests.fs"/>
+        <Compile Include="ExpectoExtensions.fs"/>
+        <Compile Include="FeedBuilder.fs"/>
+        <Compile Include="CreateArticleTests.fs"/>
+        <Compile Include="CreateArticleFromFeedItemTests.fs"/>
+        <Compile Include="FeedReader.fs"/>
+        <Compile Include="FeedReaderAdapterTests.fs"/>
+        <Compile Include="SubscribeToFeedTests.fs"/>
+        <Compile Include="DeleteSubscriptionTests.fs"/>
+        <Compile Include="FetchArticlesWorkflowTests.fs"/>
+        <Compile Include="SetArticleReadStatusWorkflowTests.fs"/>
+        <Compile Include="Specs/SubscribeToFeedSpecs.fs"/>
+        <Compile Include="Specs\GetArticlesSpecs.fs"/>
+        <Compile Include="Specs\FetchEntriesSpecs.fs"/>
+        <Compile Include="SpecTests.fs"/>
+        <Compile Include="ResolveTests.fs"/>
+        <Compile Include="HttpTests.fs" />
+        <Compile Include="Program.fs" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Expecto" Version="10.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.9"/>
+        <PackageReference Include="Microsoft.SyndicationFeed.ReaderWriter" Version="1.0.0"/>
+        <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1"/>
+        <PackageReference Include="Thoth.Json.Net" Version="5.0.0"/>
+        <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.14.3" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Farss.Server\Farss.Server.fsproj"/>
+        <ProjectReference Include="..\Farss.Shared\Farss.Shared.fsproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Update="appsettings.appveyor.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>
