@@ -30,6 +30,7 @@ type FileRepository =
 type HttpCacheRepository =
     {
         getCacheHeaders: string -> CacheHeaders option
+        save: string -> string -> string option -> DateTimeOffset option -> unit
         // save: File -> unit
         // delete: Guid -> unit
     }
@@ -117,6 +118,7 @@ type PersistedFile() =
 type PersistedHttpCacheEntry() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
     member val Url: string = Unchecked.defaultof<_> with get, set
+    member val Content: string = Unchecked.defaultof<_> with get, set
     member val ETag: string = Unchecked.defaultof<_> with get, set
     member val LastModifiedDate: Nullable<DateTimeOffset> = Unchecked.defaultof<_> with get, set
 
@@ -345,18 +347,40 @@ module HttpCacheRepositoryImpl =
             let cacheEntry =
                 context.HttpCacheEntries
                     .Where(fun x -> x.Url = url)
+                    .Select(fun x -> {| AETag = x.ETag; BLastModifiedDate = x.LastModifiedDate; CId = x.Id |})
                     .SingleOrDefault()
-                |> Option.ofObj
+                |> (fun r -> if r = Unchecked.defaultof<_> then None else Some r)
+                
             match cacheEntry with
             | Some ce ->
                 let etag = 
-                    ce.ETag
+                    ce.AETag
                     |> Option.ofObj
                 let lastModifiedDate =
-                    ce.LastModifiedDate
+                    ce.BLastModifiedDate
                     |> Option.ofNullable
-                Some { Id = ce.Id; ETag = etag; LastModified = lastModifiedDate }
+                Some { Id = ce.CId; ETag = etag; LastModified = lastModifiedDate }
             | None -> None
+    
+        let save (url: string) (response: string) (etag: string option) (lastModified: DateTimeOffset option) =
+            let entry =
+                let e =
+                    context.HttpCacheEntries
+                        .Where(fun x -> x.Url = url)
+                        .SingleOrDefault()
+                if e = null then
+                    let e = PersistedHttpCacheEntry()
+                    e.Id <- Guid.NewGuid()
+                    e.Url <- url
+                    context.HttpCacheEntries.Add(e) |> ignore
+                    e
+                else
+                    e
+            entry.Content <- response
+            entry.ETag <- Option.toObj etag
+            entry.LastModifiedDate <- Option.toNullable lastModified
+        
         {
-            getCacheHeaders = getCacheHeaders 
+            getCacheHeaders = getCacheHeaders
+            save = save    
         }

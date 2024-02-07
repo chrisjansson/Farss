@@ -92,7 +92,13 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
 let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string): Domain.CacheHeaders option =
     repository.getCacheHeaders url
 
-let getCached (getCacheHeaders: string -> Domain.CacheHeaders option) (url: string) =
+let cacheResponse (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
+    repository.save url content etag lastModified
+
+let getCached
+    (getCacheHeaders: string -> CacheHeaders option)
+    (cacheResponse: string -> string -> string option -> DateTimeOffset option -> unit)
+    (url: string) =
     task {
         let cacheHeaders = getCacheHeaders url
 
@@ -104,8 +110,12 @@ let getCached (getCacheHeaders: string -> Domain.CacheHeaders option) (url: stri
             |> Option.bind (_.LastModified)
         
         let! response = get (url, etag, lastModifiedDate)
-     
-        //Store if cache miss
+        
+        match response with
+        | Ok r -> cacheResponse url r.Content r.ETag r.LastModified
+        | NotModified -> failwith "Not implemented"
+        | Error -> failwith "Error"
+                    
         //Retrieve if cache hit
            
         return ()
