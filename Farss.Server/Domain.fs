@@ -57,6 +57,13 @@ type File =
 and FileOwner =
     | Feed = 1
 
+type CacheHeaders =
+    {
+        Id: Guid
+        ETag: string option
+        LastModified: DateTimeOffset option
+    }
+
 module ArticleGuid =
     let create (str: string) = 
         if String.IsNullOrWhiteSpace(str) then

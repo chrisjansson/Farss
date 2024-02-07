@@ -26,6 +26,13 @@ type FileRepository =
         save: File -> unit
         delete: Guid -> unit
     }
+    
+type HttpCacheRepository =
+    {
+        getCacheHeaders: string -> CacheHeaders option
+        // save: File -> unit
+        // delete: Guid -> unit
+    }
 
 //TODO: Move to test assembly
 let create () =
@@ -105,6 +112,15 @@ type PersistedFile() =
     member val Data: byte[] = Unchecked.defaultof<_> with get, set
     member val Hash: byte[] = Unchecked.defaultof<_> with get, set
 
+
+[<AllowNullLiteral>]
+type PersistedHttpCacheEntry() =
+    member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val Url: string = Unchecked.defaultof<_> with get, set
+    member val ETag: string = Unchecked.defaultof<_> with get, set
+    member val LastModifiedDate: Nullable<DateTimeOffset> = Unchecked.defaultof<_> with get, set
+
+
 open Microsoft.EntityFrameworkCore
 
 let (~+) (expr: Expression<Func<_, _>>) = Query.Expr.Quote expr
@@ -123,6 +139,10 @@ type ReaderContext(options) =
     [<DefaultValue>]
     val mutable files : DbSet<PersistedFile>
     member x.Files with get() = x.files and set v = x.files <- v
+    
+    [<DefaultValue>]
+    val mutable httpCacheEntry : DbSet<PersistedHttpCacheEntry>
+    member x.HttpCacheEntries with get() = x.httpCacheEntry and set v = x.httpCacheEntry <- v
     
     override x.OnModelCreating(mb) =
         
@@ -317,4 +337,26 @@ module FileRepositoryImpl =
             get = get
             save = save
             delete = delete
+        }
+
+module HttpCacheRepositoryImpl =
+    let create (context: ReaderContext): HttpCacheRepository =
+        let getCacheHeaders (url: string): CacheHeaders option =
+            let cacheEntry =
+                context.HttpCacheEntries
+                    .Where(fun x -> x.Url = url)
+                    .SingleOrDefault()
+                |> Option.ofObj
+            match cacheEntry with
+            | Some ce ->
+                let etag = 
+                    ce.ETag
+                    |> Option.ofObj
+                let lastModifiedDate =
+                    ce.LastModifiedDate
+                    |> Option.ofNullable
+                Some { Id = ce.Id; ETag = etag; LastModified = lastModifiedDate }
+            | None -> None
+        {
+            getCacheHeaders = getCacheHeaders 
         }

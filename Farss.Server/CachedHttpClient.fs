@@ -3,6 +3,8 @@
 open System
 open System.Net
 open System.Net.Http
+open Domain
+open Persistence
 
 //
 // public static async Task<byte[]> DownloadBytesAsync(
@@ -85,4 +87,26 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
             return NotModified
         | _ ->
             return Error
+    }
+
+let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string): Domain.CacheHeaders option =
+    repository.getCacheHeaders url
+
+let getCached (getCacheHeaders: string -> Domain.CacheHeaders option) (url: string) =
+    task {
+        let cacheHeaders = getCacheHeaders url
+
+        let etag =
+            cacheHeaders
+            |> Option.bind (_.ETag)
+        let lastModifiedDate =
+            cacheHeaders
+            |> Option.bind (_.LastModified)
+        
+        let! response = get (url, etag, lastModifiedDate)
+     
+        //Store if cache miss
+        //Retrieve if cache hit
+           
+        return ()
     }
