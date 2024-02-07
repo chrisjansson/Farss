@@ -5,6 +5,8 @@ open AngleSharp
 open CodeHollow.FeedReader
 open System
 open CodeHollow.FeedReader.Feeds
+open Farss.Server
+open Persistence
 
 type  FeedError =
     | FetchError of Exception
@@ -66,7 +68,11 @@ module FeedItem =
 
 //TODO: Download with timeout
 let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
-let downloadAsync (url: string) = Helpers.DownloadAsync(url) |> Async.AwaitTask
+let downloadAsync (repository: HttpCacheRepository) (url: string) =
+    let getCacheHeaders = CachedHttpClient.getCacheHeadersImpl repository
+    let cacheResponse = CachedHttpClient.cacheResponseImpl repository
+    
+    CachedHttpClient.getCached getCacheHeaders cacheResponse url |> Async.AwaitTask
 
 let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> Async<string>): FeedReaderAdapter =
     let tryOrErrorAsync op errorConstructor arg = async {

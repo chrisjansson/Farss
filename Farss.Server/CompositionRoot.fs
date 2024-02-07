@@ -41,14 +41,20 @@ let createCompositionRoot (connectionString: PostgresConnectionString) : IServic
         let context = s.GetRequiredService<ReaderContext>()
         ArticleRepositoryImpl.create context)
     |> ignore
+    
+    services.AddScoped<HttpCacheRepository>(fun s ->
+        let context = s.GetRequiredService<ReaderContext>()
+        HttpCacheRepositoryImpl.create context)
+    |> ignore
 
     services.AddScoped<FileRepository>(fun s ->
         let context = s.GetRequiredService<ReaderContext>()
         FileRepositoryImpl.create context)
     |> ignore
 
-    services.AddSingleton<FeedReaderAdapter.FeedReaderAdapter>(
-        FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync FeedReaderAdapter.downloadAsync
+    services.AddTransient<FeedReaderAdapter.FeedReaderAdapter>(fun sp ->
+        let repository = sp.GetRequiredService<HttpCacheRepository>()
+        FeedReaderAdapter.createAdapter FeedReaderAdapter.downloadBytesAsync (FeedReaderAdapter.downloadAsync repository)
     )
     |> ignore
 

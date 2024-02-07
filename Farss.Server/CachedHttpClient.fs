@@ -3,6 +3,8 @@
 open System
 open System.Net
 open System.Net.Http
+
+open System.Threading.Tasks
 open Domain
 open Persistence
 
@@ -92,13 +94,13 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
 let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string): Domain.CacheHeaders option =
     repository.getCacheHeaders url
 
-let cacheResponse (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
+let cacheResponseImpl (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
     repository.save url content etag lastModified
 
 let getCached
     (getCacheHeaders: string -> CacheHeaders option)
     (cacheResponse: string -> string -> string option -> DateTimeOffset option -> unit)
-    (url: string) =
+    (url: string): Task<string> =
     task {
         let cacheHeaders = getCacheHeaders url
 
@@ -111,12 +113,15 @@ let getCached
         
         let! response = get (url, etag, lastModifiedDate)
         
-        match response with
-        | Ok r -> cacheResponse url r.Content r.ETag r.LastModified
-        | NotModified -> failwith "Not implemented"
-        | Error -> failwith "Error"
+        let content = 
+            match response with
+            | Ok r ->
+                cacheResponse url r.Content r.ETag r.LastModified
+                r.Content
+            | NotModified -> failwith "Not implemented"
+            | Error -> failwith "Error"
                     
         //Retrieve if cache hit
            
-        return ()
+        return content
     }
