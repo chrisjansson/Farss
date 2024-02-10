@@ -101,49 +101,49 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
         | _ -> return Error
     }
 
-let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string) : Domain.CacheHeaders option = repository.getCacheHeaders url
+let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string) : CacheHeaders option = repository.getCacheHeaders url
 
 let cacheResponseImpl (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
     repository.save url content etag lastModified
 
 let getCached
-    (getCacheHeaders: string -> CacheHeaders option)
+    (getCacheEntry: string -> CacheHeaders option)
     (cacheResponse: string -> string -> string option -> DateTimeOffset option -> unit)
-    (getContent: Guid -> string)
+    (getCacheEntryContent: Guid -> string)
     (url: string)
     : Task<string> =
+    task {
+        let cacheHeaders = getCacheEntry url
 
-    let url = Uri(url).ToString()
-    
-    let getAndCache (url, id: Guid option, etag, lastModifiedDate) =
-        task {
-            let! response = get (url, etag, lastModifiedDate)
-            let content =
+        match cacheHeaders with
+        | Some ch ->
+            let pollThrottleWindowExpired =
+                DateTimeOffset.UtcNow - ch.LastGet < TimeSpan.FromMinutes 20
+
+            if pollThrottleWindowExpired then
+                return getCacheEntryContent ch.Id
+            else
+                let etag = ch.ETag
+                let lastModifiedDate = ch.LastModified
+
+                let! response = get (url, etag, lastModifiedDate)
+
                 match response with
                 | Ok r ->
                     cacheResponse url r.Content r.ETag r.LastModified
-                    r.Content
-                | NotModified -> getContent id.Value
-                | Error -> failwith "Error"
+                    return r.Content
+                | NotModified -> return getCacheEntryContent ch.Id
+                | Error ->
+                    failwith "Error"
+                    return ""
+        | None ->
+            let! response = get (url, None, None)
 
-            return content
-        }
-
-    task {
-        let cacheHeaders = getCacheHeaders url
-
-        let! content =
-            match cacheHeaders with
-            | Some ch ->
-                if DateTimeOffset.UtcNow - ch.LastGet < TimeSpan.FromMinutes 20 then
-                    getContent ch.Id |> Task.FromResult
-                else
-                    let etag = ch.ETag
-                    let lastModifiedDate = ch.LastModified
-
-                    getAndCache (url, Some ch.Id, etag, lastModifiedDate)
-            | None ->
-                getAndCache (url, None, None, None)
-
-        return content
+            match response with
+            | Ok r ->
+                cacheResponse url r.Content r.ETag r.LastModified
+                return r.Content
+            | _ ->
+                failwith "Error"
+                return ""
     }
