@@ -62,6 +62,7 @@ type CacheHeaders =
         Id: Guid
         ETag: string option
         LastModified: DateTimeOffset option
+        LastGet: DateTimeOffset
     }
 
 module ArticleGuid =

@@ -71,8 +71,9 @@ let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.
 let downloadAsync (repository: HttpCacheRepository) (url: string) =
     let getCacheHeaders = CachedHttpClient.getCacheHeadersImpl repository
     let cacheResponse = CachedHttpClient.cacheResponseImpl repository
+    let getContent = repository.getContent
     
-    CachedHttpClient.getCached getCacheHeaders cacheResponse url |> Async.AwaitTask
+    CachedHttpClient.getCached getCacheHeaders cacheResponse getContent url |> Async.AwaitTask
 
 let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> Async<string>): FeedReaderAdapter =
     let tryOrErrorAsync op errorConstructor arg = async {
@@ -315,17 +316,15 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                         }
                     | urls ->
                         task {
-                            let urls =
-                                [|
-                                    for u in urls do
-                                        let uri = Uri(u.Url, UriKind.RelativeOrAbsolute)
-                                        let path = if uri.IsAbsoluteUri then u.Url else baseUrl + u.Url
-                                        let x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
-                                        yield x
-        
-                                |]
-                            let! urls = urls |> Task.WhenAll
-                            let urls = urls |> List.ofArray |> List.map (Result.map (fun (url, feed) -> toDiscoveredFeed url feed))
+                            let mutable items = []
+                            for u in urls do
+                                let uri = Uri(u.Url, UriKind.RelativeOrAbsolute)
+                                let path = if uri.IsAbsoluteUri then u.Url else Uri(Uri(baseUrl), u.Url).ToString()
+                                let! x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
+                                items <- x::items
+                                
+                            let urls = items 
+                            let urls = urls |> List.map (Result.map (fun (url, feed) -> toDiscoveredFeed url feed))
                             return (Ok urls)
                         }
    

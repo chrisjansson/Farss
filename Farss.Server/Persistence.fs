@@ -31,8 +31,7 @@ type HttpCacheRepository =
     {
         getCacheHeaders: string -> CacheHeaders option
         save: string -> string -> string option -> DateTimeOffset option -> unit
-        // save: File -> unit
-        // delete: Guid -> unit
+        getContent: Guid -> string
     }
 
 //TODO: Move to test assembly
@@ -121,6 +120,7 @@ type PersistedHttpCacheEntry() =
     member val Content: string = Unchecked.defaultof<_> with get, set
     member val ETag: string = Unchecked.defaultof<_> with get, set
     member val LastModifiedDate: Nullable<DateTimeOffset> = Unchecked.defaultof<_> with get, set
+    member val LastGet: DateTimeOffset = Unchecked.defaultof<_> with get, set
 
 
 open Microsoft.EntityFrameworkCore
@@ -347,7 +347,7 @@ module HttpCacheRepositoryImpl =
             let cacheEntry =
                 context.HttpCacheEntries
                     .Where(fun x -> x.Url = url)
-                    .Select(fun x -> {| AETag = x.ETag; BLastModifiedDate = x.LastModifiedDate; CId = x.Id |})
+                    .Select(fun x -> {| AETag = x.ETag; BLastModifiedDate = x.LastModifiedDate; CId = x.Id; DLastGet = x.LastGet |})
                     .SingleOrDefault()
                 |> (fun r -> if r = Unchecked.defaultof<_> then None else Some r)
                 
@@ -359,9 +359,15 @@ module HttpCacheRepositoryImpl =
                 let lastModifiedDate =
                     ce.BLastModifiedDate
                     |> Option.ofNullable
-                Some { Id = ce.CId; ETag = etag; LastModified = lastModifiedDate }
+                Some { Id = ce.CId; ETag = etag; LastModified = lastModifiedDate; LastGet = ce.DLastGet }
             | None -> None
     
+        let getContent (id: Guid) =            
+            context.HttpCacheEntries
+                .Where(fun x -> x.Id = id)
+                .Select(fun x -> x.Content)
+                .Single()
+        
         let save (url: string) (response: string) (etag: string option) (lastModified: DateTimeOffset option) =
             let entry =
                 let e =
@@ -379,8 +385,11 @@ module HttpCacheRepositoryImpl =
             entry.Content <- response
             entry.ETag <- Option.toObj etag
             entry.LastModifiedDate <- Option.toNullable lastModified
-        
+            entry.LastGet <- DateTimeOffset.UtcNow
+            context.SaveChanges() |> ignore
+
         {
             getCacheHeaders = getCacheHeaders
+            getContent = getContent
             save = save    
         }

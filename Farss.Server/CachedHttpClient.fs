@@ -49,13 +49,19 @@ open Persistence
 // }
 
 type Response =
-    | Ok of {| Content: string; ETag: string option; LastModified: DateTimeOffset option |}
+    | Ok of
+        {|
+            Content: string
+            ETag: string option
+            LastModified: DateTimeOffset option
+        |}
     | NotModified
     | Error
 
 //Doesnt follow redirects, no timeouts nor cancellation tokens, error handling
 let get (url: string, etag: string option, lastModified: DateTimeOffset option) =
     task {
+        printfn $"Url request to %A{url}"
         use httpClient = new HttpClient()
 
         let request =
@@ -84,15 +90,18 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
             let etag = response.Headers.ETag.Tag |> Option.ofObj
             let lastModified = response.Content.Headers.LastModified |> Option.ofNullable
             let! content = response.Content.ReadAsStringAsync()
-            return Ok {| Content = content; ETag = etag; LastModified = lastModified |}
-        | HttpStatusCode.NotModified ->
-            return NotModified
-        | _ ->
-            return Error
+
+            return
+                Ok {|
+                    Content = content
+                    ETag = etag
+                    LastModified = lastModified
+                |}
+        | HttpStatusCode.NotModified -> return NotModified
+        | _ -> return Error
     }
 
-let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string): Domain.CacheHeaders option =
-    repository.getCacheHeaders url
+let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string) : Domain.CacheHeaders option = repository.getCacheHeaders url
 
 let cacheResponseImpl (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
     repository.save url content etag lastModified
@@ -100,28 +109,41 @@ let cacheResponseImpl (repository: HttpCacheRepository) (url: string) (content: 
 let getCached
     (getCacheHeaders: string -> CacheHeaders option)
     (cacheResponse: string -> string -> string option -> DateTimeOffset option -> unit)
-    (url: string): Task<string> =
+    (getContent: Guid -> string)
+    (url: string)
+    : Task<string> =
+
+    let url = Uri(url).ToString()
+    
+    let getAndCache (url, id: Guid option, etag, lastModifiedDate) =
+        task {
+            let! response = get (url, etag, lastModifiedDate)
+            let content =
+                match response with
+                | Ok r ->
+                    cacheResponse url r.Content r.ETag r.LastModified
+                    r.Content
+                | NotModified -> getContent id.Value
+                | Error -> failwith "Error"
+
+            return content
+        }
+
     task {
         let cacheHeaders = getCacheHeaders url
 
-        let etag =
-            cacheHeaders
-            |> Option.bind (_.ETag)
-        let lastModifiedDate =
-            cacheHeaders
-            |> Option.bind (_.LastModified)
-        
-        let! response = get (url, etag, lastModifiedDate)
-        
-        let content = 
-            match response with
-            | Ok r ->
-                cacheResponse url r.Content r.ETag r.LastModified
-                r.Content
-            | NotModified -> failwith "Not implemented"
-            | Error -> failwith "Error"
-                    
-        //Retrieve if cache hit
-           
+        let! content =
+            match cacheHeaders with
+            | Some ch ->
+                if DateTimeOffset.UtcNow - ch.LastGet < TimeSpan.FromMinutes 20 then
+                    getContent ch.Id |> Task.FromResult
+                else
+                    let etag = ch.ETag
+                    let lastModifiedDate = ch.LastModified
+
+                    getAndCache (url, Some ch.Id, etag, lastModifiedDate)
+            | None ->
+                getAndCache (url, None, None, None)
+
         return content
     }
