@@ -61,8 +61,7 @@ let private convertToWorkflowError2 r : Result<_, WorkflowError> =
 let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRepository) (command: SubscribeToFeedDto) =
     let getFromUrl url =
         feedReader.getFromUrl url
-        |> Async.map (Result.mapError SubscribeToFeedError.FeedError)
-        |> Async.StartAsTask
+        |> Task.map (Result.mapError SubscribeToFeedError.FeedError)
 
     let createSubscription (command: SubscribeToFeedDto) _ =
         result {
@@ -89,7 +88,6 @@ let updateFeedIcon
     =
     let getFeedForSubscription (subscription: Domain.Subscription) =
         feedReader.getFromUrl subscription.Url
-        |> Async.StartAsTask
         |> TaskResult.map (fun f -> subscription, f)
 
     let updateIcon (subscription: Domain.Subscription, feed: Feed) =

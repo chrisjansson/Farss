@@ -52,7 +52,7 @@ type [<RequireQualifiedAccess>] BaseDiscoveryError =
 type FeedReaderAdapter = 
     {
         discoverFeeds: string -> Task<Result<Result<DiscoveredFeed, FeedError> list, BaseDiscoveryError>>
-        getFromUrl: string -> AsyncResult<Feed, FeedError>
+        getFromUrl: string -> TaskResult<Feed, FeedError>
     }
 
 module FeedItem = 
@@ -67,19 +67,22 @@ module FeedItem =
     }
 
 //TODO: Download with timeout
-let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url) |> Async.AwaitTask
+let downloadBytesAsync (url: string) = Helpers.DownloadBytesAsync(url)
 let downloadAsync (repository: HttpCacheRepository) (url: string) =
     let getCacheHeaders = CachedHttpClient.getCacheHeadersImpl repository
     let cacheResponse = CachedHttpClient.cacheResponseImpl repository
     let getContent = repository.getContent
     
-    CachedHttpClient.getCached getCacheHeaders cacheResponse getContent url |> Async.AwaitTask
+    CachedHttpClient.getCached getCacheHeaders cacheResponse getContent url
 
-let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> Async<string>): FeedReaderAdapter =
-    let tryOrErrorAsync op errorConstructor arg = async {
-        match! (Async.Catch (op arg)) with
-        | Choice1Of2 r -> return Ok r
-        | Choice2Of2 r -> return Error (errorConstructor r)
+let createAdapter (getBytesAsync: string -> Task<byte[]>) (getAsync: string -> Task<string>): FeedReaderAdapter =
+    let tryOrErrorAsync op errorConstructor arg = task {
+        try
+            let! result = op arg
+            return Ok result
+        with
+            | r ->
+               return Error (errorConstructor r) 
     }
 
     let tryOrError op errorConstructor arg =
@@ -91,7 +94,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
     let tryDownloadBytesAsync (url: string) = tryOrErrorAsync getBytesAsync FetchError url
     let tryDownloadAsync (url: string) = tryOrErrorAsync getAsync id url
     
-    let parseAsync (content: string): Async<Result<Feed, FeedError>> =
+    let parseAsync (content: string): Task<Result<Feed, FeedError>> =
         let parseContent (content: string) = FeedReader.ReadFromString(content)
         let tryParseContent (content: string) = tryOrError parseContent ParseError content
         
@@ -109,16 +112,16 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     let fileName = filename url
                     
                     tryDownloadBytesAsync url
-                    |> AsyncResult.mapResult (fun data -> (fileName, data))
-                    |> Async.map transformDownloadResult
+                    |> TaskResult.map (fun data -> (fileName, data))
+                    |> Task.map transformDownloadResult
                 
                 url
                 |> Option.map tryDownloadIconAsync
-                |> Option.defaultWith (fun () -> async.Return None)
+                |> Option.defaultWith (fun () -> Task.FromResult None)
             tryOrErrorAsync inner FetchError url
-            |> Async.map (transformDownloadResult >> Option.flatten)
+            |> Task.map (transformDownloadResult >> Option.flatten)
         
-        let mapFeed (feed: CodeHollow.FeedReader.Feed) = async {
+        let mapFeed (feed: CodeHollow.FeedReader.Feed) = task {
                 let optionOfNullOrEmpty (s: string) =
                     if String.IsNullOrEmpty(s) then
                         None
@@ -132,16 +135,16 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                     
                 let! document =
                     match document with
-                    | Some t -> t |> Async.map Some
-                    | None -> async.Return None
+                    | Some t -> t |> Task.map Some
+                    | None -> Task.FromResult None
                 
                 let! faviconUrl =     
                     match document with
                     | Some content ->
-                        async {
+                        task {
                             try 
                                 let bc = BrowsingContext.New(Configuration.Default)
-                                let! document = bc.OpenAsync(System.Action<Io.VirtualResponse>(fun r -> r.Content(content) |> ignore)) |> Async.AwaitTask
+                                let! document = bc.OpenAsync(System.Action<Io.VirtualResponse>(fun r -> r.Content(content) |> ignore))
                                 return document.QuerySelectorAll("link[rel~='icon']")
                                 |> List.ofSeq
                                 |> List.tryHead
@@ -152,7 +155,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                         }
                     | None ->
                         None
-                        |> async.Return
+                        |> Task.FromResult
                 
                 let feedIcon =
                     feed.ImageUrl
@@ -264,14 +267,14 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
             
         match parsedBytes with
         | Ok b ->
-            async {
+            task {
                 let! x = mapFeed b
                 return Ok x
             }
-        | Error e -> async.Return (Error e)
+        | Error e -> Task.FromResult (Error e)
         
-    let fetch (url: string): AsyncResult<Feed, FeedError> = 
-        async {
+    let fetch (url: string): TaskResult<Feed, FeedError> = 
+        task {
             let! result = tryDownloadAsync url
             match result with
             | Ok result ->
@@ -320,7 +323,7 @@ let createAdapter (getBytesAsync: string -> Async<byte[]>) (getAsync: string -> 
                             for u in urls do
                                 let uri = Uri(u.Url, UriKind.RelativeOrAbsolute)
                                 let path = if uri.IsAbsoluteUri then u.Url else Uri(Uri(baseUrl), u.Url).ToString()
-                                let! x = fetch path |> AsyncResult.map (fun f -> (path, f)) |> Async.StartAsTask
+                                let! x = fetch path |> TaskResult.map (fun f -> (path, f))
                                 items <- x::items
                                 
                             let urls = items 

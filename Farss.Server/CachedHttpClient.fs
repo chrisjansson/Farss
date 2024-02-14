@@ -1,9 +1,11 @@
 ﻿module Farss.Server.CachedHttpClient
 
 open System
+open System.Collections.Generic
 open System.Net
 open System.Net.Http
 
+open System.Threading
 open System.Threading.Tasks
 open Domain
 open Persistence
@@ -61,7 +63,6 @@ type Response =
 //Doesnt follow redirects, no timeouts nor cancellation tokens, error handling
 let get (url: string, etag: string option, lastModified: DateTimeOffset option) =
     task {
-        printfn $"Url request to %A{url}"
         use httpClient = new HttpClient()
 
         let request =
@@ -106,6 +107,39 @@ let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string) : CacheH
 let cacheResponseImpl (repository: HttpCacheRepository) (url: string) (content: string) (etag: string option) (lastModified: DateTimeOffset option) =
     repository.save url content etag lastModified
 
+type Lock(key: string, lockObj, dictionary: Dictionary<string, int * SemaphoreSlim>) =
+    interface IDisposable with
+        member x.Dispose() =
+            let sem = lock lockObj (fun () ->
+                    let count,sem = dictionary.[key]                    
+                    let count = count - 1
+                    if count = 0 then
+                        dictionary.Remove(key) |> ignore
+                    else
+                        dictionary.[key] <- (count, sem)
+                    sem
+                )
+            sem.Release() |> ignore
+
+let createKeyedSemaphore () =
+    let lockObj = obj()
+    let cd = Dictionary<string, int * SemaphoreSlim>()
+
+    let acquireLock (url: string): SemaphoreSlim * Lock =
+        lock lockObj (fun () ->
+            if cd.ContainsKey(url) then
+                let (count, sem) = cd.[url]
+                cd.[url] <- (count + 1, sem)
+                (sem, new Lock(url, lockObj, cd))
+            else
+                let sem = new SemaphoreSlim(1)
+                cd.Add(url, (1, sem))
+                (sem, new Lock(url, lockObj, cd))
+            )
+    acquireLock
+    
+let acquireLock = createKeyedSemaphore ()
+
 let getCached
     (getCacheEntry: string -> CacheHeaders option)
     (cacheResponse: string -> string -> string option -> DateTimeOffset option -> unit)
@@ -113,37 +147,46 @@ let getCached
     (url: string)
     : Task<string> =
     task {
-        let cacheHeaders = getCacheEntry url
+        let op () =
+            task {
+                let cacheHeaders = getCacheEntry url
 
-        match cacheHeaders with
-        | Some ch ->
-            let pollThrottleWindowExpired =
-                DateTimeOffset.UtcNow - ch.LastGet < TimeSpan.FromMinutes 20
+                match cacheHeaders with
+                | Some ch ->
+                    let pollThrottleWindowExpired =
+                        DateTimeOffset.UtcNow - ch.LastGet < TimeSpan.FromMinutes 20
 
-            if pollThrottleWindowExpired then
-                return getCacheEntryContent ch.Id
-            else
-                let etag = ch.ETag
-                let lastModifiedDate = ch.LastModified
+                    if pollThrottleWindowExpired then
+                        return getCacheEntryContent ch.Id
+                    else
+                        let etag = ch.ETag
+                        let lastModifiedDate = ch.LastModified
 
-                let! response = get (url, etag, lastModifiedDate)
+                        let! response = get (url, etag, lastModifiedDate)
 
-                match response with
-                | Ok r ->
-                    cacheResponse url r.Content r.ETag r.LastModified
-                    return r.Content
-                | NotModified -> return getCacheEntryContent ch.Id
-                | Error ->
-                    failwith "Error"
-                    return ""
-        | None ->
-            let! response = get (url, None, None)
+                        match response with
+                        | Ok r ->
+                            cacheResponse url r.Content r.ETag r.LastModified
+                            return r.Content
+                        | NotModified -> return getCacheEntryContent ch.Id
+                        | Error ->
+                            failwith "Error"
+                            return ""
+                | None ->
+                    let! response = get (url, None, None)
 
-            match response with
-            | Ok r ->
-                cacheResponse url r.Content r.ETag r.LastModified
-                return r.Content
-            | _ ->
-                failwith "Error"
-                return ""
+                    match response with
+                    | Ok r ->
+                        cacheResponse url r.Content r.ETag r.LastModified
+                        return r.Content
+                    | _ ->
+                        failwith "Error"
+                        return ""
+            }
+     
+        let sem, lock = acquireLock url
+        use _ = lock
+        do! sem.WaitAsync()
+        let! r = op()
+        return r
     }

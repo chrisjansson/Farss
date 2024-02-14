@@ -22,8 +22,7 @@ let fetchArticlesForSubscriptionImpl: FetchArticlesForSubscriptionImpl =
 
         let fetchFeedForSubscription (subscription: Subscription) =
             adapter.getFromUrl subscription.Url
-            |> Async.map (Result.mapError FetchArticlesError.FeedError)
-            |> Async.StartAsTask
+            |> Task.map (Result.mapError FetchArticlesError.FeedError)
 
         let filterExistingItems (items: Article list) =
             let itemIds = List.map (fun (a: Article) -> a.Guid) items
