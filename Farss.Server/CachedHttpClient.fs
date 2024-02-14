@@ -58,7 +58,7 @@ type Response =
             LastModified: DateTimeOffset option
         |}
     | NotModified
-    | Error
+    | Error of HttpStatusCode
 
 //Doesnt follow redirects, no timeouts nor cancellation tokens, error handling
 let get (url: string, etag: string option, lastModified: DateTimeOffset option) =
@@ -99,7 +99,7 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
                     LastModified = lastModified
                 |}
         | HttpStatusCode.NotModified -> return NotModified
-        | _ -> return Error
+        | statusCode -> return Error statusCode
     }
 
 let getCacheHeadersImpl (repository: HttpCacheRepository) (url: string) : CacheHeaders option = repository.getCacheHeaders url
@@ -169,9 +169,8 @@ let getCached
                             cacheResponse url r.Content r.ETag r.LastModified
                             return r.Content
                         | NotModified -> return getCacheEntryContent ch.Id
-                        | Error ->
-                            failwith "Error"
-                            return ""
+                        | Error statusCode ->
+                            return raise (Exception($"Error status code: {statusCode}"))
                 | None ->
                     let! response = get (url, None, None)
 
@@ -180,8 +179,7 @@ let getCached
                         cacheResponse url r.Content r.ETag r.LastModified
                         return r.Content
                     | _ ->
-                        failwith "Error"
-                        return ""
+                        return raise (Exception("Error"))
             }
      
         let sem, lock = acquireLock url
