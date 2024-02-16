@@ -19,6 +19,8 @@
     <Compile Include="Operation.fs" />
     <Compile Include="Domain.fs" />
     <Compile Include="BackgroundTaskQueue.fs" />
+    <Compile Include="Entities.fs" />
+    <Compile Include="ORMappingConfiguration.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="DtoValidation.fs" />
     <Compile Include="Serialization.fs" />

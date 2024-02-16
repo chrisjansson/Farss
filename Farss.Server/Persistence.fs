@@ -1,8 +1,8 @@
 module Persistence
 
 open System
-open System.Collections.Generic
 open Domain
+open Microsoft.EntityFrameworkCore
 
 type SubscriptionRepository = {
     get: SubscriptionId -> Subscription
@@ -55,110 +55,11 @@ module Query =
 type Q =
     static member orderByDescending(selector: Expression<Func<_, _>>, query: IQueryable<_>) = query.OrderByDescending(selector)
 
-[<AllowNullLiteral>]
-type PersistedSubscription() =
-    member val Id: Guid = Unchecked.defaultof<_> with get, set
-    member val Url: string = Unchecked.defaultof<_> with get, set
-    member val Title: string = Unchecked.defaultof<_> with get, set
-    member val Icon: Nullable<Guid> = Unchecked.defaultof<_> with get, set
-    member val Articles: ResizeArray<PersistedArticle> = ResizeArray<_>() with get, set
-
-and [<AllowNullLiteral>] PersistedSubscriptionLogEntry() =
-    member val Id: Guid = Unchecked.defaultof<_> with get, set
-    member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
-    member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
-    member val Success: bool = Unchecked.defaultof<_> with get, set
-    member val Message: string = Unchecked.defaultof<_> with get, set
-    member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
-
-and [<AllowNullLiteral>] PersistedArticle() =
-    member val Id: Guid = Unchecked.defaultof<_> with get, set
-    member val Title: string = Unchecked.defaultof<_> with get, set
-    member val Guid: string = Unchecked.defaultof<_> with get, set
-    member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
-    member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
-    member val Content: string = Unchecked.defaultof<_> with get, set
-    member val Summary: string = Unchecked.defaultof<_> with get, set
-    member val Source: string = Unchecked.defaultof<_> with get, set
-    member val IsRead: bool = Unchecked.defaultof<_> with get, set
-    member val Timestamp: DateTimeOffset = Unchecked.defaultof<_> with get, set
-    member val Link: string = Unchecked.defaultof<_> with get, set
-
-[<AllowNullLiteral>]
-type PersistedFile() =
-    member val Id: Guid = Unchecked.defaultof<_> with get, set
-    member val FileName: string = Unchecked.defaultof<_> with get, set
-    member val FileOwner: FileOwner = Unchecked.defaultof<_> with get, set
-    member val Data: byte[] = Unchecked.defaultof<_> with get, set
-    member val Hash: byte[] = Unchecked.defaultof<_> with get, set
-
-
-[<AllowNullLiteral>]
-type PersistedHttpCacheEntry() =
-    member val Id: Guid = Unchecked.defaultof<_> with get, set
-    member val Url: string = Unchecked.defaultof<_> with get, set
-    member val Content: string = Unchecked.defaultof<_> with get, set
-    member val ETag: string = Unchecked.defaultof<_> with get, set
-    member val LastModifiedDate: Nullable<DateTimeOffset> = Unchecked.defaultof<_> with get, set
-    member val LastGet: DateTimeOffset = Unchecked.defaultof<_> with get, set
-
-
-open Microsoft.EntityFrameworkCore
 
 let (~+) (expr: Expression<Func<_, _>>) = Query.Expr.Quote expr
 
-type ReaderContext(options) =
-    inherit DbContext(options)
-
-    [<DefaultValue>]
-    val mutable subscriptions: DbSet<PersistedSubscription>
-
-    member x.Subscriptions
-        with get () = x.subscriptions
-        and set v = x.subscriptions <- v
-
-    [<DefaultValue>]
-    val mutable articles: DbSet<PersistedArticle>
-
-    member x.Articles
-        with get () = x.articles
-        and set v = x.articles <- v
-
-    [<DefaultValue>]
-    val mutable files: DbSet<PersistedFile>
-
-    member x.Files
-        with get () = x.files
-        and set v = x.files <- v
-
-    [<DefaultValue>]
-    val mutable httpCacheEntry: DbSet<PersistedHttpCacheEntry>
-
-    member x.HttpCacheEntries
-        with get () = x.httpCacheEntry
-        and set v = x.httpCacheEntry <- v
-
-
-    [<DefaultValue>]
-    val mutable persistedSubscriptionLogEntries: DbSet<PersistedSubscriptionLogEntry>
-
-    member x.SubscriptionLogEntries
-        with get () = x.persistedSubscriptionLogEntries
-        and set v = x.persistedSubscriptionLogEntries <- v
-
-    override x.OnModelCreating(mb) =
-
-        mb
-            .Entity<PersistedArticle>()
-            .HasOne(fun x -> x.Subscription)
-            .WithMany(fun x -> x.Articles :> IEnumerable<_>)
-        |> ignore
-
-        mb
-            .Entity<PersistedSubscriptionLogEntry>()
-            .HasOne(fun x -> x.Subscription)
-            .WithMany()
-        |> ignore
+open Entities
+open ORMappingConfiguration
 
 module SubscriptionRepositoryImpl =
     let private mapToSubscription (s: PersistedSubscription) : Subscription = {
@@ -314,32 +215,6 @@ module ArticleRepositoryImpl =
         {
             getAll = getAll
             getTop = getTop
-            getAllBySubscription = getAllBySubscription
-            save = save
-            filterExistingArticles = filterExistingArticles
-        }
-
-    //TODO: move to test assembly
-    let createInMemory () =
-        let mutable articles = []
-        let getAll () = articles
-
-        let getAllBySubscription subscriptionId =
-            articles |> List.filter (fun a -> a.Subscription = subscriptionId)
-
-        let save (article: Article) = articles <- article :: articles
-
-        let filterExistingArticles subscriptionId guids =
-            let existingGuids =
-                articles
-                |> List.filter (fun (a: Article) -> a.Subscription = subscriptionId)
-                |> List.map (fun (a: Article) -> a.Guid)
-
-            List.except existingGuids guids
-
-        {
-            getAll = getAll
-            getTop = fun _ -> getAll ()
             getAllBySubscription = getAllBySubscription
             save = save
             filterExistingArticles = filterExistingArticles
