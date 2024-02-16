@@ -37,3 +37,10 @@ let ignore (t: Task<_>) = task {
     let! _ = t
     return ()
 }
+
+let tee (f: _ -> unit) (t: Task<_>) =
+    task {
+        let! r = t
+        f r
+        return r
+    }
