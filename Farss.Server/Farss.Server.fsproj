@@ -33,11 +33,12 @@
     <Compile Include="DeleteSubscriptionHandler.fs" />
     <Compile Include="FetchArticlesWorkflow.fs" />
     <Compile Include="FetchArticlesHandler.fs" />
+    <Compile Include="UpdateIconsHandler.fs" />
     <Compile Include="GetArticlesWorkflow.fs" />
     <Compile Include="GetArticlesHandler.fs" />
     <Compile Include="SetArticleReadStatusWorkflow.fs" />
-    <Compile Include="GetFileWorkflow.fs" />
     <Compile Include="SetArticleReadStatusHandler.fs" />
+    <Compile Include="GetFileWorkflow.fs" />
     <Compile Include="GetFileHandler.fs" />
     <Compile Include="FetchArticlesHostedService.fs" />
     <Compile Include="Giraffe.fs" />

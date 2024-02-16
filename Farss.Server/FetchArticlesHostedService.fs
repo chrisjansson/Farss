@@ -67,7 +67,7 @@ type FetchArticlesHostedService
                                 logger.LogInformation "Updating subscription icons"
 
                                 let updateIcons =
-                                    FetchArticlesHandler.constructUpdateIconsHandler scopedServiceProvider
+                                    UpdateIconsHandler.updateFeedIconsHandler scopedServiceProvider
 
                                 do! updateIcons ()
                                 logger.LogInformation "Updated dubscription icons"
