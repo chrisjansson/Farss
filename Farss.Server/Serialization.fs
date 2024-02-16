@@ -1,5 +1,19 @@
 ﻿namespace Dto
 
+module Option =
+    open System
+    let value (name: string) (v: Option<'a>) =
+        match v with
+        | Some v -> Ok v
+        | None -> Error name
+
+
+    let tap f v =
+        match v with
+        | Some x -> f x; v
+        | None -> v
+
+
 module SubscriptionDto = 
 
     let toDto (subscription: Domain.Subscription) (unread: int) : SubscriptionDto =
@@ -14,7 +28,6 @@ module SubscriptionDto =
 
 module DeleteSubscriptionDto =
     open Domain
-    open DtoValidation
     open Reflection
 
     let toCommand (dto: DeleteSubscriptionDto): Result<DeleteSubscriptionCommand, string> = result {
@@ -24,7 +37,6 @@ module DeleteSubscriptionDto =
 
 module SetArticleReadStatusDto =
     open Domain
-    open DtoValidation
     open Reflection
 
     let toCommand (dto: SetArticleReadStatusDto): Result<SetArticleReadStatusCommand, string> = result {
@@ -33,6 +45,3 @@ module SetArticleReadStatusDto =
             
         return { ArticleId = articleId; SetIsReadTo = setIsReadTo }
     }
-
-module Articles =
-    open Domain

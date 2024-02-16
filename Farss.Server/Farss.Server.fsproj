@@ -22,7 +22,6 @@
     <Compile Include="Entities.fs" />
     <Compile Include="ORMappingConfiguration.fs" />
     <Compile Include="Persistence.fs" />
-    <Compile Include="DtoValidation.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="CachedHttpClient.fs" />
     <Compile Include="FeedReaderAdapter.fs" />

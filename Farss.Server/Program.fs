@@ -4,7 +4,7 @@ open Microsoft.Extensions.DependencyInjection
 
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Hosting
-open Persistence
+open ORMappingConfiguration
 
 module Program =
     let exitCode = 0

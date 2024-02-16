@@ -1,6 +1,6 @@
 ﻿module GetSubscriptionsHandler
 
-open Persistence
+open ORMappingConfiguration
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 open System.Linq

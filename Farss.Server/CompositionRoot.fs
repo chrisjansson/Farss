@@ -5,6 +5,7 @@ open FetchArticlesHostedService
 open JobExecutorHostedService
 open Microsoft.EntityFrameworkCore
 open Microsoft.Extensions.Hosting
+open ORMappingConfiguration
 open Postgres
 open Microsoft.Extensions.DependencyInjection
 open Persistence
