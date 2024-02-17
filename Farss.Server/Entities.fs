@@ -8,7 +8,7 @@ type PersistedSubscription() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
     member val Url: string = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
-    member val Icon: Nullable<Guid> = Unchecked.defaultof<_> with get, set
+    member val IconId: Nullable<Guid> = Unchecked.defaultof<_> with get, set
     member val Articles: ResizeArray<PersistedArticle> = ResizeArray<_>() with get, set
 
 and [<AllowNullLiteral>] PersistedSubscriptionLogEntry() =

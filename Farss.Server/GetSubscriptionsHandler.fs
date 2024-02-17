@@ -19,7 +19,7 @@ let getSubscriptionsHandler: HttpHandler =
                        BUnread = x.Articles.Where(fun a -> not a.IsRead).Count()
                        CId = x.Id
                        DUrl = x.Url
-                       EIcon = x.Icon |})
+                       EIcon = x.IconId |})
                 .ToList()
                 
         let dtos =

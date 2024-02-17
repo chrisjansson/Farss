@@ -66,14 +66,14 @@ module SubscriptionRepositoryImpl =
         Id = s.Id
         Url = s.Url
         Title = s.Title
-        Icon = Option.ofNullable s.Icon
+        Icon = Option.ofNullable s.IconId
     }
 
     let private mapFromSubscription (s: Subscription) (t: PersistedSubscription) =
         t.Id <- s.Id
         t.Title <- s.Title
         t.Url <- s.Url
-        t.Icon <- Option.toNullable s.Icon
+        t.IconId <- Option.toNullable s.Icon
 
     let getOrAddNew<'T when 'T: (new: unit -> 'T) and 'T: not struct and 'T: null> (id: Guid) (set: DbSet<_>) =
         set.Find id

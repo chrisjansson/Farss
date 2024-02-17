@@ -1,5 +1,6 @@
 module ORMappingConfiguration
 
+open System
 open Entities
 open System.Collections.Generic
 open Microsoft.EntityFrameworkCore
@@ -45,6 +46,8 @@ type ReaderContext(options) =
 
     override x.OnModelCreating(mb) =
 
+        let tenantId = Guid.Parse "D6B09244-40DA-4454-A214-E4F13798E245"
+        
         mb
             .Entity<PersistedArticle>()
             .HasOne(fun x -> x.Subscription)
@@ -52,7 +55,44 @@ type ReaderContext(options) =
         |> ignore
 
         mb
+            .Entity<PersistedArticle>()
+            .Property<Guid>("TenantId")
+        |> ignore
+        
+        mb
+            .Entity<PersistedArticle>()
+            .HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantId)
+        |> ignore
+        
+        mb
             .Entity<PersistedSubscriptionLogEntry>()
             .HasOne(fun x -> x.Subscription)
             .WithMany()
+        |> ignore
+                
+        mb
+            .Entity<PersistedSubscriptionLogEntry>()
+            .HasQueryFilter(fun e -> EF.Property<Guid>(e, "TenantId") = tenantId)
+        |> ignore
+        
+        mb
+            .Entity<PersistedSubscriptionLogEntry>()
+            .Property<Guid>("TenantId")
+        |> ignore
+        
+        mb
+            .Entity<PersistedSubscription>()
+            .HasOne<PersistedFile>()
+            .WithMany()
+            .HasForeignKey(nameof Unchecked.defaultof<PersistedSubscription>.IconId)
+        |> ignore
+        
+        mb
+            .Entity<PersistedSubscription>()
+            .Property<Guid>("TenantId")
+        |> ignore
+        
+        mb
+            .Entity<PersistedSubscription>()
+            .HasQueryFilter(fun e -> EF.Property<Guid>(e, "TenantId") = tenantId)
         |> ignore
