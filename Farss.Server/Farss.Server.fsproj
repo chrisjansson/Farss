@@ -45,6 +45,7 @@
     <Compile Include="Postgres.fs" />
     <Compile Include="JobExecutorHostedService.fs" />
     <Compile Include="CompositionRoot.fs" />
+    <Compile Include="TrustedProxyHeaderAuthenticationHandler.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

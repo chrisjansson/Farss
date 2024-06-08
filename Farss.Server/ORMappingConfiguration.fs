@@ -43,6 +43,13 @@ type ReaderContext(options) =
     member x.SubscriptionLogEntries
         with get () = x.persistedSubscriptionLogEntries
         and set v = x.persistedSubscriptionLogEntries <- v
+        
+    [<DefaultValue>]
+    val mutable persistedUsers: DbSet<PersistedUser>
+
+    member x.Users
+        with get () = x.persistedUsers
+        and set v = x.persistedUsers <- v
 
     override x.OnModelCreating(mb) =
 
@@ -95,4 +102,16 @@ type ReaderContext(options) =
         mb
             .Entity<PersistedSubscription>()
             .HasQueryFilter(fun e -> EF.Property<Guid>(e, "TenantId") = tenantId)
+        |> ignore
+        
+        mb
+            .Entity<PersistedUser>()
+            .Property(fun e -> e.Username)
+            .IsRequired()
+        |> ignore
+        
+        mb
+            .Entity<PersistedUser>()
+            .HasIndex(fun e -> e.Username :> obj)
+            .IsUnique()
         |> ignore
