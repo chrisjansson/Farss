@@ -49,3 +49,7 @@ type PersistedHttpCacheEntry() =
     member val LastModifiedDate: Nullable<DateTimeOffset> = Unchecked.defaultof<_> with get, set
     member val LastGet: DateTimeOffset = Unchecked.defaultof<_> with get, set
 
+[<AllowNullLiteral>]
+type PersistedUser() =
+    member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val Username: string = Unchecked.defaultof<_> with get, set

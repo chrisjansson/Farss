@@ -1,12 +1,11 @@
 ﻿module Farss.Server.TrustedProxyHeaderAuthenticationHandler
 
 open System.Security.Claims
+open Farss.Server.UserCache
 open Microsoft.AspNetCore.Authentication
 
-type TrustedProxyHeaderAuthenticationHandler(options, logger, encoder) =
+type TrustedProxyHeaderAuthenticationHandler(options, logger, encoder, userCache: UserCache) =
     inherit AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
-
-    let userMapping = [ "chris", "3f914fef-a2dc-4fd5-be13-eff3e5ccd9fb" ] |> Map.ofList
 
     override this.HandleAuthenticateAsync() =
         let request = base.Request
@@ -17,14 +16,13 @@ type TrustedProxyHeaderAuthenticationHandler(options, logger, encoder) =
             else
                 let remoteUser = request.Headers.["Remote-User"].ToString()
 
-                return
-                    match Map.tryFind remoteUser userMapping with
-                    | None -> AuthenticateResult.Fail("Unknown user")
-                    | Some userId ->
-                        let claims = [ Claim(ClaimTypes.NameIdentifier, userId) ]
+                let! user = userCache.GetUserAsync(remoteUser.ToLower())
 
-                        let claimsIdentity = ClaimsIdentity(claims, this.Scheme.Name)
-                        let claimsPrincipal = ClaimsPrincipal(claimsIdentity)
+                let userId = user.Id.ToString()
+                let claims = [ Claim(ClaimTypes.NameIdentifier, userId) ]
 
-                        AuthenticateResult.Success(AuthenticationTicket(claimsPrincipal, this.Scheme.Name))
+                let claimsIdentity = ClaimsIdentity(claims, this.Scheme.Name)
+                let claimsPrincipal = ClaimsPrincipal(claimsIdentity)
+
+                return AuthenticateResult.Success(AuthenticationTicket(claimsPrincipal, this.Scheme.Name))
         }

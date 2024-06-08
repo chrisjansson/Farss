@@ -3,6 +3,8 @@ module Farss.Giraffe
 open Giraffe
 open Giraffe.EndpointRouting
 
+let requireAuthentication = requiresAuthentication (RequestErrors.unauthorized "DefaultScheme" "Realm" (text "auth failed"))
+
 let endpoints  =
     [
         GET [
@@ -19,3 +21,6 @@ let endpoints  =
             route ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
         ]
     ]
+    |> Routers.subRoute "farss/api"
+    |> applyBefore requireAuthentication
+    |> List.singleton

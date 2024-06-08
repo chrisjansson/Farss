@@ -7,6 +7,7 @@ export default defineConfig({
       { jsxRuntime: 'classic' }
     ),
   ],
+  base: "/farss/",
   server: {
     watch: {
       usePolling: true,

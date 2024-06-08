@@ -1,9 +1,12 @@
 namespace Farss.Server
 
 open System
+open Farss.Server.TrustedProxyHeaderAuthenticationHandler
+open Farss.Server.UserCache
 open Giraffe.HttpStatusCodeHandlers
 open Giraffe
 open Giraffe.EndpointRouting
+open Microsoft.AspNetCore.Authentication
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Server.Kestrel.Core
@@ -15,6 +18,7 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Thoth.Json.Giraffe
 open Thoth.Json.Net
+
 
 type Startup(configuration: IConfiguration) =    
     let errorHandler (ex : Exception) (logger : ILogger) =
@@ -29,6 +33,14 @@ type Startup(configuration: IConfiguration) =
         
         services.AddGiraffe() |> ignore
         services.AddTransient<Json.ISerializer>(fun _ -> ThothSerializer(caseStrategy = CaseStrategy.CamelCase)) |> ignore
+        services.AddTransient<UserCache>() |> ignore
+        
+        services.AddAuthentication("DefaultScheme")
+            .AddScheme<AuthenticationSchemeOptions, TrustedProxyHeaderAuthenticationHandler>("DefaultScheme",fun x -> ())
+            |> ignore
+        
+        services.AddAuthorization()
+            |> ignore
         
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->
@@ -47,5 +59,7 @@ type Startup(configuration: IConfiguration) =
             .UseResponseCompression()
             .UseStaticFiles()
             .UseRouting()
+            .UseAuthentication()
+            .UseAuthorization()
             .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints))
             |> ignore
