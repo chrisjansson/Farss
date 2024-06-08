@@ -3,9 +3,9 @@ module Farss.Giraffe
 open Giraffe
 open Giraffe.EndpointRouting
 
-let requireAuthentication = requiresAuthentication (RequestErrors.unauthorized "DefaultScheme" "Realm" (text "auth failed"))
+let private requireAuthentication (authenticationScheme: string) = requiresAuthentication (RequestErrors.unauthorized authenticationScheme "Realm" (text "auth failed"))
 
-let endpoints  =
+let endpoints (authenticationScheme: string) =
     [
         GET [
             route "/ping" (text "pong")
@@ -22,5 +22,5 @@ let endpoints  =
         ]
     ]
     |> Routers.subRoute "farss/api"
-    |> applyBefore requireAuthentication
+    |> applyBefore (requireAuthentication authenticationScheme)
     |> List.singleton

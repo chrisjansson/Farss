@@ -25,6 +25,8 @@ type Startup(configuration: IConfiguration) =
         logger.LogError(EventId(), ex, "An unhandled exception has occurred while executing the request.")
         clearResponse
         >=> ServerErrors.INTERNAL_ERROR ex.Message
+    
+    let authenticationScheme = "DefaultScheme"
             
     member this.ConfigureServices(services: IServiceCollection) =
         let connectionString = Postgres.loadConnectionString configuration
@@ -35,8 +37,8 @@ type Startup(configuration: IConfiguration) =
         services.AddTransient<Json.ISerializer>(fun _ -> ThothSerializer(caseStrategy = CaseStrategy.CamelCase)) |> ignore
         services.AddTransient<UserCache>() |> ignore
         
-        services.AddAuthentication("DefaultScheme")
-            .AddScheme<AuthenticationSchemeOptions, TrustedProxyHeaderAuthenticationHandler>("DefaultScheme",fun x -> ())
+        services.AddAuthentication(authenticationScheme)
+            .AddScheme<AuthenticationSchemeOptions, TrustedProxyHeaderAuthenticationHandler>(authenticationScheme,fun x -> ())
             |> ignore
         
         services.AddAuthorization()
@@ -61,5 +63,5 @@ type Startup(configuration: IConfiguration) =
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints))
+            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints authenticationScheme))
             |> ignore
