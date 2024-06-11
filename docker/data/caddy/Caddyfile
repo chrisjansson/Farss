@@ -1,0 +1,43 @@
+# The Caddyfile is an easy way to configure your Caddy web server.
+#
+# Unless the file starts with a global options block, the first
+# uncommented line is always the address of your site.
+#
+# To use your own domain name (with automatic HTTPS), first make
+# sure your domain's A/AAAA DNS records are properly pointed to
+# this machine's public IP, then replace ":80" below with your
+# domain name.
+
+localhost {
+	# Authelia Portal.
+	@authelia path /authelia /authelia/*
+	handle @authelia {
+			reverse_proxy authelia:9091 {
+					## This import needs to be included if you're relying on a trusted proxies configuration.
+					#import trusted_proxy_list
+			}
+	}
+	
+	@farss path /farss /farss/*
+    handle @farss {
+        forward_auth authelia:9091 {
+                uri /api/verify?rd=https://localhost:4443/authelia/
+                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+        }
+        
+        handle /farss/api* {
+            reverse_proxy http://host.docker.internal:5000 {
+                        
+            }
+        }
+        
+        handle {
+            reverse_proxy http://host.docker.internal:5173 {
+                                    
+            }
+        }        
+    }
+}
+
+# Refer to the Caddy docs for more information:
+# https://caddyserver.com/docs/caddyfile

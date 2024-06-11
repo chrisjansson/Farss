@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  authelia:
+    container_name: authelia
+    image: docker.io/authelia/authelia:4.37
+    restart: unless-stopped
+    networks:
+      - net
+    expose:
+      - 9091
+    environment:
+      AUTHELIA_JWT_SECRET_FILE: /secrets/JWT_SECRET
+      #AUTHELIA_SESSION_SECRET_FILE: /secrets/SESSION_SECRET
+      #AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: /secrets/STORAGE_PASSWORD
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/STORAGE_ENCRYPTION_KEY
+    volumes:
+      - ${PWD}/data/authelia/config:/config
+      - ${PWD}/data/authelia/secrets:/secrets
+  caddy:
+    image: caddy:2.7.6-alpine
+    restart: unless-stopped
+    networks:
+      - net
+    #cap_add:
+    #  - NET_ADMIN
+    ports:
+      - "8080:80"
+      - "4443:443"
+      - "4443:443/udp"
+    volumes:
+      - $PWD/data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - $PWD/data/caddy/site:/srv
+      - $PWD/data/caddy/caddy_data:/data
+      - $PWD/data/caddy/caddy_config:/config
+  postgres:
+    image: postgres:16.3
+    networks:
+      - net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/data/postgres/data:/var/lib/postgresql/data
+networks:
+  net:
+    name: net
