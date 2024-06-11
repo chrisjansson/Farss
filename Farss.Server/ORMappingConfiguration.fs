@@ -10,9 +10,12 @@ open Microsoft.EntityFrameworkCore
 type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
     inherit DbContext(options)
     let tenantId =
-        let user = httpContextAccessor.HttpContext.User
-        let claim = user.FindFirst(ClaimTypes.NameIdentifier)
-        Guid.Parse(claim.Value)
+        if httpContextAccessor <> null then
+            let user = httpContextAccessor.HttpContext.User
+            let claim = user.FindFirst(ClaimTypes.NameIdentifier)
+            Guid.Parse(claim.Value)
+        else
+            Guid.Empty
 
     [<DefaultValue>]
     val mutable subscriptions: DbSet<PersistedSubscription>
