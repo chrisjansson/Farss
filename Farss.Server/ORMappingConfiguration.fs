@@ -7,6 +7,20 @@ open System.Collections.Generic
 open Microsoft.AspNetCore.Http
 open Microsoft.EntityFrameworkCore
 
+let private configureTenancy<'T when 'T : not struct> (mb: ModelBuilder) tenantId =
+        mb.Entity<'T>().Property<Guid>("TenantId") |> ignore
+        mb.Entity<'T>()
+            .HasOne<PersistedUser>()
+            .WithMany()
+            .HasForeignKey("TenantId")
+            |> ignore
+
+        mb
+            .Entity<'T>()
+            .HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantId)
+        |> ignore
+    
+
 type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
     inherit DbContext(options)
     let tenantId =
@@ -66,13 +80,8 @@ type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
             .HasOne(fun x -> x.Subscription)
             .WithMany(fun x -> x.Articles :> IEnumerable<_>)
         |> ignore
-
-        mb.Entity<PersistedArticle>().Property<Guid>("TenantId") |> ignore
-
-        mb
-            .Entity<PersistedArticle>()
-            .HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantId)
-        |> ignore
+        
+        configureTenancy<PersistedArticle> mb tenantId
 
         mb
             .Entity<PersistedSubscriptionLogEntry>()
@@ -80,26 +89,16 @@ type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
             .WithMany()
         |> ignore
 
-        mb
-            .Entity<PersistedSubscriptionLogEntry>()
-            .HasQueryFilter(fun e -> EF.Property<Guid>(e, "TenantId") = tenantId)
-        |> ignore
-
-        mb.Entity<PersistedSubscriptionLogEntry>().Property<Guid>("TenantId") |> ignore
-
+        configureTenancy<PersistedSubscriptionLogEntry> mb tenantId
+        
         mb
             .Entity<PersistedSubscription>()
             .HasOne<PersistedFile>()
             .WithMany()
             .HasForeignKey(nameof Unchecked.defaultof<PersistedSubscription>.IconId)
         |> ignore
-
-        mb.Entity<PersistedSubscription>().Property<Guid>("TenantId") |> ignore
-
-        mb
-            .Entity<PersistedSubscription>()
-            .HasQueryFilter(fun e -> EF.Property<Guid>(e, "TenantId") = tenantId)
-        |> ignore
+        
+        configureTenancy<PersistedSubscriptionLogEntry> mb tenantId
 
         mb.Entity<PersistedUser>().Property(fun e -> e.Username).IsRequired() |> ignore
 
