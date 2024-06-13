@@ -3,26 +3,26 @@
 open System
 
 [<Literal>]
-let SubscribeToFeed = "/api/feeds"
+let SubscribeToFeed = "api/feeds"
 
 [<Literal>]
-let PreviewSubscribeToFeed = "/api/previewsubscribe"
+let PreviewSubscribeToFeed = "api/previewsubscribe"
 
 [<Literal>]
-let GetSubscriptions = "/api/feeds"
+let GetSubscriptions = "api/feeds"
 
 [<Literal>]
-let DeleteSubscription = "/api/subscription/delete"
+let DeleteSubscription = "api/subscription/delete"
 
 [<Literal>]
-let PollSubscriptions = "/api/poll"
+let PollSubscriptions = "api/poll"
 
 [<Literal>]
-let GetArticles = "/api/articles"
+let GetArticles = "api/articles"
 
 [<Literal>]
-let SetArticleReadStatus = "/api/article/setreadstatus"
+let SetArticleReadStatus = "api/article/setreadstatus"
 
-let GetFileRoute = "/api/file/{id}"
+let GetFileRoute = "api/file/{id}"
 
-let GetFile (id: Guid) = sprintf "/api/file/%A" id
+let GetFile (id: Guid) = sprintf "api/file/%A" id
