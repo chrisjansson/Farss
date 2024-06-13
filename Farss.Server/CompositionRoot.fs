@@ -26,6 +26,9 @@ let createCompositionRoot (connectionString: PostgresConnectionString) : IServic
 
 
     services.AddSingleton(connectionString) |> ignore
+    
+    services.AddHttpContextAccessor() |> ignore
+    services.AddMemoryCache() |> ignore
 
     services.AddDbContext<ReaderContext>(fun sp options ->
         let cs = createConnectionString connectionString
@@ -52,6 +55,8 @@ let createCompositionRoot (connectionString: PostgresConnectionString) : IServic
         let context = s.GetRequiredService<ReaderContext>()
         FileRepositoryImpl.create context)
     |> ignore
+    
+    services.AddTransient<TenantProvider>() |> ignore
 
     services.AddTransient<FeedReaderAdapter.FeedReaderAdapter>(fun sp ->
         let repository = sp.GetRequiredService<HttpCacheRepository>()
