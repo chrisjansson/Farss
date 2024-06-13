@@ -1,6 +1,6 @@
-﻿{
+{
   "name": "Farss.Client",
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@4.3.0",
   "scripts": {
     "start": "dotnet fable watch src --run vite --host"
   },

@@ -26,7 +26,7 @@ type UserCache(context: ReaderContext, cache: IMemoryCache) =
                         return user
                 }
 
-            return user
+            return! user
         }
 
     member _.GetUserAsync(username: string) =
