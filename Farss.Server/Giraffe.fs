@@ -2,13 +2,21 @@ module Farss.Giraffe
 
 open Giraffe
 open Giraffe.EndpointRouting
+open Microsoft.AspNetCore.Http
 
 let private requireAuthentication (authenticationScheme: string) = requiresAuthentication (RequestErrors.unauthorized authenticationScheme "Realm" (text "auth failed"))
+
+let echo: HttpHandler =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        let currentUser = ctx.GetRequestHeader("Remote-User")
+        
+        text $"%A{currentUser}" next ctx
 
 let endpoints (authenticationScheme: string) =
     [
         GET [
-            route "/ping" (text "pong")
+            route "api/ping" (text "pong")
+            route "api/echo" echo
             route ApiUrls.GetSubscriptions GetSubscriptionsHandler.getSubscriptionsHandler
             route ApiUrls.GetFileRoute GetFileHandler.getFileHandler
         ]
@@ -21,6 +29,6 @@ let endpoints (authenticationScheme: string) =
             route ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
         ]
     ]
-    |> Routers.subRoute "farss/api"
+    |> Routers.subRoute "farss/"
     |> applyBefore (requireAuthentication authenticationScheme)
     |> List.singleton

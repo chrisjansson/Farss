@@ -1,6 +1,7 @@
 ﻿module ApiClient
 
 open System
+open Browser.Types
 open Fable.Core.JsInterop
 open Thoth.Json
 //open Fetch
@@ -9,11 +10,17 @@ open Thoth.Json
 module Fetch =
     open Thoth.Json
     open Fetch
+    
+    let inline private prependBaseUrl (url: string) =
+        let pathname = Browser.Dom.window.location.pathname
+        pathname + url
+        
 
     let inline tryFetchAs url (responseDecoder: Decoder<_>) parameters =
         let decode = Decode.fromString responseDecoder
         let decodeResponse (response: Response) = response.text () |> Promise.map decode
-
+        let url = prependBaseUrl url
+        
         tryFetch url parameters
         |> Promise.mapResultError (fun e -> e.Message)
         |> PromiseResult.bind decodeResponse
@@ -29,7 +36,7 @@ module Fetch =
         let method = Method HttpMethod.POST
         tryFetchAs url responseDecoder [ method; body ]
 
-    let inline sendRecord
+    let inline private sendRecord
         (url: string)
         (record: 'T)
         (properties: RequestProperties list)
@@ -51,6 +58,7 @@ module Fetch =
         (record: 'T)
         (properties: RequestProperties list)
         : Fable.Core.JS.Promise<Response> =
+        let url = prependBaseUrl url
         sendRecord url record properties HttpMethod.POST
 
     let inline tryPostRecord<'T>
