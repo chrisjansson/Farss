@@ -128,3 +128,13 @@ ALTER TABLE "{{SchemaName}}"."Subscriptions"
     ADD CONSTRAINT "FK_Subscriptions_Files_IconId" FOREIGN KEY ("IconId") REFERENCES "Files" ("Id") NOT valid;
 
 ALTER TABLE "{{SchemaName}}"."Subscriptions" validate CONSTRAINT "FK_Subscriptions_Files_IconId";
+
+ALTER TABLE "{{SchemaName}}"."Subscriptions"
+    ADD COLUMN "TenantId" uuid NOT NULL;
+
+CREATE INDEX "IX_Subscriptions_TenantId" ON {{SchemaName}}."Subscriptions" USING btree ("TenantId");
+
+ALTER TABLE "{{SchemaName}}"."Subscriptions"
+    ADD CONSTRAINT "FK_Subscriptions_Users_TenantId" FOREIGN KEY ("TenantId") REFERENCES "Users" ("Id") ON DELETE CASCADE NOT valid;
+
+ALTER TABLE "{{SchemaName}}"."Subscriptions" validate CONSTRAINT "FK_Subscriptions_Users_TenantId";
