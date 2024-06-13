@@ -25,20 +25,20 @@ module Program =
             do! migrate fromCs
 
             let options = DbContextOptionsBuilder<ReaderContext>().UseNpgsql(toCs).Options
-            let ctx = new ReaderContext(options, null)
+            let ctx = new ReaderContext(options, TenantProvider(null))
             ctx.Database.EnsureDeleted() |> ignore
             ctx.Database.EnsureCreated() |> ignore
             return ()
         }
 
-    and migrate (fromCs: string) =
+    and migrate (connectionString: string) =
         task {
             let serviceCollection = ServiceCollection()
 
             serviceCollection.AddLogging(fun c -> c.AddSimpleConsole().SetMinimumLevel(LogLevel.Warning) |> ignore)
             |> ignore
 
-            let builder = NpgsqlConnectionStringBuilder(fromCs)
+            let builder = NpgsqlConnectionStringBuilder(connectionString)
             builder.Database <- "postgres"
             let adminCs = builder.ToString()
 
@@ -46,7 +46,7 @@ module Program =
                 let scriptDirectory = Path.Join(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "db")
                 builder
                     .WithUserTokens([| "SchemaName=public" |])
-                    .WithConnectionString(fromCs)
+                    .WithConnectionString(connectionString)
                     .WithAdminConnectionString(adminCs)
                     .WithSqlFilesDirectory(scriptDirectory)
                 |> ignore)
@@ -65,15 +65,11 @@ module Program =
             let t = setupTargetSchema fromCs toCs
             t.Wait()
             exitCode
+        | [| "migrate"; targetCS |] ->
+            let t = migrate targetCS
+            t.Wait()
+            exitCode
         | _ ->
             let webHost = CreateWebHostBuilder(args).Build()
-
-            let startup () =
-                use scope = webHost.Services.CreateScope()
-                let readerContext = scope.ServiceProvider.GetRequiredService<ReaderContext>()
-                readerContext.Database.EnsureCreated() |> ignore
-
-            startup ()
-
             webHost.Run()
             exitCode

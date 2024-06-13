@@ -6,30 +6,19 @@ open Entities
 open System.Collections.Generic
 open Microsoft.AspNetCore.Http
 open Microsoft.EntityFrameworkCore
-
-let private configureTenancy<'T when 'T : not struct> (mb: ModelBuilder) tenantId =
-        mb.Entity<'T>().Property<Guid>("TenantId") |> ignore
-        mb.Entity<'T>()
-            .HasOne<PersistedUser>()
-            .WithMany()
-            .HasForeignKey("TenantId")
-            |> ignore
-
-        mb
-            .Entity<'T>()
-            .HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantId)
-        |> ignore
-    
-
-type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
-    inherit DbContext(options)
-    let tenantId =
-        if httpContextAccessor <> null then
+open Microsoft.EntityFrameworkCore.Metadata.Builders
+open System.Linq
+type TenantProvider(httpContextAccessor: IHttpContextAccessor) =
+    member _.TenantId with get() = 
+        if httpContextAccessor <> null && httpContextAccessor.HttpContext <> null then
             let user = httpContextAccessor.HttpContext.User
             let claim = user.FindFirst(ClaimTypes.NameIdentifier)
             Guid.Parse(claim.Value)
         else
             Guid.Empty
+
+type ReaderContext(options, tenantProvider: TenantProvider) =
+    inherit DbContext(options)
 
     [<DefaultValue>]
     val mutable subscriptions: DbSet<PersistedSubscription>
@@ -75,13 +64,21 @@ type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
         and set v = x.persistedUsers <- v
 
     override x.OnModelCreating(mb) =
+        
+        let inline configureTenancy(mb: EntityTypeBuilder<'T>) =
+            mb.Property<Guid>("TenantId") |> ignore
+            mb.HasOne<PersistedUser>().WithMany().HasForeignKey("TenantId") |> ignore
+
+            mb.HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantProvider.TenantId)
+            |> ignore
+        
         mb
             .Entity<PersistedArticle>()
             .HasOne(fun x -> x.Subscription)
             .WithMany(fun x -> x.Articles :> IEnumerable<_>)
         |> ignore
-        
-        configureTenancy<PersistedArticle> mb tenantId
+
+        configureTenancy(mb.Entity<PersistedArticle>())
 
         mb
             .Entity<PersistedSubscriptionLogEntry>()
@@ -89,18 +86,41 @@ type ReaderContext(options, httpContextAccessor: IHttpContextAccessor) =
             .WithMany()
         |> ignore
 
-        configureTenancy<PersistedSubscriptionLogEntry> mb tenantId
-        
+        configureTenancy(mb.Entity<PersistedSubscriptionLogEntry>())
+
         mb
             .Entity<PersistedSubscription>()
             .HasOne<PersistedFile>()
             .WithMany()
             .HasForeignKey(nameof Unchecked.defaultof<PersistedSubscription>.IconId)
         |> ignore
-        
-        configureTenancy<PersistedSubscriptionLogEntry> mb tenantId
+
+        configureTenancy(mb.Entity<PersistedSubscription>())
 
         mb.Entity<PersistedUser>().Property(fun e -> e.Username).IsRequired() |> ignore
 
         mb.Entity<PersistedUser>().HasIndex(fun e -> e.Username :> obj).IsUnique()
         |> ignore
+        
+    override x.SaveChanges() =
+        
+        let tenantIdEntities =
+            x.ChangeTracker
+                .Entries()
+                .Where(fun e -> e.Property("TenantId") <> null)
+        for e in tenantIdEntities do
+            let p = e.Property("TenantId")
+            p.CurrentValue <- tenantProvider.TenantId
+        
+        base.SaveChanges()
+
+    override x.SaveChangesAsync(ct) =
+        let tenantIdEntities =
+            x.ChangeTracker
+                .Entries()
+                .Where(fun e -> e.Property("TenantId") <> null)
+        for e in tenantIdEntities do
+            let p = e.Property("TenantId")
+            p.CurrentValue <- tenantProvider.TenantId
+        
+        base.SaveChangesAsync(ct)
