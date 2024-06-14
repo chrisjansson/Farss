@@ -51,6 +51,9 @@ type Startup(configuration: IConfiguration) =
         
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         let isDevelopment = env.EnvironmentName = Environments.Development
+        let hostingSubdir =
+            configuration.GetValue<string>("urlBase")
+            |> Option.ofObj
         
         if  isDevelopment then 
             app.UseDeveloperExceptionPage() |> ignore
@@ -63,5 +66,5 @@ type Startup(configuration: IConfiguration) =
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints authenticationScheme))
+            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints hostingSubdir authenticationScheme))
             |> ignore

@@ -6,13 +6,19 @@ open Microsoft.AspNetCore.Http
 
 let private requireAuthentication (authenticationScheme: string) = requiresAuthentication (RequestErrors.unauthorized authenticationScheme "Realm" (text "auth failed"))
 
-let echo: HttpHandler =
+let private echo: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         let currentUser = ctx.GetRequestHeader("Remote-User")
         
         text $"%A{currentUser}" next ctx
+        
+let private conditionalSubDir (subDir: string option) endpoint =
+    match subDir with
+    | Some d -> Routers.subRoute d endpoint
+    | None -> Routers.subRoute "/" endpoint
+    
 
-let endpoints (authenticationScheme: string) =
+let endpoints (subdir: string option) (authenticationScheme: string) =
     [
         GET [
             route "api/ping" (text "pong")
@@ -29,6 +35,6 @@ let endpoints (authenticationScheme: string) =
             route ApiUrls.SetArticleReadStatus SetArticleReadStatusHandler.setArticleReadStatusHandler
         ]
     ]
-    |> Routers.subRoute "farss/"
+    |> Routers.subRoute (Option.defaultValue "/" subdir)
     |> applyBefore (requireAuthentication authenticationScheme)
     |> List.singleton
