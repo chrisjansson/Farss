@@ -62,6 +62,7 @@ type Startup(configuration: IConfiguration) =
         app
             .UseResponseCaching()
             .UseResponseCompression()
+            .UseDefaultFiles()
             .UseStaticFiles()
             .UseRouting()
             .UseAuthentication()
