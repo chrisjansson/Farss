@@ -17,7 +17,7 @@ type QueueFetchArticles(taskQueue: IBackgroundTaskQueue) =
         task {
             while (not ct.IsCancellationRequested) do
                 do! taskQueue.QueuePollArticles(QueueReason.Poll)
-                do! Task.Delay(interval)
+                do! Task.Delay(interval, ct)
         }
 
 type FetchArticlesHostedService
