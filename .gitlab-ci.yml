@@ -1,0 +1,6 @@
+deploy:
+  stage: deploy
+  script:
+    - cd scripts
+    - nu deploy.nu
+  environment: prod
