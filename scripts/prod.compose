@@ -1,8 +1,8 @@
 version: "3.8"
 services:
   farss:
-    container_name: {{farss_image_name}}
-    image: registry.gitlab.com/chrisjansson/farss
+    container_name: farss
+    image: registry.gitlab.com/chrisjansson/{{farss_image_name}}
     restart: unless-stopped
     networks:
       - farss
