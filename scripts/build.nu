@@ -1,5 +1,6 @@
 #!/usr/bin/env nu
 
+dotnet tool restore
 dotnet fable ../Farss.Client/src/ --noCache 
 cd ../Farss.Client
 yarn run build --outDir ../publish/wwwroot --base ""
