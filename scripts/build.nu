@@ -3,6 +3,7 @@
 dotnet tool restore
 dotnet fable ../Farss.Client/src/ --noCache 
 cd ../Farss.Client
+yarn
 yarn run build --outDir ../publish/wwwroot --base ""
 dotnet publish ..\Farss.Server\ -c release -o ../publish
 cd ..
