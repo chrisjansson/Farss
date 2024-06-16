@@ -1,3 +1,7 @@
+build:
+  stage: build
+  script:
+      
 deploy:
   stage: deploy
   script:
