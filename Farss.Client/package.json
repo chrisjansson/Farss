@@ -2,7 +2,8 @@
   "name": "Farss.Client",
   "packageManager": "yarn@4.3.0",
   "scripts": {
-    "start": "dotnet fable watch src --run vite --host"
+    "start": "dotnet fable watch src --run vite --host",
+    "build": "vite build"
   },
   "dependencies": {
     "@tabler/icons-react": "^2.34.0",
