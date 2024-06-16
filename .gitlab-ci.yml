@@ -1,7 +1,8 @@
 build:
   stage: build
   script:
-      
+    - cd scripts
+    - nu build.nu
 deploy:
   stage: deploy
   script:
