@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  farss:
+    container_name: {{farss_image_name}}
+    image: registry.gitlab.com/chrisjansson/farss
+    restart: unless-stopped
+    networks:
+      - farss
+    expose:
+      - 5000
+    environment:
+      POSTGRES__HOST: farssdb
+      URLBASE: ""
+      ASPNETCORE_URLS: "http://*:5000"
+networks:
+  farss:
+    name: farss
+    external: true
