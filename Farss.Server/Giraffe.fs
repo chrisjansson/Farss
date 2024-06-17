@@ -11,7 +11,7 @@ let private data = if File.Exists "commit.txt" then File.ReadAllText "commit.txt
 
 let private echo: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
-        json { Dto.StartupInformationDto.BaseUrl = "/"; CommitInformation = data } next ctx
+        json { Dto.StartupInformationDto.BaseUrl = "/"; Dto.StartupInformationDto.CommitInformation = data } next ctx
         
 let private conditionalSubDir (subDir: string option) endpoint =
     match subDir with
