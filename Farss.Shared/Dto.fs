@@ -75,3 +75,9 @@ type GetArticlesQuery =
 type DeleteSubscriptionDto = { Id: Guid option }
 
 type SetArticleReadStatusDto = { ArticleId: Guid option; SetIsReadTo: bool option }
+
+type StartupInformationDto =
+    {
+        BaseUrl: string
+        CommitInformation: string option
+    }
