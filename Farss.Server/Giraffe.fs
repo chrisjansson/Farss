@@ -1,16 +1,28 @@
 module Farss.Giraffe
 
+open System.IO
 open Giraffe
 open Giraffe.EndpointRouting
 open Microsoft.AspNetCore.Http
 
 let private requireAuthentication (authenticationScheme: string) = requiresAuthentication (RequestErrors.unauthorized authenticationScheme "Realm" (text "auth failed"))
 
+let private data = if File.Exists "commit.txt" then File.ReadAllText "commit.txt" |> Some else None
+
+type EchoResponseDto =
+    {
+        User: string
+        Data: string option
+    }
+
 let private echo: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
-        let currentUser = ctx.GetRequestHeader("Remote-User")
-        
-        text $"%A{currentUser}" next ctx
+        let currentUser =
+            match ctx.GetRequestHeader("Remote-User") with
+            | Ok u -> u
+            | Error _ -> ""
+            
+        json { User = currentUser; Data = data } next ctx
         
 let private conditionalSubDir (subDir: string option) endpoint =
     match subDir with
