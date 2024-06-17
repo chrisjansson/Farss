@@ -12,7 +12,15 @@ RUN apt install -y dotnet-sdk-8.0
 RUN wget "https://s3.dualstack.us-east-1.amazonaws.com/gitlab-runner-downloads/latest/deb/gitlab-runner_amd64.deb"
 RUN apt install -y git curl
 RUN dpkg -i gitlab-runner_amd64.deb 
+
+ENV NODE_VERSION=20.14.0
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-RUN echo "nvm install 20" > install.sh && chmod +x install.sh 
-#ENTRYPOINT ["gitlab-runner"]
-#CMD ["run"]
+ENV NVM_DIR=/root/.nvm
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+RUN corepack enable
+RUN apt install -y docker.io
+ENTRYPOINT ["gitlab-runner"]
+CMD ["run"]
