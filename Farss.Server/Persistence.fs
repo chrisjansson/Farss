@@ -320,6 +320,7 @@ module BackendArticleRepositoryImpl =
 
                 let existing =
                     context.Articles
+                        .IgnoreQueryFilters()
                         .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
                         .Select(fun x -> x.Guid)
                         .ToList()
