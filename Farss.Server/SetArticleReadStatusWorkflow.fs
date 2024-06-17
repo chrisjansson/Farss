@@ -13,7 +13,7 @@ let setArticleReadStatusWorkflowImpl: SetArticleReadStatusWorkflowImpl =
             | Some article -> Ok article
             | None -> WorkflowError.BadRequest ("ArticleNotFound", None) |> Error
 
-        let setIsRead command article =
+        let setIsRead command (article: Article) =
             let article = { article with IsRead = command.SetIsReadTo }
             ar.save(article)
 

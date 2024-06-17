@@ -82,15 +82,15 @@ let subscribeToFeed (feedReader: FeedReaderAdapter) (repository: SubscriptionRep
 
 let updateFeedIcon
     (feedReader: FeedReaderAdapter)
-    (repository: SubscriptionRepository)
+    (repository: BackendSubscriptionRepository)
     (fileRepository: FileRepository)
     (subscriptionId: Domain.SubscriptionId)
     =
-    let getFeedForSubscription (subscription: Domain.Subscription) =
+    let getFeedForSubscription (subscription: Domain.TenantedSubscription) =
         feedReader.getFromUrl subscription.Url
         |> TaskResult.map (fun f -> subscription, f)
 
-    let updateIcon (subscription: Domain.Subscription, feed: Feed) =
+    let updateIcon (subscription: Domain.TenantedSubscription, feed: Feed) =
         let hashData (iconData: byte[]) = SHA256.HashData(iconData)
 
         let createFileAndSaveFile (s, icon, iconHash) =
@@ -106,7 +106,7 @@ let updateFeedIcon
             fileRepository.save icon
             icon
 
-        let changeIcon (subscription: Domain.Subscription, file: Domain.File option) = {
+        let changeIcon (subscription: Domain.TenantedSubscription, file: Domain.File option) = {
             subscription with
                 Icon = file |> Option.map (fun file -> file.Id)
         }

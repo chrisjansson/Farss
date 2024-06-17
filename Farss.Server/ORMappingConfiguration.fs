@@ -8,6 +8,7 @@ open Microsoft.AspNetCore.Http
 open Microsoft.EntityFrameworkCore
 open Microsoft.EntityFrameworkCore.Metadata.Builders
 open System.Linq
+
 type TenantProvider(httpContextAccessor: IHttpContextAccessor) =
     member _.TenantId with get() = 
         if httpContextAccessor <> null && httpContextAccessor.HttpContext <> null then
@@ -64,9 +65,8 @@ type ReaderContext(options, tenantProvider: TenantProvider) =
         and set v = x.persistedUsers <- v
 
     override x.OnModelCreating(mb) =
-        
         let inline configureTenancy(mb: EntityTypeBuilder<'T>) =
-            mb.Property<Guid>("TenantId") |> ignore
+            //mb.Property<Guid>("TenantId") |> ignore
             mb.HasOne<PersistedUser>().WithMany().HasForeignKey("TenantId") |> ignore
 
             mb.HasQueryFilter(fun a -> EF.Property<Guid>(a, "TenantId") = tenantProvider.TenantId)
@@ -103,14 +103,14 @@ type ReaderContext(options, tenantProvider: TenantProvider) =
         |> ignore
         
     override x.SaveChanges() =
-        
         let tenantIdEntities =
             x.ChangeTracker
                 .Entries()
-                .Where(fun e -> e.Property("TenantId") <> null)
+                .Where(fun e -> e.Properties.Any(fun p -> p.Metadata.Name = "TenantId"))
         for e in tenantIdEntities do
             let p = e.Property("TenantId")
-            p.CurrentValue <- tenantProvider.TenantId
+            if p.CurrentValue = Guid.Empty then do
+                p.CurrentValue <- tenantProvider.TenantId
         
         base.SaveChanges()
 
@@ -118,9 +118,10 @@ type ReaderContext(options, tenantProvider: TenantProvider) =
         let tenantIdEntities =
             x.ChangeTracker
                 .Entries()
-                .Where(fun e -> e.Property("TenantId") <> null)
+                .Where(fun e -> e.Properties.Any(fun p -> p.Metadata.Name = "TenantId"))
         for e in tenantIdEntities do
             let p = e.Property("TenantId")
-            p.CurrentValue <- tenantProvider.TenantId
+            if p.CurrentValue = Guid.Empty then do
+                p.CurrentValue <- tenantProvider.TenantId
         
         base.SaveChangesAsync(ct)

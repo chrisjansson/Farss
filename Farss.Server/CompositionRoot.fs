@@ -40,10 +40,20 @@ let createCompositionRoot (connectionString: PostgresConnectionString) : IServic
         let context = s.GetRequiredService<ReaderContext>()
         SubscriptionRepositoryImpl.create context)
     |> ignore
+    
+    services.AddScoped<BackendSubscriptionRepository>(fun s ->
+        let context = s.GetRequiredService<ReaderContext>()
+        BackendSubscriptionRepositoryImpl.create context)
+    |> ignore
 
     services.AddScoped<ArticleRepository>(fun s ->
         let context = s.GetRequiredService<ReaderContext>()
         ArticleRepositoryImpl.create context)
+    |> ignore
+    
+    services.AddScoped<BackendArticleRepository>(fun s ->
+        let context = s.GetRequiredService<ReaderContext>()
+        BackendArticleRepositoryImpl.create context)
     |> ignore
     
     services.AddScoped<HttpCacheRepository>(fun s ->

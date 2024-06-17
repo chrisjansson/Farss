@@ -58,12 +58,12 @@ type FeedReaderAdapter =
 module FeedItem = 
     open Domain
 
-    let toArticle subscriptionId (item: Item) = result {
+    let toArticle subscriptionId tenantId (item: Item) = result {
         let! guid = ArticleGuid.create item.Id
         let! timestamp = ArticleTimestamp.create item.Timestamp
         let! link = ArticleLink.create item.Link
 
-        return Article.create item.Title guid subscriptionId item.Source (Option.defaultValue "" item.Content) item.Summary timestamp link
+        return Article.create item.Title guid subscriptionId tenantId item.Source (Option.defaultValue "" item.Content) item.Summary timestamp link
     }
 
 //TODO: Download with timeout

@@ -70,11 +70,6 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ScriptFiles Include="../db/**/*.*" />
-    </ItemGroup>
-
-    <Target Name="CopyFiles" BeforeTargets="Build">
-        <Copy SourceFiles="@(ScriptFiles)" DestinationFolder="$(OutputPath)/db/%(RecursiveDir)">
-        </Copy>
-    </Target>
+        <Content Include="../db/**" LinkBase="db/" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup> 
 </Project> 

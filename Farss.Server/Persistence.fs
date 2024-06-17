@@ -9,15 +9,26 @@ type SubscriptionRepository = {
     getAll: unit -> Subscription list
     save: Subscription -> unit
     delete: SubscriptionId -> unit
-    storeLog: SubscriptionId * Result<string, string> * DateTimeOffset -> unit
+}
+
+type BackendSubscriptionRepository = {
+    getAll: unit -> TenantedSubscription list
+    get: SubscriptionId -> TenantedSubscription
+    save: TenantedSubscription -> unit
+    storeLog: SubscriptionId * TenantId * Result<string, string> * DateTimeOffset -> unit
 }
 
 type ArticleRepository = {
     getAll: unit -> Article list
-    getTop: (Guid option * int) -> Article list
+    getTop: Guid option * int -> Article list
     save: Article -> unit
     filterExistingArticles: SubscriptionId -> string list -> string list
     getAllBySubscription: SubscriptionId -> Article list
+}
+
+type BackendArticleRepository = {
+    save: TenantedArticle -> unit
+    filterExistingArticles: SubscriptionId -> string list -> string list
 }
 
 type FileRepository = {
@@ -102,10 +113,41 @@ module SubscriptionRepositoryImpl =
             context.Subscriptions.Single(fun s -> s.Id = subscriptionId)
             |> mapToSubscription
 
-        let storeLog (subscriptionId: SubscriptionId, result: Result<string, string>, timestamp: DateTimeOffset) =
 
+        {
+            get = get
+            getAll = getAll
+            save = save
+            delete = delete
+        }
+
+module BackendSubscriptionRepositoryImpl =
+    let private mapToSubscription (s: PersistedSubscription) : TenantedSubscription = {
+        Id = s.Id
+        Url = s.Url
+        Title = s.Title
+        Icon = Option.ofNullable s.IconId
+        TenantId = s.TenantId
+    }
+
+
+    let create (context: ReaderContext) : BackendSubscriptionRepository =
+        let get (subscriptionId: SubscriptionId) =
+            context.Subscriptions
+                .IgnoreQueryFilters()
+                .Single(fun s -> s.Id = subscriptionId)
+            |> mapToSubscription
+
+        let getAll () =
+            context.Subscriptions.IgnoreQueryFilters()
+            |> Query.toList
+            |> Seq.map mapToSubscription
+            |> List.ofSeq
+
+        let storeLog (subscriptionId: SubscriptionId, tenantId: Guid, result: Result<string, string>, timestamp: DateTimeOffset) =
             let tail =
                 context.SubscriptionLogEntries
+                    .IgnoreQueryFilters()
                     .Where(fun x -> x.SubscriptionId = subscriptionId)
                     .OrderByDescending(fun x -> x.Timestamp)
                     .Skip(99)
@@ -125,17 +167,29 @@ module SubscriptionRepositoryImpl =
                 | Error e -> e
 
             context.SubscriptionLogEntries.Add(
-                PersistedSubscriptionLogEntry(SubscriptionId = subscriptionId, Success = Result.isOk result, Message = message, Timestamp = timestamp)
+                PersistedSubscriptionLogEntry(SubscriptionId = subscriptionId, TenantId = tenantId, Success = Result.isOk result, Message = message, Timestamp = timestamp)
             )
             |> ignore
 
             context.SaveChanges() |> ignore
+            
+        let mapFromSubscription (s: TenantedSubscription) (t: PersistedSubscription) =
+            t.Id <- s.Id
+            t.Title <- s.Title
+            t.Url <- s.Url
+            t.IconId <- Option.toNullable s.Icon
+            t.TenantId <- s.TenantId
+            
+        let save (subscription: TenantedSubscription) =
+            SubscriptionRepositoryImpl.getOrAddNew subscription.Id context.Subscriptions
+            |> mapFromSubscription subscription
+
+            context.SaveChanges() |> ignore
 
         {
-            get = get
             getAll = getAll
+            get = get
             save = save
-            delete = delete
             storeLog = storeLog
         }
 
@@ -205,6 +259,7 @@ module ArticleRepositoryImpl =
 
                 let existing =
                     context.Articles
+                        .IgnoreQueryFilters()
                         .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
                         .Select(fun x -> x.Guid)
                         .ToList()
@@ -216,6 +271,63 @@ module ArticleRepositoryImpl =
             getAll = getAll
             getTop = getTop
             getAllBySubscription = getAllBySubscription
+            save = save
+            filterExistingArticles = filterExistingArticles
+        }
+        
+module BackendArticleRepositoryImpl =
+    let private mapToArticle (s: PersistedArticle) : TenantedArticle = {
+        Id = s.Id
+        TenantId = s.TenantId
+        Title = s.Title
+        Guid = s.Guid
+        Subscription = s.SubscriptionId
+        Content = s.Content
+        Source = s.Source
+        IsRead = s.IsRead
+        Timestamp = s.Timestamp
+        Link = s.Link
+        Summary = Option.ofObj s.Summary
+    }
+
+    let private mapFromArticle (s: TenantedArticle) (t: PersistedArticle) =
+        t.Id <- s.Id
+        t.TenantId <- s.TenantId
+        t.Title <- s.Title
+        t.Guid <- s.Guid
+        t.SubscriptionId <- s.Subscription
+        t.Content <- s.Content
+        t.Source <- s.Source
+        t.IsRead <- s.IsRead
+        t.Timestamp <- s.Timestamp
+        t.Link <- s.Link
+        t.Summary <- Option.toObj s.Summary
+
+    let create (context: ReaderContext) : BackendArticleRepository =
+        let save (article: TenantedArticle) =
+            SubscriptionRepositoryImpl.getOrAddNew article.Id context.Articles
+            |> mapFromArticle article
+
+            context.SaveChanges() |> ignore
+
+        let filterExistingArticles (subscriptionId: SubscriptionId) (guids: string list) =
+            if List.length guids = 0 then
+                []
+            else if List.contains null guids then
+                failwith "Feed GUID is null"
+            else
+                let guidsA = Array.ofList guids
+
+                let existing =
+                    context.Articles
+                        .Where(fun x -> x.SubscriptionId = subscriptionId && guidsA.Contains(x.Guid))
+                        .Select(fun x -> x.Guid)
+                        .ToList()
+                    |> Set.ofSeq
+
+                guids |> Set.ofList |> (fun x -> Set.difference x existing) |> Set.toList
+
+        {
             save = save
             filterExistingArticles = filterExistingArticles
         }

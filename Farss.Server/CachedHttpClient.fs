@@ -88,7 +88,10 @@ let get (url: string, etag: string option, lastModified: DateTimeOffset option) 
 
         match response.StatusCode with
         | HttpStatusCode.OK ->
-            let etag = response.Headers.ETag.Tag |> Option.ofObj
+            let etag =
+                response.Headers.ETag
+                    |> Option.ofObj
+                    |> Option.map (fun e -> e.Tag)
             let lastModified = response.Content.Headers.LastModified |> Option.ofNullable
             let! content = response.Content.ReadAsStringAsync()
 

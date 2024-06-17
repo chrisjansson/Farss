@@ -14,7 +14,7 @@ let private updateFeedIconForSubscriptionHandler (serviceProvider: IServiceProvi
             use scope = serviceProvider.CreateScope()
             let services = scope.ServiceProvider
             let adapter = services.GetService<FeedReaderAdapter>()
-            let subscriptionRepository = services.GetService<SubscriptionRepository>()
+            let subscriptionRepository = services.GetService<BackendSubscriptionRepository>()
             let fileRepository = services.GetService<FileRepository>()
             return! SubscribeToFeedWorkflow.updateFeedIcon adapter subscriptionRepository fileRepository id
         }
@@ -24,7 +24,7 @@ let updateFeedIconsHandler (serviceProvider: IServiceScopeFactory) =
         task {
             use scope = serviceProvider.CreateScope()
             let services = scope.ServiceProvider
-            let subscriptionRepository = services.GetService<SubscriptionRepository>()
+            let subscriptionRepository = services.GetService<BackendSubscriptionRepository>()
             let subs = subscriptionRepository.getAll () |> List.map (fun x -> x.Id)
 
             for s in subs do

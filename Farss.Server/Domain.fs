@@ -9,9 +9,18 @@ type Subscription =
         Title: SubscriptionTitle
         Icon: Guid option
     }
+and TenantedSubscription =
+    {
+        Id: SubscriptionId
+        TenantId: TenantId
+        Url: string
+        Title: SubscriptionTitle
+        Icon: Guid option
+    }
 and SubscriptionId = Guid
 and SubscriptionTitle = string
 
+and TenantId = Guid
 module SubscriptionTitle =
     let create v =
         if String.IsNullOrWhiteSpace(v) then //TODO: Extract validation helpers for common rules
@@ -31,6 +40,20 @@ module Subscription =
 type Article =
     {
         Id: ArticleId
+        Title: string
+        Guid: ArticleGuid
+        Subscription: SubscriptionId
+        Summary: string option
+        Content: string
+        Source: string
+        IsRead: bool
+        Timestamp: ArticleTimestamp
+        Link: ArticleLink
+    }
+and TenantedArticle =
+    {
+        Id: ArticleId
+        TenantId: TenantId
         Title: string
         Guid: ArticleGuid
         Subscription: SubscriptionId
@@ -85,10 +108,11 @@ module ArticleLink =
         | None -> Error "Link is required"
 
 module Article =
-    let create title guid subscription source content summary timestamp link =
+    let create title guid subscription tenant source content summary timestamp link =
         { 
             Id = Guid.NewGuid(); 
-            Title = title; 
+            Title = title
+            TenantId = tenant
             Guid = guid; 
             Subscription = subscription
             Source = source

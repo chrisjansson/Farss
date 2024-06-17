@@ -6,6 +6,7 @@ open Domain
 [<AllowNullLiteral>]
 type PersistedSubscription() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val TenantId: Guid = Unchecked.defaultof<_> with get, set
     member val Url: string = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
     member val IconId: Nullable<Guid> = Unchecked.defaultof<_> with get, set
@@ -13,6 +14,7 @@ type PersistedSubscription() =
 
 and [<AllowNullLiteral>] PersistedSubscriptionLogEntry() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val TenantId: Guid = Unchecked.defaultof<_> with get, set
     member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
     member val Subscription: PersistedSubscription = Unchecked.defaultof<_> with get, set
     member val Success: bool = Unchecked.defaultof<_> with get, set
@@ -21,6 +23,7 @@ and [<AllowNullLiteral>] PersistedSubscriptionLogEntry() =
 
 and [<AllowNullLiteral>] PersistedArticle() =
     member val Id: Guid = Unchecked.defaultof<_> with get, set
+    member val TenantId: Guid = Unchecked.defaultof<_> with get, set
     member val Title: string = Unchecked.defaultof<_> with get, set
     member val Guid: string = Unchecked.defaultof<_> with get, set
     member val SubscriptionId: Guid = Unchecked.defaultof<_> with get, set
