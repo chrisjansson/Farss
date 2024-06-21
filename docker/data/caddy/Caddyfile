@@ -8,35 +8,32 @@
 # this machine's public IP, then replace ":80" below with your
 # domain name.
 
-localhost {
-	# Authelia Portal.
-	@authelia path /authelia /authelia/*
-	handle @authelia {
-			reverse_proxy authelia:9091 {
-					## This import needs to be included if you're relying on a trusted proxies configuration.
-					#import trusted_proxy_list
-			}
-	}
-	
-	@farss path /farss /farss/*
-    handle @farss {
-        forward_auth authelia:9091 {
-                uri /api/verify?rd=https://localhost:4443/authelia/
-                copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
-        }
-        
-        handle /farss/api* {
-            reverse_proxy http://host.docker.internal:5000 {
-                        
-            }
-        }
-        
-        handle {
-            reverse_proxy http://host.docker.internal:5173 {
-                                    
-            }
-        }        
+auth.localdev.me {
+   	tls internal 
+    reverse_proxy authelia:9091 {
+            ## This import needs to be included if you're relying on a trusted proxies configuration.
+            #import trusted_proxy_list
     }
+}
+
+rss.localdev.me {
+   	tls internal 
+    forward_auth authelia:9091 {
+            uri /api/verify?rd=https://:auth.localdev.me:4443
+            copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+    }
+    
+    handle /api* {
+        reverse_proxy http://host.docker.internal:5000 {
+                    
+        }
+    }
+    
+    handle {
+        reverse_proxy http://host.docker.internal:5173 {
+                                
+        }
+    }        
 }
 
 # Refer to the Caddy docs for more information:

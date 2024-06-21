@@ -25,7 +25,7 @@ theme: light
 ## in such a case.
 ##
 ## Note: this parameter is optional. If not provided, user won't be redirected upon successful authentication.
-default_redirection_url: localhost:4443/nextcloud
+default_redirection_url: https://auth.localdev.me:4443
 
 ## Set the default 2FA method for new users and for when a user has a preferred method configured that has been
 ## disabled. This setting must be a method that is enabled.
@@ -45,7 +45,7 @@ server:
 
   ## Set the single level path Authelia listens on.
   ## Must be alphanumeric chars and should not contain any slashes.
-  path: "authelia"
+  path: ""
 
   ## Set the path on disk to Authelia assets.
   ## Useful to allow overriding of specific static assets.
@@ -666,7 +666,7 @@ session:
   ## The domain to protect.
   ## Note: the authenticator must also be in that domain.
   ## If empty, the cookie is restricted to the subdomain of the issuer.
-  domain: localhost
+  domain: localdev.me
 
   ## Sets the Cookie SameSite value. Possible options are none, lax, or strict.
   ## Please read https://www.authelia.com/c/session#same_site
