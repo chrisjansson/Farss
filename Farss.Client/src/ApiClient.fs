@@ -12,7 +12,7 @@ module Fetch =
     open Fetch
     
     let inline private prependBaseUrl (url: string) =
-        let pathname = Browser.Dom.window.location.pathname
+        let pathname = "/"
         pathname + url
         
 
