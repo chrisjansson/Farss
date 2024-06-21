@@ -1,6 +1,7 @@
 namespace Farss.Server
 
 open System
+open System.IO
 open Farss.Server.TrustedProxyHeaderAuthenticationHandler
 open Farss.Server.UserCache
 open Giraffe.HttpStatusCodeHandlers
@@ -14,11 +15,57 @@ open Microsoft.Extensions.DependencyInjection
 
 open Microsoft.Extensions.Configuration
 open CompositionRoot
+open Microsoft.Extensions.FileProviders
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Thoth.Json.Giraffe
 open Thoth.Json.Net
 
+type ReplacingFileInfo(baseInfo: IFileInfo) =
+    
+    let replaceFile (stream: Stream) =
+        use stream = stream
+        use ms = new MemoryStream()
+        stream.CopyTo(ms)
+        ms.Position <- 0
+        
+        use sr = new StreamReader(ms)
+        let fileContents = sr.ReadToEnd()
+        let fileContents = fileContents.Replace("%APP_BASE_URL%", "hejkakabakaweee")
+        
+        let newMs = new MemoryStream()
+        let sw = new StreamWriter(newMs)
+        sw.Write(fileContents)
+        sw.Flush()
+        newMs.Position <- 0
+        newMs 
+        
+    let length =
+        if baseInfo.Exists then
+            use ms = replaceFile (baseInfo.CreateReadStream())
+            ms.Length
+        else
+            0
+        
+    interface IFileInfo with
+        member x.IsDirectory with get() = baseInfo.IsDirectory
+        member this.CreateReadStream() = replaceFile (baseInfo.CreateReadStream())
+        member this.Exists = baseInfo.Exists
+        member this.LastModified = baseInfo.LastModified
+        member this.Length = length
+        member this.Name = baseInfo.Name
+        member this.PhysicalPath = null
+
+type FileProvider(fileProvider: IFileProvider) =
+    interface IFileProvider with
+        member x.GetFileInfo(subPath) =
+            let fileInfo = fileProvider.GetFileInfo(subPath)
+            if fileInfo.Name = "index.html" then
+                ReplacingFileInfo(fileInfo)
+            else
+                fileInfo
+        member this.GetDirectoryContents(subpath) = fileProvider.GetDirectoryContents(subpath)
+        member this.Watch(filter) = fileProvider.Watch(filter)
 
 type Startup(configuration: IConfiguration) =    
     let errorHandler (ex : Exception) (logger : ILogger) =
@@ -43,7 +90,7 @@ type Startup(configuration: IConfiguration) =
         
         services.AddAuthorization()
             |> ignore
-        
+            
         services.Configure<KestrelServerOptions>(
             fun (opt: KestrelServerOptions) ->
                 opt.AllowSynchronousIO <- true
@@ -62,10 +109,12 @@ type Startup(configuration: IConfiguration) =
         app
             .UseResponseCaching()
             .UseResponseCompression()
-            .UseDefaultFiles()
             .UseStaticFiles()
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseEndpoints(fun e -> e.MapGiraffeEndpoints(Farss.Giraffe.endpoints hostingSubdir authenticationScheme))
+            .UseEndpoints(fun e ->
+                e.MapGiraffeEndpoints(Farss.Giraffe.endpoints hostingSubdir authenticationScheme)
+                e.MapFallbackToFile("index.html", StaticFileOptions(FileProvider = FileProvider(env.WebRootFileProvider))) |> ignore
+            )
             |> ignore
