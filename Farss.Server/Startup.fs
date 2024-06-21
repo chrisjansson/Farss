@@ -115,6 +115,6 @@ type Startup(configuration: IConfiguration) =
             .UseAuthorization()
             .UseEndpoints(fun e ->
                 e.MapGiraffeEndpoints(Farss.Giraffe.endpoints hostingSubdir authenticationScheme)
-                e.MapFallbackToFile("index.html", StaticFileOptions(FileProvider = FileProvider(env.WebRootFileProvider))) |> ignore
+                e.MapFallbackToFile("index.html") |> ignore
             )
             |> ignore
