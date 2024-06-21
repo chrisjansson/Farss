@@ -1,26 +1,21 @@
 ﻿module ApiClient
 
 open System
-open Browser.Types
 open Fable.Core.JsInterop
 open Thoth.Json
-//open Fetch
-
 
 module Fetch =
-    open Thoth.Json
     open Fetch
-    
+
     let inline private prependBaseUrl (url: string) =
         let pathname = "/"
         pathname + url
-        
 
     let inline tryFetchAs url (responseDecoder: Decoder<_>) parameters =
         let decode = Decode.fromString responseDecoder
         let decodeResponse (response: Response) = response.text () |> Promise.map decode
         let url = prependBaseUrl url
-        
+
         tryFetch url parameters
         |> Promise.mapResultError (fun e -> e.Message)
         |> PromiseResult.bind decodeResponse
@@ -36,12 +31,7 @@ module Fetch =
         let method = Method HttpMethod.POST
         tryFetchAs url responseDecoder [ method; body ]
 
-    let inline private sendRecord
-        (url: string)
-        (record: 'T)
-        (properties: RequestProperties list)
-        httpMethod
-        : Fable.Core.JS.Promise<Response> =
+    let inline private sendRecord (url: string) (record: 'T) (properties: RequestProperties list) httpMethod : Fable.Core.JS.Promise<Response> =
         let defaultProps = [
             RequestProperties.Method httpMethod
             requestHeaders [ ContentType "application/json" ]
@@ -53,19 +43,11 @@ module Fetch =
 
     /// Sends a HTTP post with the record serialized as JSON.
     /// This function already sets the HTTP Method to POST sets the json into the body.
-    let inline postRecord<'T>
-        (url: string)
-        (record: 'T)
-        (properties: RequestProperties list)
-        : Fable.Core.JS.Promise<Response> =
+    let inline postRecord<'T> (url: string) (record: 'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Response> =
         let url = prependBaseUrl url
         sendRecord url record properties HttpMethod.POST
 
-    let inline tryPostRecord<'T>
-        (url: string)
-        (record: 'T)
-        (properties: RequestProperties list)
-        : Fable.Core.JS.Promise<Result<Response, Exception>> =
+    let inline tryPostRecord<'T> (url: string) (record: 'T) (properties: RequestProperties list) : Fable.Core.JS.Promise<Result<Response, Exception>> =
         postRecord url record properties |> Promise.result
 
 //    /// Sends a HTTP put with the record serialized as JSON.
@@ -86,9 +68,7 @@ module Fetch =
 //        fetch url [RequestProperties.Method HttpMethod.OPTIONS] |> Promise.result
 
 let inline previewSubscribeToFeed (dto: Dto.PreviewSubscribeToFeedQueryDto) =
-    Fetch.tryFetchAsWithPayload<Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError> list, Dto.PreviewSubscribeToFeedQueryDto>
-        ApiUrls.PreviewSubscribeToFeed
-        dto
+    Fetch.tryFetchAsWithPayload<Result<Dto.PreviewSubscribeToFeedResponseDto, Dto.FeedError> list, Dto.PreviewSubscribeToFeedQueryDto> ApiUrls.PreviewSubscribeToFeed dto
 
 let subscribeToFeed (dto: Dto.SubscribeToFeedDto) =
     Fetch.tryPostRecord ApiUrls.SubscribeToFeed dto [] |> Promise.mapResult ignore
@@ -116,3 +96,9 @@ let getArticles (feed: Guid option) (count: int) : Fable.Core.JS.Promise<Result<
 //
 let poll () =
     Fetch.tryPostRecord ApiUrls.PollSubscriptions () [] |> Promise.mapResult ignore
+
+let echo () =
+    let decoder =
+        Thoth.Json.Decode.Auto.generateDecoder<Dto.StartupInformationDto> (caseStrategy = CaseStrategy.CamelCase)
+
+    Fetch.tryFetchAs ApiUrls.GetStartupInformation decoder []

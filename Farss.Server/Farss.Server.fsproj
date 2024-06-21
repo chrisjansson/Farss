@@ -71,5 +71,10 @@
     
     <ItemGroup>
         <Content Include="../db/**" LinkBase="db/" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Remove="wwwroot\index.html" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
     </ItemGroup> 
 </Project> 

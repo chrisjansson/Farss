@@ -78,6 +78,6 @@ type SetArticleReadStatusDto = { ArticleId: Guid option; SetIsReadTo: bool optio
 
 type StartupInformationDto =
     {
-        BaseUrl: string
+        WhoAmI: string
         CommitInformation: string option
     }

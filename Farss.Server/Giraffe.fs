@@ -7,11 +7,16 @@ open Microsoft.AspNetCore.Http
 
 let private requireAuthentication (authenticationScheme: string) = requiresAuthentication (RequestErrors.unauthorized authenticationScheme "Realm" (text "auth failed"))
 
-let private data = if File.Exists "commit.txt" then File.ReadAllText "commit.txt" |> Some else None
+let private data = if File.Exists "commit.txt" then File.ReadAllText "commit.txt" |> Some else Some "Running in debug yo"
 
 let private echo: HttpHandler =
     fun (next: HttpFunc) (ctx: HttpContext) ->
-        json { Dto.StartupInformationDto.BaseUrl = "/"; Dto.StartupInformationDto.CommitInformation = data } next ctx
+        let currentUser =
+            match ctx.GetRequestHeader("Remote-User") with
+            | Ok u -> u
+            | Error _ -> ""
+            
+        json { Dto.StartupInformationDto.WhoAmI =  currentUser; Dto.StartupInformationDto.CommitInformation = data } next ctx
         
 let private conditionalSubDir (subDir: string option) endpoint =
     match subDir with

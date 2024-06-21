@@ -23,6 +23,9 @@ let GetArticles = "api/articles"
 [<Literal>]
 let SetArticleReadStatus = "api/article/setreadstatus"
 
+[<Literal>]
+let GetStartupInformation = "api/echo"
+
 let GetFileRoute = "api/file/{id}"
 
 let GetFile (id: Guid) = sprintf "api/file/%A" id

@@ -78,7 +78,6 @@ let AddFeedDialog (onClose: unit -> unit) =
         fun () ->
             match onRef.current with
             | Some e ->
-                DialogPolyfill.dialogPolyfill.registerDialog e
                 e?showModal()
             | _ -> ()
             ()
