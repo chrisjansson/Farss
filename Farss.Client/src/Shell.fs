@@ -1,9 +1,12 @@
 module Shell
 
+open System
+open Browser.Types
 open Feliz
 
 open Dto
 open Fss.Types
+
 
 type private ViewModel<'T> =
     | Loading
@@ -48,16 +51,17 @@ let private MemoArticles = React.memo ArticleList.Articles
 
 let private MemoMenu = React.memo Toolbar.Menu
 
-[<ReactComponent>]
-let Main () =
-    let (currentUrl, updateUrl) = React.useState (Router.currentPath ())
+open Feliz.UseMediaQuery
 
+[<ReactComponent>]
+let rec Main () =
+    let (currentUrl, updateUrl) = React.useState (Router.currentPath ())
+    let isMobile = React.useMediaQuery("(max-width: 600px)")
+    
     React.router [
         router.pathMode
         router.onUrlChanged updateUrl
         router.children [
-
-
             let selectedFeed, selectedArticle =
                 match currentUrl with
                 | [] -> None, None
@@ -67,34 +71,76 @@ let Main () =
                 | [ "feeds"; Route.Guid feedId; "articles"; Route.Guid articleId ] -> Some feedId, Some articleId
                 | [ "feeds"; "articles"; Route.Guid articleId ] -> None, Some articleId
                 | _ -> None, None
+            if isMobile then
+                MobileMain (selectedFeed, selectedArticle)
 
+            else
+                DesktopMain (selectedFeed, selectedArticle)
+        ]
+    ]
+and DesktopMain (selectedFeed: Guid option, selectedArticle: Guid option): ReactElement =
+    Html.div [
+        prop.className [ Style.GridContainer ]
+        prop.children [
             Html.div [
-                prop.className [ Style.GridContainer ]
+                prop.classes [ Style.Logo ]
                 prop.children [
                     Html.div [
-                        prop.classes [ Style.Logo ]
-                        prop.children [
-                            Html.div [
-                                prop.style [
-                                    style.display.flex
-                                    style.flexDirection.column
-                                    style.justifyContent.center
-                                    style.height (length.percent 100)
-                                    style.margin (0, 10)
-                                ]
-                                prop.children [ Html.span [ prop.text "Farss" ] ]
-                            ]
+                        prop.style [
+                            style.display.flex
+                            style.flexDirection.column
+                            style.justifyContent.center
+                            style.height (length.percent 100)
+                            style.margin (0, 10)
                         ]
+                        prop.children [ Html.span [ prop.text "Farss" ] ]
                     ]
-                    Html.div [ prop.classes [ Style.Menu ]; prop.children [ MemoMenu() ] ]
+                ]
+            ]
+            Html.div [ prop.classes [ Style.Menu ]; prop.children [ MemoMenu() ] ]
+            Html.div [
+                prop.classes [ Style.SideMenu ]
+                prop.children [ SideMenu.SideMenu selectedFeed ]
+            ]
+            Html.div [
+                prop.classes [ Style.Main ]
+                prop.children [
+                    MemoArticles {|
+                        SelectedFeed = selectedFeed
+                        SelectedArticle = selectedArticle
+                    |}
+                ]
+            ]
+        ]
+    ]
+    
+and MobileMain (selectedFeed, selectedArticle): ReactElement =
+    Html.div [
+        prop.className [ Style.GridContainer ]
+        prop.children [
+            Html.div [
+                prop.classes [ Style.Logo ]
+                prop.children [
                     Html.div [
-                        prop.classes [ Style.SideMenu ]
-                        prop.children [ SideMenu.SideMenu selectedFeed ]
+                        prop.style [
+                            style.display.flex
+                            style.flexDirection.column
+                            style.justifyContent.center
+                            style.height (length.percent 100)
+                            style.margin (0, 10)
+                        ]
+                        prop.children [ Html.span [ prop.text "Farss" ] ]
                     ]
-                    Html.div [
-                        prop.classes [ Style.Main ]
-                        prop.children [ MemoArticles {| SelectedFeed = selectedFeed; SelectedArticle = selectedArticle  |} ]
-                    ]
+                ]
+            ]
+            Html.div [ prop.classes [ Style.Menu ]; prop.children [ MemoMenu() ] ]
+            Html.div [
+                prop.classes [ Style.Main ]
+                prop.children [
+                    MemoArticles {|
+                        SelectedFeed = selectedFeed
+                        SelectedArticle = selectedArticle
+                    |}
                 ]
             ]
         ]
