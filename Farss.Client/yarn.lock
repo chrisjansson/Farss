@@ -538,7 +538,6 @@ __metadata:
   dependencies:
     "@tabler/icons-react": "npm:^2.34.0"
     "@vitejs/plugin-react": "npm:^4.0.4"
-    dialog-polyfill: "npm:^0.5.3"
     dompurify: "npm:2.4.0"
     react: "npm:^18.2.0"
     react-dom: "npm:18.2.0"
@@ -791,13 +790,6 @@ __metadata:
   version: 1.1.2
   resolution: "depd@npm:1.1.2"
   checksum: 10/2ed6966fc14463a9e85451db330ab8ba041efed0b9a1a472dbfc6fbf2f82bab66491915f996b25d8517dddc36c8c74e24c30879b34877f3c4410733444a51d1d
-  languageName: node
-  linkType: hard
-
-"dialog-polyfill@npm:^0.5.3":
-  version: 0.5.6
-  resolution: "dialog-polyfill@npm:0.5.6"
-  checksum: 10/42428793b04fd2e0a67dfb75838703488d7d05f73663c3251441ad6ed154b8dc71d65ed03d5a0ba4a83c6167c2e6f791cbe1574d0dca37dac1405ce3816033ca
   languageName: node
   linkType: hard
 

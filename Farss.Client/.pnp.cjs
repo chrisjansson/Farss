@@ -29,7 +29,6 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["@tabler/icons-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0"],\
           ["@vitejs/plugin-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:4.0.4"],\
-          ["dialog-polyfill", "npm:0.5.6"],\
           ["dompurify", "npm:2.4.0"],\
           ["react", "npm:18.2.0"],\
           ["react-dom", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:18.2.0"],\
@@ -721,7 +720,6 @@ const RAW_RUNTIME_STATE =
           ["Farss.Client", "workspace:."],\
           ["@tabler/icons-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:2.34.0"],\
           ["@vitejs/plugin-react", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:4.0.4"],\
-          ["dialog-polyfill", "npm:0.5.6"],\
           ["dompurify", "npm:2.4.0"],\
           ["react", "npm:18.2.0"],\
           ["react-dom", "virtual:1daa6d47830261dd25c85fb1cdcc73ff3974cb6ab1c28fa9c3291bf34986bd24ad75b119cce7c2617f851566ad103d3b5ce0c9d07ac51b04317a385553298294#npm:18.2.0"],\
@@ -1020,15 +1018,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/depd-npm-1.1.2-b0c8414da7-2ed6966fc1.zip/node_modules/depd/",\
         "packageDependencies": [\
           ["depd", "npm:1.1.2"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["dialog-polyfill", [\
-      ["npm:0.5.6", {\
-        "packageLocation": "./.yarn/cache/dialog-polyfill-npm-0.5.6-2a36d9e8ee-42428793b0.zip/node_modules/dialog-polyfill/",\
-        "packageDependencies": [\
-          ["dialog-polyfill", "npm:0.5.6"]\
         ],\
         "linkType": "HARD"\
       }]\
